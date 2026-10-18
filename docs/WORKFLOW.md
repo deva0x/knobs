@@ -17,6 +17,7 @@ Actions.
 | `scripts/ci.sh fast` | Automatically before every commit (pre-commit hook) | No-hosted-CI check, format lint, KnobsCore unit tests |
 | `scripts/ci.sh` | Before checking a box in PLAN, and before every push (pre-push hook) | Everything in `fast`, integration tests, app build with warnings as errors |
 | `scripts/ci.sh release` | Before a release | Everything above, plus a Release build, and a failure if any of the 10 tools is missing |
+| `scripts/ci.sh linux` | After changing KnobsCore, and before a Linux build | Format lint, then KnobsCore's unit tests on Linux in a local container (OrbStack or Docker on this Mac; `swift:6.2-noble` unless `KNOBS_LINUX_IMAGE` names another). Never a hosted runner |
 
 Test conventions the script relies on:
 - Any suite that launches a real tool must be named `...IntegrationTests` (for example `FFmpegIntegrationTests`). `fast` skips suites matching `IntegrationTests`.

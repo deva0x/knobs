@@ -190,6 +190,23 @@ import Testing
         #expect(ContinuousClock.now - started < ToolRunner.defaultCancelGracePeriod)
     }
 
+    /// The same rule covers Cancel pressed just after a tool exited but before its exit was collected.
+    @Test func aToolThatExitsCleanlyAfterCancelHasStillSucceeded() async {
+        let run = runner.start(
+            executable: URL(filePath: "/bin/sh"),
+            arguments: ["-c", "trap 'exit 0' TERM; /bin/sleep 30 >/dev/null 2>&1 & echo ready; wait"],
+            workingDirectory: nil, progress: nil)
+        var outcome: RunOutcome?
+        for await event in run.events {
+            switch event {
+            case .line("ready", _): run.cancel()
+            case .finished(let finished): outcome = finished
+            default: break
+            }
+        }
+        #expect(outcome == .succeeded)
+    }
+
     @Test func cancelAlsoStopsChildrenThatIgnoreTheFirstSignal() async throws {
         let quickRunner = ToolRunner(
             environment: ProcessInfo.processInfo.environment, cancelGracePeriod: .milliseconds(200))

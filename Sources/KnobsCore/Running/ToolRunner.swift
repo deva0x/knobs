@@ -92,7 +92,7 @@ public final class ToolRun: Sendable {
 
     /// Asks the tool to stop: SIGTERM now, SIGKILL after the grace period. Both go to the tool's whole process
     /// group, so helpers it started (yt-dlp's ffmpeg, ocrmypdf's Ghostscript) stop too. A tool that has already
-    /// exited is left alone, so a run that finished just before Cancel still counts as finished.
+    /// exited is left alone, and one that exits cleanly anyway still counts as finished (see `outcome(of:)`).
     public func cancel() {
         let process = state.withLock { state -> Process? in
             guard !state.isFinished, state.exitStatus == nil, let process = state.process else { return nil }
@@ -254,11 +254,13 @@ public final class ToolRun: Sendable {
         if let outcome = state.withLock({ Self.outcome(of: $0) }) { finish(with: outcome) }
     }
 
-    /// How the run ended, or nil while the tool is still running.
+    /// How the run ended, or nil while the tool is still running. A clean exit counts as success even after
+    /// Cancel: the tool says it finished its work, and Cancel may have come in the moment between the tool's exit
+    /// and Knobs collecting it. A tool that Cancel did stop exits by the signal or with a failure code.
     private static func outcome(of state: borrowing State) -> RunOutcome? {
         guard let exit = state.exitStatus else { return nil }
-        if state.isCancelled { return .cancelled }
-        return exit.reason == .exit && exit.status == 0 ? .succeeded : .failed(exitCode: exit.status)
+        if exit.reason == .exit && exit.status == 0 { return .succeeded }
+        return state.isCancelled ? .cancelled : .failed(exitCode: exit.status)
     }
 
     /// Yields `.finished` and ends the stream under the lock, so it is always the last event.

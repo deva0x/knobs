@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>Knobs: command-line tools as Mac windows</title>
-  <meta name="description" content="Knobs is a free, open-source Mac app that turns command-line tools like ffmpeg, yt-dlp and pandoc into plain Mac windows. Pick a task, drop in a file, press Run. The exact command is always shown.">
+  <meta name="description" content="Knobs is a free, open-source Mac app that turns command-line tools like ffmpeg, yt-dlp and pandoc into plain Mac windows. Pick a task, drop in a file, press Run. The exact command is always shown. Also on Linux.">
   <meta name="theme-color" content="#F4F1EA" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -84,6 +84,7 @@
             </a>
             <a class="btn btn-quiet" href="#get" data-link="github">View on GitHub</a>
           </div>
+          <p class="hero-also">Also on Linux: Ubuntu, Fedora and Arch. <a href="#get">Linux downloads</a></p>
         </div>
 
         <figure class="shot" data-screenshot-slot="hero">
@@ -414,13 +415,18 @@
       <div class="wrap get-grid">
         <svg class="get-icon" aria-hidden="true"><use href="#mark"/></svg>
         <div class="get-copy">
-          <h2 id="get-title">Free, open source, and made for the Mac.</h2>
-          <p>Knobs is MIT licensed. It runs on macOS 26 or later with Apple Silicon, and works with the tools you install with Homebrew.</p>
+          <h2 id="get-title">Free, open source, for the Mac and Linux.</h2>
+          <p>Knobs is MIT licensed. On the Mac it runs on macOS 26 or later with Apple Silicon. On Linux it runs on Ubuntu 26.04, Fedora 43, current Arch Linux or newer, on ARM or x86 computers.</p>
           <div class="cta-row">
             <a class="btn btn-primary" href="#get" data-link="download">
               <svg class="icon" aria-hidden="true"><use href="#g-download"/></svg>
               <span>Download for Mac</span>
               <span class="btn-meta">macOS 26+</span>
+            </a>
+            <a class="btn btn-quiet" href="#get" data-link="download">
+              <svg class="icon" aria-hidden="true"><use href="#g-download"/></svg>
+              <span>Download for Linux</span>
+              <span class="btn-meta">.deb, .rpm, Arch</span>
             </a>
             <a class="btn btn-quiet" href="#get" data-link="github">View on GitHub</a>
           </div>
@@ -433,6 +439,7 @@
               <svg class="icon" aria-hidden="true"><use href="#g-copy"/></svg><span>Copy</span>
             </button>
           </div>
+          <p>On Linux, install it with your distribution’s package manager, such as <code>apt</code>, <code>dnf</code> or <code>pacman</code>.</p>
         </div>
       </div>
     </section>
@@ -444,15 +451,15 @@
         <div class="faq-list">
           <details>
             <summary>Does Knobs install the tools?</summary>
-            <p>No. Knobs runs tools you already have. When one is missing, it shows the <code>brew install</code> command for you to copy into Terminal, and a Check again button for when you’re done.</p>
+            <p>No. Knobs runs tools you already have. When one is missing, it shows the <code>brew install</code> command for you to copy into Terminal, and a Check again button for when you’re done. On Linux, it names the command to install with your distribution’s package manager.</p>
           </details>
           <details>
             <summary>Is it free?</summary>
             <p>Yes. Knobs is free and open source under the MIT license. There’s no account and no subscription.</p>
           </details>
           <details>
-            <summary>Which Macs does it run on?</summary>
-            <p>macOS 26 or later, on a Mac with Apple Silicon. Intel Macs aren’t supported.</p>
+            <summary>What does it run on?</summary>
+            <p>On the Mac, macOS 26 or later with Apple Silicon; Intel Macs aren’t supported. On Linux, any desktop with GTK 4.20 or later, which means Ubuntu 26.04, Fedora 43, current Arch Linux or newer, on ARM or x86. There’s a .deb for Ubuntu, an .rpm for Fedora, and a package for Arch.</p>
           </details>
           <details>
             <summary>Is it safe?</summary>

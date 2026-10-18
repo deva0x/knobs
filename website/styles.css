@@ -173,6 +173,9 @@ h2 {
 .btn-meta { font-weight: 500; font-size: 13.5px; padding-left: 10px; margin-left: 2px; border-left: 1px solid rgba(20,20,20,.28); }
 .btn-quiet { color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); }
 .btn-quiet:hover { background: var(--plate); }
+.btn-quiet .btn-meta { border-left-color: var(--line-strong); color: var(--ink-2); }
+.hero-also { margin-top: 18px; font-size: 15px; color: var(--ink-2); }
+.hero-also a { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
 
 /* Hero */
 .hero { padding-top: clamp(32px, 4vw, 56px); padding-bottom: var(--section); }

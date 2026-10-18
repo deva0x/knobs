@@ -2,11 +2,13 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-18 IST
+Updated: 2026-10-19 IST
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
-  screenshots in the README and on the website, and most of the Linux version (M11).
+  screenshots in the README and on the website, and most of the Linux version (M11). The website offers both
+  the Mac and the Linux downloads, with the requirements for each (checked at desktop and phone widths, light and
+  dark, on 2026-10-19).
 - Verified in the Mac app on this Mac: ffmpeg Shrink a video, Compress an image, a failing run, the Open With
   chooser, link and folder tasks, All options, Add a Tool with `jq`, ⌘K, in light and dark.
 - Verified by tests: `scripts/ci.sh` full passes (149 tests in 26 suites, every task of all ten tools running for
@@ -40,6 +42,8 @@ publish, or a system setting:
 1. Create the Developer ID Application certificate and store the notary profile `knobs-notary` (WORKFLOW,
    "Releasing"); `scripts/release.sh` then signs and notarizes instead of building an unsigned DMG.
 2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
+   Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
+   command); the website's Download buttons point at the latest release.
 3. Deploy the website (WORKFLOW, "Publishing the website").
 4. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).
 5. Optional: try Reduce Motion and VoiceOver once on the Mac, and click through Knobs on omarchy-1.

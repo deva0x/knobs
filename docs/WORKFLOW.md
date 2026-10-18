@@ -18,6 +18,10 @@ Actions.
 | `scripts/ci.sh` | Before checking a box in PLAN, and before every push (pre-push hook) | Everything in `fast`, integration tests, app build with warnings as errors |
 | `scripts/ci.sh release` | Before a release | Everything above, plus a Release build, and a failure if any of the 10 tools is missing |
 
+Test conventions the script relies on:
+- Any suite that launches a real tool must be named `...IntegrationTests` (for example `FFmpegIntegrationTests`). `fast` skips suites matching `IntegrationTests`.
+- Integration tests skip, with a message, when their tool isn't installed. With `KNOBS_REQUIRE_TOOLS=1` (set by `release` mode) they fail instead.
+
 Hooks live in `scripts/hooks/` and are turned on with `scripts/install-hooks.sh`. That script sets
 `core.hooksPath`, so the hooks are versioned files, not copies. Never skip them with `--no-verify`.
 

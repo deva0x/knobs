@@ -6,7 +6,6 @@ build/
 dist/
 *.xcodeproj/
 *.xcworkspace/
-!Package.swift
 CLAUDE.local.md
 .env
 .env.*

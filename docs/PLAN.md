@@ -94,7 +94,9 @@ add an integration test that runs one real task on a tiny fixture, and try it on
 
 ### M8. Publish (only Deva can do this)
 - [ ] Deva approves the name and license
-- [ ] Deva creates the GitHub repo (or approves creating it) and pushes
+- [ ] Deva creates the GitHub repo (or approves creating it)
+- [ ] Deva turns off GitHub Actions for the repo before the first push (Settings → Actions → General → Disable actions), and leaves CodeQL default setup and Dependabot off. An empty `.github/workflows` doesn't stop GitHub's own default workflows.
+- [ ] Deva pushes
 - [ ] Deva approves uploading the DMG with `gh release create` (a release upload, not GitHub Actions)
 
 ## Order and dependencies

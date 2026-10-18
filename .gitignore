@@ -1,0 +1,15 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+build/
+dist/
+*.xcodeproj/
+*.xcworkspace/
+!Package.swift
+CLAUDE.local.md
+.env
+.env.*
+*.p12
+*.cer
+App/Info.plist

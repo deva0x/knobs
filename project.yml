@@ -1,0 +1,41 @@
+# XcodeGen spec for the Knobs app (DEC-007). Knobs.xcodeproj is generated from this file and not committed.
+name: Knobs
+options:
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+packages:
+  KnobsCore:
+    path: .
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    ARCHS: arm64
+    DEVELOPMENT_TEAM: P564YR8496
+    ENABLE_HARDENED_RUNTIME: YES
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+targets:
+  Knobs:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Manifests
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: KnobsCore
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Knobs
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSMinimumSystemVersion: "15.0"
+        LSApplicationCategoryType: public.app-category.utilities
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.deva0x.Knobs
+        PRODUCT_NAME: Knobs

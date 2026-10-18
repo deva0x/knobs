@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Fast gate before every commit. Never bypass with --no-verify.
+exec "$(git rev-parse --show-toplevel)/scripts/ci.sh" fast

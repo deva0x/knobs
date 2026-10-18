@@ -5,16 +5,14 @@ Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 Updated: 2026-10-18 IST
 
 ## Now
-- Milestone: M0 (foundations).
-- Done: repo, template guardrails, plan and process docs, local CI and hooks, app and core skeleton.
-- Next action: once Deva approves, run one `brew install exiftool` and download the whisper test model (DEC-009) first, so any permission prompt shows up while Deva can still answer it. Then start M1: the `ToolManifest` model and decoding the ffmpeg manifest.
+- Milestones done: M0 foundations, M1 manifests and command building, M2 running tools, M3 design direction.
+- In progress: M4 app (end-to-end with ffmpeg) and M8 website (a separate agent is building `website/`).
+- Next action: build the thin app slice (sidebar, ffmpeg, Shrink a video, drop, Run, result card), screenshot it, then iterate against DESIGN.md.
 
 ## Waiting on Deva
-1. Approve the plan and the standing authorization in CLAUDE.md (local commits, Homebrew installs, the
-   whisper test model).
-2. Create the Developer ID Application certificate (see WORKFLOW, "Releasing"). Needed only for M7.
-3. Store the notary profile `knobs-notary` (see WORKFLOW). Needed only for M7.
-4. Decide the final name and license before publishing (M8).
+1. Create the Developer ID Application certificate (see WORKFLOW, "Releasing"). Needed only for M9.
+2. Store the notary profile `knobs-notary` (see WORKFLOW). Needed only for M9.
+3. Decide the final name, license and bundle id before publishing (M10).
 
 ## Blocked
 Nothing.

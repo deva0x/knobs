@@ -40,25 +40,25 @@ Every milestone ends with `scripts/ci.sh` passing, plus the milestone's own chec
 - Exit: `scripts/ci.sh` passes. `git log` shows the first commit. WORKLOG has an entry.
 
 ### M1. Core: manifests and command building (KnobsCore, no UI)
-- [ ] `ToolManifest` model decoded from JSON, following `docs/MANIFEST_FORMAT.md`
-- [ ] Validation with clear errors: unknown keys and field references, defaults outside their range, duplicate ids, a missing or repeated `{extra}`
-- [ ] `CommandBuilder`: manifest task plus field values gives an argv `[String]`; a value is always exactly one argument
-- [ ] Extra arguments: the box's text is split into words with quote rules, by Knobs itself, never by a shell
-- [ ] Output path derivation that never overwrites an existing file (adds " 2", " 3", and so on)
-- [ ] Display rendering of argv with shell-style quoting, used only for the command preview and copying
-- [ ] ffmpeg manifest written as the reference example
+- [x] `ToolManifest` model decoded from JSON, following `docs/MANIFEST_FORMAT.md`
+- [x] Validation with clear errors: unknown keys and field references, defaults outside their range, duplicate ids, a missing or repeated `{extra}`
+- [x] `CommandBuilder`: manifest task plus field values gives an argv `[String]`; a value is always exactly one argument
+- [x] Extra arguments: the box's text is split into words with quote rules, by Knobs itself, never by a shell
+- [x] Output path derivation that never overwrites an existing file (adds " 2", " 3", and so on)
+- [x] Display rendering of argv with shell-style quoting, used only for the command preview and copying
+- [x] ffmpeg manifest written as the reference example
 - Exit: unit tests cover decoding, every validation error, argv building (golden tests), word splitting, quoting and output naming.
 
 ### M2. Core: running tools
-- [ ] `ToolLocator`: finds executables in `/opt/homebrew/bin`, `/usr/local/bin` and the system paths, because apps opened from Finder don't get the shell's PATH
-- [ ] `ToolRunner`: launches `Process` with argv, streams stdout and stderr, supports cancel (SIGTERM, then SIGKILL after a grace period), reports the exit status
-- [ ] Output buffer capped at the last 5,000 lines
-- [ ] Integration test: really runs ffmpeg on a generated 1-second clip (`-f lavfi testsrc`); skips with a message if ffmpeg is missing
+- [x] `ToolLocator`: finds executables in `/opt/homebrew/bin`, `/usr/local/bin` and the system paths, because apps opened from Finder don't get the shell's PATH
+- [x] `ToolRunner`: launches `Process` with argv, streams stdout and stderr, supports cancel (SIGTERM, then SIGKILL after a grace period), reports the exit status
+- [x] Output buffer capped at the last 5,000 lines
+- [x] Integration test: really runs ffmpeg on a generated 1-second clip (`-f lavfi testsrc`); skips with a message if ffmpeg is missing
 - Exit: tests pass, and the integration test passes on this Mac.
 
 ### M3. Design direction
-- [ ] `docs/DESIGN.md`: principles, layout, type, color, motion, components, and the review checklist
-- [ ] Brand basics shared by the app and the website: name treatment, accent color, icon concept
+- [x] `docs/DESIGN.md`: principles, layout, type, color, motion, components, and the review checklist
+- [x] Brand basics shared by the app and the website: name treatment, accent color, icon concept
 - Exit: DESIGN.md exists and the app and website briefs both point to it.
 
 ### M4. App: end-to-end with ffmpeg, premium from the start

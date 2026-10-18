@@ -75,8 +75,6 @@ public final class ToolRun: Sendable {
 
     private struct State: ~Copyable {
         var process: Process?
-        /// Foundation starts each tool as the leader of its own process group; recorded at launch to be sure.
-        var leadsProcessGroup = false
         var isCancelled = false
         var exitStatus: (status: Int32, reason: Process.TerminationReason)?
         var openStreams: Set<OutputLog.Stream> = [.standardOutput, .standardError]
@@ -96,22 +94,25 @@ public final class ToolRun: Sendable {
     /// group, so helpers it started (yt-dlp's ffmpeg, ocrmypdf's Ghostscript) stop too. A tool that has already
     /// exited is left alone, so a run that finished just before Cancel still counts as finished.
     public func cancel() {
-        let target = state.withLock { state -> (process: Process, leadsGroup: Bool)? in
+        let process = state.withLock { state -> Process? in
             guard !state.isFinished, state.exitStatus == nil, let process = state.process else { return nil }
             state.isCancelled = true
-            return (process, state.leadsProcessGroup)
+            return state.process
         }
-        guard let target, target.process.isRunning else { return }
-        let pid = target.process.processIdentifier
-        Self.send(SIGTERM, to: pid, group: target.leadsGroup)
+        guard let process, process.isRunning else { return }
+        let pid = process.processIdentifier
+        // Foundation starts each tool as the leader of its own process group; checked here rather than assumed.
+        let leadsGroup = getpgid(pid) == pid
+        if leadsGroup { killpg(pid, SIGTERM) } else { kill(pid, SIGTERM) }
         DispatchQueue.global().asyncAfter(deadline: .now() + cancelGracePeriod.timeInterval) {
-            // Sent even if the tool itself has exited: a helper that ignored SIGTERM may still be running.
-            Self.send(SIGKILL, to: pid, group: target.leadsGroup)
+            if leadsGroup {
+                // Sent even if the tool itself has exited, because a helper that ignored SIGTERM may still be
+                // running, but only while the group still has members, so a reused id is never signalled.
+                if killpg(pid, 0) == 0 { killpg(pid, SIGKILL) }
+            } else if process.isRunning {
+                kill(pid, SIGKILL)
+            }
         }
-    }
-
-    private static func send(_ signal: Int32, to pid: pid_t, group: Bool) {
-        if group { killpg(pid, signal) } else { kill(pid, signal) }
     }
 
     fileprivate func launch(
@@ -143,8 +144,6 @@ public final class ToolRun: Sendable {
         state.withLock { $0.process = process }
         do {
             try process.run()
-            let pid = process.processIdentifier
-            state.withLock { $0.leadsProcessGroup = getpgid(pid) == pid }
         } catch {
             standardOutput.fileHandleForReading.readabilityHandler = nil
             standardError.fileHandleForReading.readabilityHandler = nil

@@ -34,6 +34,23 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
         #expect(option("--skip-text", in: options)?.summary.hasSuffix("--force-ocr).") == true)
     }
 
+    /// Golden counts for the real help fixtures: a parser change that swallows or invents options shows up here,
+    /// not only in the one flag per tool checked below. Update a count only after reading the new parse.
+    @Test(arguments: [
+        ("7zz", 46), ("curl", 250), ("ffmpeg", 42), ("gs", 7), ("jq", 29), ("magick", 261), ("ocrmypdf", 59),
+        ("pandoc", 109), ("rsync", 151), ("whisper-cli", 66), ("yt-dlp", 246),
+    ])
+    func realHelpTextYieldsTheKnownNumberOfOptions(tool: String, count: Int) throws {
+        #expect(HelpParser.options(in: try fixture(tool)).count == count)
+    }
+
+    @Test func longOnlyOptionsOnTheirOwnIndentedLineStayOptions() throws {
+        let options = HelpParser.options(in: try fixture("pandoc"))
+        #expect(option("--data-dir", in: options) != nil)
+        #expect(option("--template", in: options) != nil)
+        #expect(options.count > 100)
+    }
+
     @Test func optionalBracketsBeforeAValueStillTakeTheValue() {
         let options = HelpParser.options(in: "  -i[r[-|0]]{@listfile|!wildcard} : Include filenames\n")
         #expect(option("-i", in: options)?.valueStyle == .attached)
@@ -152,6 +169,16 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
             from: [HelpOption(flags: ["--video-password"], valueName: "PASSWORD", valueStyle: .separate, summary: "")],
             toolName: "tool")
         #expect(generated.task.fields.first?.kind == .secret)
+    }
+
+    @Test func secretValuesAreFoundByTheirValueNameToo() {
+        let generated = HelpTaskBuilder.task(
+            from: [
+                HelpOption(flags: ["-p"], valueName: "Password", valueStyle: .attached, summary: ""),
+                HelpOption(flags: ["-u", "--user"], valueName: "user:password", valueStyle: .separate, summary: ""),
+                HelpOption(flags: ["--password-file"], valueName: "FILE", valueStyle: .equals, summary: ""),
+            ], toolName: "tool")
+        #expect(generated.task.fields.map(\.kind).prefix(3) == [.secret, .secret, .text(placeholder: "FILE")])
     }
 
     @Test func optionsTakingSeveralValuesAreLeftToExtraArguments() {

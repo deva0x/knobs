@@ -183,7 +183,8 @@ public struct LibraryFile: Sendable {
     }
 
     /// Moves a library that couldn't be read out of the way, next to where it was, so starting fresh never
-    /// overwrites the user's presets. Returns where it went. `date` names the copy, so several never collide.
+    /// overwrites the user's presets. Returns where it went. `date` names the copy, to the second; a second
+    /// set-aside within the same second fails with `.unwritable` rather than replacing the first.
     public func setAside(at date: Date) throws(LibraryFileError) -> URL {
         let stamp = date.formatted(.iso8601.year().month().day().time(includingFractionalSeconds: false))
             .replacing(":", with: "-")

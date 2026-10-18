@@ -72,9 +72,11 @@ public enum HelpParser {
                 flush()
                 continue
             }
-            // A deeper-indented line with no column gap continues the description, even when it starts with a
-            // flag, as in "unlike\n                 --force-ocr)." Without this, wrapped text would become options.
-            if var current = pending, indent > current.indent, !hasColumnGap(trimmed) {
+            // A deeper-indented line with no column gap continues a description already under way, even when it
+            // starts with a flag, as in "unlike\n                 --force-ocr)." Without this, wrapped text would
+            // become options. An option with no description yet is left alone: pandoc prints a long spelling on
+            // its own deeper line ("-o FILE\n     --output=FILE"), and that is a new option.
+            if var current = pending, !current.summary.isEmpty, indent > current.indent, !hasColumnGap(trimmed) {
                 current.summary = current.summary.isEmpty ? trimmed : current.summary + " " + trimmed
                 pending = current
             } else if trimmed.hasPrefix("-"), isFlagStart(trimmed) {

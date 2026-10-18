@@ -12,7 +12,9 @@ public enum ArgumentSplitter {
         case trailingBackslash
     }
 
-    private static let wordSeparators: Set<Character> = [" ", "\t", "\n", "\r\n", "\r"]
+    /// Swift reads a Windows line ending, "\r\n", as one character, so each spelling is listed.
+    private static let lineBreaks: Set<Character> = ["\n", "\r\n", "\r"]
+    private static let wordSeparators: Set<Character> = lineBreaks.union([" ", "\t"])
     private static let escapableInDoubleQuotes: Set<Character> = ["\"", "\\", "$", "`"]
 
     public static func split(_ text: String) throws(SplitError) -> [String] {
@@ -44,7 +46,7 @@ public enum ArgumentSplitter {
                     }
                     if quoted == "\\" {
                         guard let escaped = characters.next() else { throw .unclosedQuote("\"") }
-                        if escaped == "\n" { continue }
+                        if Self.lineBreaks.contains(escaped) { continue }
                         if !escapableInDoubleQuotes.contains(escaped) { current.append("\\") }
                         current.append(escaped)
                     } else {
@@ -54,7 +56,7 @@ public enum ArgumentSplitter {
                 guard closed else { throw .unclosedQuote("\"") }
             case "\\":
                 guard let escaped = characters.next() else { throw .trailingBackslash }
-                if escaped == "\n" { continue }
+                if Self.lineBreaks.contains(escaped) { continue }
                 hasWord = true
                 current.append(escaped)
             case _ where wordSeparators.contains(character):

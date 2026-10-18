@@ -15,6 +15,7 @@ import Testing
         ("''", [""]),
         ("a\tb\nc", ["a", "b", "c"]),
         ("-a \\\n-b", ["-a", "-b"]),
+        ("-a \\\r\n-b", ["-a", "-b"]),
         (#""\$HOME \`x\`""#, ["$HOME `x`"]),
         ("my\u{00A0}file", ["my\u{00A0}file"]),
     ])

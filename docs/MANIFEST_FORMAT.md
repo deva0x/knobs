@@ -173,7 +173,7 @@ happen:
 - a task without exactly one `{extra}`, `{extra}` inside an `if`, or a field whose id is `extra` or `output`
   (both are reserved)
 - `{extra}` or a field with several files used inside a longer string instead of as a list item of its own
-- a path part (`.stem`, `.name`, `.ext`, `.dir`, `.base`) on a field that isn't a file or folder, an unknown
+- a path part (`.stem`, `.name`, `.ext`, `.dir`, `.base`, `.percentDoubled`) on a field that isn't a file or folder, an unknown
   or empty path part (`{input.}`), or an unbalanced `{` or `}`
 - `{output}` in a task without an `output` rule, or an `output` rule the arguments never use
 - an `output` without exactly one of `nextTo` (naming an `inputFile` field) and `folder` (naming an

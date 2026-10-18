@@ -73,8 +73,15 @@ public enum HelpTaskBuilder {
         return GeneratedTask(task: task, options: mapping)
     }
 
+    /// A password or token, judged by the flag and by the value's name (7-Zip's `-p{Password}`, curl's
+    /// `-u user:password`). A value that names a file, such as rsync's `--password-file=FILE`, is a path, not a
+    /// secret.
     private static func isSecret(_ option: HelpOption) -> Bool {
-        option.flags.contains { flag in secretWords.contains { flag.lowercased().contains($0) } }
+        let valueName = option.valueName?.lowercased() ?? ""
+        guard !valueName.isEmpty, !valueName.contains("file") else { return false }
+        return (option.flags.map { $0.lowercased() } + [valueName]).contains { text in
+            secretWords.contains { text.contains($0) }
+        }
     }
 
     private static func escapeBraces(_ text: String) -> String {

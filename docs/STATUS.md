@@ -12,7 +12,8 @@ Updated: 2026-10-19 IST
   downloads from one `#release` block, with a Linux chooser (distribution, processor, install command) that
   `scripts/release.sh` checks against `dist/`; real Linux screenshots; a 404 page, Cloudflare headers, a
   home-screen icon and a link-preview image. Checked in a browser at 320, 375, 768, 940, 980, 1100, 1280 and
-  1440 px, light and dark, by keyboard, and with JavaScript off; no console errors.
+  1440 px, light and dark, by keyboard, and with JavaScript off; no console errors. `scripts/ci.sh linux`
+  passes with the website tests (140 tests, 2026-10-19).
 - Verified in the Mac app on this Mac: ffmpeg Shrink a video, Compress an image, a failing run, the Open With
   chooser, link and folder tasks, All options, Add a Tool with `jq`, ⌘K, in light and dark.
 - Verified by tests: `scripts/ci.sh` full passes (149 tests in 26 suites, every task of all ten tools running for
@@ -33,7 +34,8 @@ Updated: 2026-10-19 IST
   - Long option lists filter when typing pauses, so typing keeps up (checked through Broadway).
   - BUG-013 fixed: a file chosen in the file dialog could arrive as a garbled path (a use-after-free in Adwaita
     for Swift); Knobs now opens GTK's dialog itself. All seven Linux packages were rebuilt with the fix on
-    2026-10-19; the rebuilt packages themselves weren't reinstalled in clean containers.
+    2026-10-19. The rebuilt aarch64 tarball, unpacked and started by the relative path the website gives,
+    found all ten tools, and its folder picker fed rsync's Copy a folder, which copied for real.
   - Not yet: clicking through on a real Linux desktop.
 - Seen on screen (Mac, 2026-10-19): preset save and rename through the toolbar menu, drag and drop onto a tool
   home (an image opens the chooser, a PDF is refused), the About window, the quit-while-running dialog (Keep
@@ -50,7 +52,8 @@ publish, or a system setting:
    "Releasing"); `scripts/release.sh` then signs and notarizes instead of building an unsigned DMG.
 2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
    Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
-   command); the website's Download buttons point at the latest release.
+   command). The website's Download buttons link straight to that release's files (`#release` in
+   website/index.html); only "Every file of this release" goes to the latest-release page.
 3. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
    site's address (website/README.md, "Link previews") and deploy again.
 4. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).

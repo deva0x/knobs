@@ -170,3 +170,16 @@ repo except the session scratchpad. Stop: when the site needs only Deva's deploy
 - Note: I ran `rm -f` on two output videos my own test run wrote into the gitignored .cache/shots; nothing else
   was deleted. The throwaway Docker image knobs-shots-tmp is left in place for Deva to remove or keep.
 - Next: nothing for an agent. Deva: certificate, GitHub repo + release upload, deploy, then og:image tags.
+
+## 2026-10-19 04:27 IST · Claude Code (Opus 5.5) · HEAD 5720ff3
+
+Follow-up checks after review.
+- scripts/ci.sh linux (changed earlier to include website/index.html): PASS, 140 tests in 17 suites on
+  swift:6.2-noble, WebsiteTests included.
+- The website's "Other" Linux instruction, checked for real: the rebuilt knobs-0.1.0-linux-aarch64.tar.gz unpacked
+  in a clean container and started as knobs/usr/bin/knobs from its parent folder; the sidebar listed all ten tools.
+- FileChooser's folder branch: rsync -> Copy a folder, both folder fields picked through the dialog in that
+  packaged build; the command showed clean paths and the run copied the folder into /tmp.
+- STATUS: Download buttons now described as direct release-file links; checks above recorded.
+- Left running/present for Deva: containers knobs-linux and knobs-*-test from earlier sessions (running),
+  knobs-tarball-test and knobs-shots (stopped), image knobs-shots-tmp. Not removed by me.

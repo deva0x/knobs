@@ -62,59 +62,59 @@ Every milestone ends with `scripts/ci.sh` passing, plus the milestone's own chec
 - Exit: DESIGN.md exists and the app and website briefs both point to it.
 
 ### M4. App: end-to-end with ffmpeg, premium from the start
-- [ ] App shell: sidebar of tools, task gallery per tool, task workspace (SwiftUI, macOS 26+, Liquid Glass)
-- [ ] Field controls for every field kind, styled to DESIGN.md
-- [ ] Drop zone for files, with a Quick Look thumbnail of what was dropped
-- [ ] Live command preview, colored by part (tool, flags, values, paths), with Copy
-- [ ] Extra arguments box (collapsed by default)
-- [ ] Run and Cancel, live progress and output, done and failed states, result card with Open, Reveal in Finder and drag-out
-- [ ] "Not installed" state showing the `brew install` command with Copy
+- [x] App shell: sidebar of tools, task gallery per tool, task workspace (SwiftUI, macOS 26+, Liquid Glass)
+- [x] Field controls for every field kind, styled to DESIGN.md
+- [x] Drop zone for files, with a Quick Look thumbnail of what was dropped
+- [x] Live command preview, colored by part (tool, flags, values, paths), with Copy
+- [x] Extra arguments box (collapsed by default)
+- [x] Run and Cancel, live progress and output, done and failed states, result card with Open, Reveal in Finder and drag-out
+- [x] "Not installed" state showing the `brew install` command with Copy
 - Exit: build and launch the app, shrink a real video with ffmpeg, confirm the output exists and plays. Screenshot saved in `docs/screenshots/`, and the DESIGN.md checklist passes.
 
 ### M5. App: presets, history, palette, polish
-- [ ] Save, apply, rename and delete presets per task (JSON in Application Support)
-- [ ] Remember the last values per task, and a recent-runs list
-- [ ] Command palette (⌘K) across every tool and task
-- [ ] Keyboard: ⌘R runs, ⌘. cancels, ⌘K opens the palette
-- [ ] Empty states and error messages in plain words
+- [ ] Save, apply, rename and delete presets per task (JSON in Application Support). Save, apply and delete work; rename is not built yet
+- [x] Remember the last values per task, and a recent-runs list
+- [x] Command palette (⌘K) across every tool and task
+- [x] Keyboard: ⌘R runs, ⌘. cancels, ⌘K opens the palette
+- [x] Empty states and error messages in plain words
 - [ ] UI review loop: screenshot every screen in light and dark mode, judge it against DESIGN.md, fix, repeat until it passes
 - Exit: preset store tests pass, presets survive a relaunch, and the review loop's final screenshots are in `docs/screenshots/`.
 
 ### M6. All ten tools
 For each tool: install it with Homebrew, write its manifest, add golden argv tests, add an integration test
 that runs one real task on a tiny fixture, and try it once in the app.
-- [ ] ffmpeg (5 to 6 tasks): shrink, convert, trim, extract audio, make a GIF, remove sound
-- [ ] yt-dlp (5 to 6): video, audio only, choose quality, subtitles, a whole playlist, thumbnail (integration test uses a local file, no network)
-- [ ] ImageMagick (5 to 6): resize, convert format, compress, crop or pad to a square, add a watermark text, strip metadata
-- [ ] pandoc (3 to 4): Markdown to Word, Word to Markdown, Markdown to HTML, to EPUB
-- [ ] exiftool (3 to 4): show metadata, remove all metadata (copy kept), remove GPS location only, rename photos by date taken
-- [ ] ocrmypdf (3 to 4): make searchable, deskew and clean, force OCR, choose language
-- [ ] Ghostscript (3 to 4): compress a PDF, merge PDFs, convert to grayscale, extract pages
-- [ ] whisper.cpp (3 to 4): transcribe to text, to subtitles (SRT, VTT), translate to English
-- [ ] rsync (3 to 4): copy a folder, mirror a folder, preview changes (dry run), back up with exclusions
-- [ ] 7-Zip (3 to 4): create an archive, create with a password, extract, test an archive
+- [x] ffmpeg (5 to 6 tasks): shrink, convert, trim, extract audio, make a GIF, remove sound
+- [x] yt-dlp (5 to 6): video, audio only, choose quality, subtitles, a whole playlist, thumbnail (integration test uses a local file, no network)
+- [x] ImageMagick (5 to 6): resize, convert format, compress, crop or pad to a square, add a watermark text, strip metadata
+- [x] pandoc (3 to 4): Markdown to Word, Word to Markdown, Markdown to HTML, to EPUB
+- [x] exiftool (3 to 4): show metadata, remove all metadata (copy kept), remove GPS location only, rename photos by date taken
+- [x] ocrmypdf (3 to 4): make searchable, deskew and clean, force OCR, choose language
+- [x] Ghostscript (3 to 4): compress a PDF, merge PDFs, convert to grayscale, extract pages
+- [x] whisper.cpp (3 to 4): transcribe to text, to subtitles (SRT, VTT), translate to English
+- [x] rsync (3 to 4): copy a folder, mirror a folder, preview changes (dry run), back up with exclusions
+- [x] 7-Zip (3 to 4): create an archive, create with a password, extract, test an archive
 - Exit: every manifest validates, golden and integration tests pass, and each tool was run once in the app.
 
 ### M7. All options and Add any tool (time-boxed: 4 hours)
-- [ ] Parser for common `--help` layouts (`-x, --long VALUE  description`)
-- [ ] "All options" view for every tool: searchable list, a toggle or field per option, built into argv
-- [ ] "Add any tool": choose any executable and get the same view
-- [ ] Fixture tests using real `--help` output captured from at least 6 tools
+- [x] Parser for common `--help` layouts (`-x, --long VALUE  description`)
+- [x] "All options" view for every tool: searchable list, a toggle or field per option, built into argv
+- [x] "Add any tool": choose any executable and get the same view
+- [x] Fixture tests using real `--help` output captured from at least 6 tools
 - Exit: tests pass, "All options" works for all 10 tools, and "Add any tool" works for `jq`, `fd` or `curl`.
 - If the time box runs out, ship what's solid behind clear "best effort" wording and log the rest in BUGS.
 
 ### M8. Website
-- [ ] Static site in `website/` (no build server needed), following DESIGN.md and studied reference sites
-- [ ] Hero, live demo of a command turning into controls, tool gallery, how manifests work, download, open-source section
+- [x] Static site in `website/` (no build server needed), following DESIGN.md and studied reference sites
+- [x] Hero, live demo of a command turning into controls, tool gallery, how manifests work, download, open-source section
 - [ ] Real app screenshots, fast, accessible, works at phone width, light and dark
 - [ ] Reviewed in a browser at desktop and phone sizes, then iterated until it stands out
 - Exit: screenshots of the site in `docs/screenshots/website/`, Lighthouse-style checks noted in WORKLOG.
 
 ### M9. Ship-ready
-- [ ] App icon and About window (version, license, link to the repo)
+- [x] App icon and About window (version, license, link to the repo)
 - [ ] Accessibility pass: labels on every control, VoiceOver reads the form in order, keyboard-only use works
-- [ ] `scripts/release.sh`: archive, sign with Developer ID, notarize, staple, DMG, checksum
-- [ ] README with screenshots, CONTRIBUTING (how to add a manifest), CHANGELOG
+- [x] `scripts/release.sh`: archive, sign with Developer ID, notarize, staple, DMG, checksum
+- [x] README with screenshots, CONTRIBUTING (how to add a manifest), CHANGELOG
 - Exit: `scripts/ci.sh release` passes, a notarized DMG installs and opens on this Mac without a warning, and `spctl -a -vv` accepts the app.
 - If the Developer ID certificate or the notary profile is missing, build everything else, leave an unsigned DMG, and list the missing step under "Waiting on Deva" in STATUS.
 

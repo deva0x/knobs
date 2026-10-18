@@ -14,11 +14,14 @@ struct RootView: View {
                 NavigationStack(path: $model.taskPath) {
                     ToolHomeView(manifest: tool)
                         .navigationDestination(for: String.self) { taskID in
-                            if let task = tool.task(withID: taskID) {
+                            if taskID == HelpTaskBuilder.taskID {
+                                AllOptionsView(manifest: tool)
+                            } else if let task = tool.task(withID: taskID) {
                                 TaskWorkspaceView(session: model.session(for: task, of: tool))
                             }
                         }
                 }
+                // A fresh stack per tool, so switching tools never animates one tool's pages over another's.
                 .id(tool.id)
             } else {
                 ContentUnavailableView("Choose a tool", systemImage: "slider.horizontal.3")

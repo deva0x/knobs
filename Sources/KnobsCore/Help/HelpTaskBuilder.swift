@@ -3,6 +3,10 @@
 public enum HelpTaskBuilder {
     public static let taskID = "all-options"
     public static let filesFieldID = "files"
+    /// Options that only print help or a version are left out; they would just replace the real work.
+    static let informationalFlags: Set<String> = [
+        "-h", "--help", "-help", "-?", "--usage", "-usage", "--version", "-version",
+    ]
 
     /// A generated task plus which field belongs to which option, for the searchable list.
     public struct GeneratedTask: Sendable, Hashable {
@@ -25,7 +29,8 @@ public enum HelpTaskBuilder {
         var arguments: [ArgumentTemplate] = []
         var mapping: [(fieldID: String, option: HelpOption)] = []
 
-        for (index, option) in options.enumerated() {
+        let useful = options.filter { informationalFlags.isDisjoint(with: $0.flags) }
+        for (index, option) in useful.enumerated() {
             let fieldID = "option\(index + 1)"
             let flag = escapeBraces(option.preferredFlag)
             if let valueName = option.valueName {

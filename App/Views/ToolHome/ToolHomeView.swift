@@ -16,15 +16,33 @@ struct ToolHomeView: View {
                 if !model.isInstalled(manifest) {
                     NotInstalledPanel(manifest: manifest)
                 }
+                if !manifest.tasks.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("What do you want to do?")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                        LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
+                            ForEach(manifest.tasks) { task in
+                                TaskCard(
+                                    title: task.title, summary: task.summary, symbol: task.symbol, tint: manifest.tint
+                                ) {
+                                    model.taskPath = [task.id]
+                                }
+                            }
+                        }
+                    }
+                }
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("What do you want to do?")
+                    Text(manifest.tasks.isEmpty ? "Build a command" : "Or build your own command")
                         .font(.headline)
                         .foregroundStyle(.secondary)
                     LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
-                        ForEach(manifest.tasks) { task in
-                            TaskCard(task: task, tint: manifest.tint) {
-                                model.taskPath = [task.id]
-                            }
+                        TaskCard(
+                            title: "All options",
+                            summary: "Every option \(manifest.name) lists in its own help, searchable.",
+                            symbol: "list.bullet.rectangle", tint: .gray, isSecondary: true
+                        ) {
+                            model.taskPath = [HelpTaskBuilder.taskID]
                         }
                     }
                 }
@@ -64,20 +82,23 @@ struct ToolHomeView: View {
 }
 
 private struct TaskCard: View {
-    let task: ManifestTask
+    let title: String
+    let summary: String
+    let symbol: String
     let tint: Tint
+    var isSecondary = false
     let open: () -> Void
     @State private var isHovered = false
 
     var body: some View {
         Button(action: open) {
             VStack(alignment: .leading, spacing: 12) {
-                GlyphTile(symbol: task.symbol, tint: tint, size: 34)
+                GlyphTile(symbol: symbol, tint: tint, size: 34)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(task.title)
+                    Text(title)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    Text(task.summary)
+                    Text(summary)
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -89,11 +110,13 @@ private struct TaskCard: View {
             .frame(maxWidth: .infinity, minHeight: 138, alignment: .topLeading)
             .background {
                 RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
-                    .fill(.background.secondary)
+                    .fill(isSecondary ? AnyShapeStyle(.clear) : AnyShapeStyle(.background.secondary))
             }
             .overlay {
                 RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
-                    .strokeBorder(isHovered ? tint.color.opacity(0.55) : Color.primary.opacity(0.08), lineWidth: 1)
+                    .strokeBorder(
+                        isHovered ? tint.color.opacity(0.55) : Color.primary.opacity(isSecondary ? 0.16 : 0.08),
+                        style: StrokeStyle(lineWidth: 1, dash: isSecondary ? [5, 4] : []))
             }
             .shadow(color: .black.opacity(isHovered ? 0.10 : 0), radius: 10, y: 4)
             .offset(y: isHovered ? -2 : 0)
@@ -103,7 +126,7 @@ private struct TaskCard: View {
         .onHover { hovering in
             withAnimation(.knobs) { isHovered = hovering }
         }
-        .accessibilityLabel(task.title)
-        .accessibilityHint(task.summary)
+        .accessibilityLabel(title)
+        .accessibilityHint(summary)
     }
 }

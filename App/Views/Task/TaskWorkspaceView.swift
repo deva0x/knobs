@@ -105,7 +105,7 @@ struct SettingsGroup<Content: View>: View {
     }
 }
 
-private struct ExtraArgumentsSection: View {
+struct ExtraArgumentsSection: View {
     @Bindable var session: TaskSession
     @Binding var isExpanded: Bool
 

@@ -25,11 +25,9 @@ struct DropZone: View {
         return false
     }
 
-    /// "a video", "an image" and so on, from the field's own label.
+    /// "a video", "an image", "a PDF", "PDFs": the field's label as a phrase.
     private var kindName: String {
-        let lowered = field.label.lowercased()
-        let article = "aeiou".contains(lowered.first ?? "x") ? "an" : "a"
-        return allowsMultiple ? lowered : "\(article) \(lowered)"
+        LabelPhrase.phrase(for: field.label, isPlural: allowsMultiple)
     }
 
     var body: some View {
@@ -236,5 +234,22 @@ struct FileThumbnail: View {
             }
         }
         .accessibilityHidden(true)
+    }
+}
+
+/// Turns a field label into a phrase for sentences such as "Drop a video here".
+enum LabelPhrase {
+    /// Letters whose names start with a vowel sound, so acronyms take "an": an MP3, an SRT, an HTML page.
+    private static let vowelSoundingLetters = Set("AEFHILMNORSX")
+
+    static func phrase(for label: String, isPlural: Bool) -> String {
+        guard let firstWord = label.split(separator: " ").first else { return label }
+        let isAcronym = firstWord.filter(\.isUppercase).count >= 2
+        let text = isAcronym ? label : label.prefix(1).lowercased() + label.dropFirst()
+        guard !isPlural else { return text }
+        let first = text.first ?? "x"
+        let takesAn =
+            isAcronym ? vowelSoundingLetters.contains(Character(first.uppercased())) : "aeiou".contains(first)
+        return "\(takesAn ? "an" : "a") \(text)"
     }
 }

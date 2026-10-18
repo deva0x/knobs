@@ -26,6 +26,7 @@ struct KnobsApp: App {
             RootView()
                 .environment(model)
                 .onAppear { appDelegate.connect(model.openFiles) }
+                .modifier(DebugLaunchOptions())
                 .frame(minWidth: 900, minHeight: 620)
         }
         .defaultSize(width: 1180, height: 780)
@@ -90,5 +91,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
+    }
+}
+
+/// Debug-build launch switches for screenshot reviews, which can run while the display sleeps and animations
+/// can't finish: `-KnobsDisableAnimations YES` and `-KnobsAppearance light|dark`. Release builds ignore them.
+private struct DebugLaunchOptions: ViewModifier {
+    func body(content: Content) -> some View {
+        #if DEBUG
+            content
+                .transaction { transaction in
+                    if UserDefaults.standard.bool(forKey: "KnobsDisableAnimations") {
+                        transaction.disablesAnimations = true
+                        transaction.animation = nil
+                    }
+                }
+                .onAppear {
+                    switch UserDefaults.standard.string(forKey: "KnobsAppearance") {
+                    case "light": NSApp.appearance = NSAppearance(named: .aqua)
+                    case "dark": NSApp.appearance = NSAppearance(named: .darkAqua)
+                    default: break
+                    }
+                }
+        #else
+            content
+        #endif
     }
 }

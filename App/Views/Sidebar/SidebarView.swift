@@ -3,19 +3,34 @@ import SwiftUI
 
 struct SidebarView: View {
     @Environment(AppModel.self) private var model
+    @State private var isAddingTool = false
     private static let visibleRecentRuns = 6
 
     var body: some View {
-        @Bindable var model = model
-        List(selection: $model.selectedToolID) {
+        List(selection: Binding(get: { model.selectedToolID }, set: { model.selectTool($0) })) {
             Section("Tools") {
-                ForEach(model.manifests) { manifest in
+                ForEach(model.bundledManifests) { manifest in
                     ToolRow(
                         manifest: manifest,
                         isInstalled: model.isInstalled(manifest),
                         isRunning: model.isRunningAnything(of: manifest)
                     )
                     .tag(manifest.id)
+                }
+            }
+            if !model.addedManifests.isEmpty {
+                Section("Added") {
+                    ForEach(model.addedManifests) { manifest in
+                        ToolRow(
+                            manifest: manifest,
+                            isInstalled: model.isInstalled(manifest),
+                            isRunning: model.isRunningAnything(of: manifest)
+                        )
+                        .tag(manifest.id)
+                        .contextMenu {
+                            Button("Remove \(manifest.name)", role: .destructive) { model.removeTool(manifest) }
+                        }
+                    }
                 }
             }
             if !model.library.recentRuns.isEmpty {
@@ -40,6 +55,21 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .safeAreaInset(edge: .bottom) {
+            Button {
+                isAddingTool = true
+            } label: {
+                Label("Add a Tool", systemImage: "plus")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .help("Add any command-line tool by name")
+        }
+        .sheet(isPresented: $isAddingTool) { AddToolSheet() }
         .safeAreaInset(edge: .top) {
             Button {
                 model.isPaletteVisible = true

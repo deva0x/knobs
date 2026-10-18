@@ -77,9 +77,13 @@ struct CommandPaletteView: View {
                 } else {
                     VStack(spacing: 2) {
                         ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                            row(entry, isHighlighted: index == highlighted)
-                                .onTapGesture { open(entry) }
-                                .onHover { if $0 { highlighted = index } }
+                            Button {
+                                open(entry)
+                            } label: {
+                                row(entry, isHighlighted: index == highlighted)
+                            }
+                            .buttonStyle(.plain)
+                            .onHover { if $0 { highlighted = index } }
                         }
                     }
                     .padding(8)
@@ -111,7 +115,7 @@ struct CommandPaletteView: View {
         .background(isHighlighted ? Color.primary.opacity(0.08) : .clear, in: .rect(cornerRadius: 10))
         .contentShape(.rect)
         .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isHighlighted ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAddTraits(isHighlighted ? .isSelected : [])
     }
 
     private func openHighlighted() {

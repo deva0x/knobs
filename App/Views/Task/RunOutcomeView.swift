@@ -47,6 +47,8 @@ private struct ResultCard: View {
                 FileThumbnail(url: url, size: 72)
                     .draggable(url)
                     .help("Drag the result anywhere")
+            } else if let folder = result.folderURL {
+                FileThumbnail(url: folder, size: 56)
             } else {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 40))
@@ -57,10 +59,14 @@ private struct ResultCard: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.green)
                     .symbolEffect(.bounce, value: appeared)
-                Text(result.outputURL?.lastPathComponent ?? "\(session.task.title) finished")
-                    .font(.headline)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                Text(
+                    result.outputURL?.lastPathComponent
+                        ?? result.folderURL.map { "Saved in \($0.lastPathComponent)" }
+                        ?? "\(session.task.title) finished"
+                )
+                .font(.headline)
+                .lineLimit(1)
+                .truncationMode(.middle)
                 HStack(spacing: 6) {
                     if let bytes = result.outputBytes { Text(ByteCount.string(bytes)) }
                     if let sizeChange {
@@ -84,6 +90,8 @@ private struct ResultCard: View {
                         Button("Open") { NSWorkspace.shared.open(url) }
                             .keyboardShortcut("o")
                     }
+                } else if let folder = result.folderURL {
+                    Button("Open Folder") { NSWorkspace.shared.open(folder) }
                 }
                 Button(showsOutput ? "Hide Output" : "Show Output") { showsOutput.toggle() }
                     .buttonStyle(.link)

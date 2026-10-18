@@ -17,7 +17,7 @@ struct DropZone: View {
     private var allowedTypes: [UTType] {
         guard case .inputFile(let identifiers, _) = field.kind else { return [.item] }
         let types = identifiers.compactMap { UTType($0) }
-        return types.isEmpty ? [.item] : types
+        return types.isEmpty ? [.item, .folder] : types
     }
 
     private var allowsMultiple: Bool {

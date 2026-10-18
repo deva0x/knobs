@@ -146,7 +146,7 @@ private struct PathPicker: View {
         switch field.kind {
         case .inputFile(let identifiers, _):
             let types = identifiers.compactMap { UTType($0) }
-            return types.isEmpty ? [.item] : types
+            return types.isEmpty ? [.item, .folder] : types
         default:
             return [.folder]
         }
@@ -209,7 +209,8 @@ enum FileTypeCheck {
         case .inputFolder, .outputFolder:
             return isFolder
         case .inputFile(let identifiers, _):
-            guard !isFolder else { return false }
+            // No content types means anything, folders included (for archives). Otherwise a folder only fits
+            // when one of the types is a folder type.
             let allowed = identifiers.compactMap { UTType($0) }
             guard !allowed.isEmpty else { return true }
             guard

@@ -145,8 +145,8 @@ public final class ToolRun: Sendable {
             var buffer = state.pending[stream, default: Data()]
             buffer.append(data)
             var lines: [String] = []
-            // Tools such as ffmpeg redraw their status with carriage returns, so \r ends a line too.
-            while let end = buffer.firstIndex(where: { $0 == UInt8(ascii: "\n") || $0 == UInt8(ascii: "\r") }) {
+            // Tools redraw their status with carriage returns (ffmpeg) or backspaces (7-Zip), so those end a line too.
+            while let end = buffer.firstIndex(where: Self.isLineBreak) {
                 lines.append(String(decoding: buffer[buffer.startIndex..<end], as: UTF8.self))
                 buffer = Data(buffer[buffer.index(after: end)...])
             }
@@ -155,9 +155,15 @@ public final class ToolRun: Sendable {
                 buffer = Data()
             }
             state.pending[stream] = buffer
-            return lines.filter { !$0.isEmpty }.flatMap { line in Self.events(for: line, from: stream, state: &state) }
+            return lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.flatMap { line in
+                Self.events(for: line, from: stream, state: &state)
+            }
         }
         for event in events { continuation.yield(event) }
+    }
+
+    private static func isLineBreak(_ byte: UInt8) -> Bool {
+        byte == UInt8(ascii: "\n") || byte == UInt8(ascii: "\r") || byte == 0x08
     }
 
     private static func events(for line: String, from stream: OutputLog.Stream, state: inout State) -> [RunEvent] {

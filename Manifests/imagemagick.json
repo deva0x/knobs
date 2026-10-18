@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "id": "imagemagick",
+  "name": "ImageMagick",
+  "summary": "Resize, convert, compress and edit images.",
+  "executable": "magick",
+  "install": { "brew": "imagemagick" },
+  "homepage": "https://imagemagick.org",
+  "symbol": "photo.stack",
+  "tint": "teal",
+  "tasks": [
+    {
+      "id": "resize",
+      "title": "Resize an image",
+      "summary": "Make an image smaller, keeping its shape.",
+      "symbol": "arrow.up.left.and.down.right.magnifyingglass",
+      "fields": [
+        { "id": "input", "label": "Image", "kind": "inputFile", "contentTypes": ["public.image"] },
+        { "id": "size", "label": "Longest side", "kind": "integer", "default": 1600, "minimum": 64, "maximum": 8000,
+          "help": "In pixels. Smaller images are never enlarged." }
+      ],
+      "output": { "template": "{input.stem} {size}px.{input.ext}", "nextTo": "input" },
+      "arguments": ["{input}", "-auto-orient", "-resize", "{size}x{size}>", "{extra}", "{output}"]
+    },
+    {
+      "id": "convert",
+      "title": "Convert an image",
+      "summary": "Save an image as PNG, JPEG, WebP, HEIC, AVIF, TIFF or PDF.",
+      "symbol": "arrow.triangle.2.circlepath",
+      "fields": [
+        { "id": "input", "label": "Image", "kind": "inputFile", "contentTypes": ["public.image"] },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "png",
+          "options": [
+            { "value": "png", "label": "PNG" },
+            { "value": "jpg", "label": "JPEG" },
+            { "value": "webp", "label": "WebP" },
+            { "value": "heic", "label": "HEIC" },
+            { "value": "avif", "label": "AVIF" },
+            { "value": "tiff", "label": "TIFF" },
+            { "value": "pdf", "label": "PDF" }
+          ] }
+      ],
+      "output": { "template": "{input.stem}.{format}", "nextTo": "input" },
+      "arguments": ["{input}", "-auto-orient", "{extra}", "{output}"]
+    },
+    {
+      "id": "compress",
+      "title": "Compress an image",
+      "summary": "Make an image file much smaller for the web or email.",
+      "symbol": "arrow.down.right.and.arrow.up.left",
+      "fields": [
+        { "id": "input", "label": "Image", "kind": "inputFile", "contentTypes": ["public.image"] },
+        { "id": "quality", "label": "Quality", "kind": "integer", "default": 75, "minimum": 30, "maximum": 95,
+          "help": "Lower numbers make smaller files." },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "jpg",
+          "options": [
+            { "value": "jpg", "label": "JPEG" },
+            { "value": "webp", "label": "WebP" },
+            { "value": "avif", "label": "AVIF" }
+          ] }
+      ],
+      "output": { "template": "{input.stem} compressed.{format}", "nextTo": "input" },
+      "arguments": ["{input}", "-auto-orient", "-strip", "-quality", "{quality}", "{extra}", "{output}"]
+    },
+    {
+      "id": "square",
+      "title": "Make it square",
+      "summary": "Crop or pad an image to a square, for profile pictures and posts.",
+      "symbol": "square.dashed",
+      "fields": [
+        { "id": "input", "label": "Image", "kind": "inputFile", "contentTypes": ["public.image"] },
+        { "id": "mode", "label": "How", "kind": "choice", "default": "crop",
+          "options": [
+            { "value": "crop", "label": "Crop to fill" },
+            { "value": "pad", "label": "Fit and pad" }
+          ] },
+        { "id": "size", "label": "Size", "kind": "integer", "default": 1080, "minimum": 64, "maximum": 4096,
+          "help": "Width and height, in pixels." },
+        { "id": "background", "label": "Padding color", "kind": "choice", "default": "white",
+          "options": [
+            { "value": "white", "label": "White" },
+            { "value": "black", "label": "Black" },
+            { "value": "none", "label": "Transparent (PNG only)" }
+          ] }
+      ],
+      "output": { "template": "{input.stem} square.{input.ext}", "nextTo": "input" },
+      "arguments": [
+        "{input}", "-auto-orient",
+        { "if": "mode", "equals": "pad",
+          "then": ["-resize", "{size}x{size}", "-background", "{background}", "-gravity", "center", "-extent", "{size}x{size}"],
+          "else": ["-resize", "{size}x{size}^", "-gravity", "center", "-extent", "{size}x{size}"] },
+        "{extra}", "{output}"
+      ]
+    },
+    {
+      "id": "watermark",
+      "title": "Add a text watermark",
+      "summary": "Put your name or a note in a corner of an image.",
+      "symbol": "textformat",
+      "fields": [
+        { "id": "input", "label": "Image", "kind": "inputFile", "contentTypes": ["public.image"] },
+        { "id": "text", "label": "Text", "kind": "text", "required": true, "placeholder": "© Your Name" },
+        { "id": "position", "label": "Corner", "kind": "choice", "default": "SouthEast",
+          "options": [
+            { "value": "SouthEast", "label": "Bottom right" },
+            { "value": "SouthWest", "label": "Bottom left" },
+            { "value": "NorthEast", "label": "Top right" },
+            { "value": "NorthWest", "label": "Top left" },
+            { "value": "Center", "label": "Center" }
+          ] },
+        { "id": "size", "label": "Text size", "kind": "integer", "default": 36, "minimum": 10, "maximum": 300 }
+      ],
+      "output": { "template": "{input.stem} watermarked.{input.ext}", "nextTo": "input" },
+      "arguments": [
+        "{input}", "-auto-orient",
+        "-font", "/System/Library/Fonts/Helvetica.ttc", "-gravity", "{position}", "-pointsize", "{size}",
+        "-fill", "#FFFFFFC0", "-stroke", "#00000060", "-strokewidth", "1",
+        "-annotate", "+24+24", "{text}",
+        "{extra}", "{output}"
+      ]
+    },
+    {
+      "id": "rotate",
+      "title": "Rotate or flip",
+      "summary": "Turn an image a quarter, half or three quarters, or mirror it.",
+      "symbol": "rotate.right",
+      "fields": [
+        { "id": "input", "label": "Image", "kind": "inputFile", "contentTypes": ["public.image"] },
+        { "id": "turn", "label": "Turn", "kind": "choice", "default": "90",
+          "options": [
+            { "value": "90", "label": "90° clockwise" },
+            { "value": "180", "label": "180°" },
+            { "value": "270", "label": "90° counterclockwise" },
+            { "value": "flop", "label": "Mirror left to right" },
+            { "value": "flip", "label": "Mirror top to bottom" }
+          ] }
+      ],
+      "output": { "template": "{input.stem} rotated.{input.ext}", "nextTo": "input" },
+      "arguments": [
+        "{input}", "-auto-orient",
+        { "if": "turn", "equals": "flip", "then": ["-flip"],
+          "else": [{ "if": "turn", "equals": "flop", "then": ["-flop"], "else": ["-rotate", "{turn}"] }] },
+        "{extra}", "{output}"
+      ]
+    }
+  ]
+}

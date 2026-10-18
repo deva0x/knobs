@@ -46,7 +46,9 @@ struct TaskWorkspaceView: View {
                 .tint(session.manifest.tint.color)
             }
             .onChange(of: session.phase) { _, phase in
-                if case .finished = phase {
+                if case .finished(let outcome) = phase {
+                    // Tasks that only report something (such as listing metadata) show their output right away.
+                    if outcome == .succeeded && !session.producesResult { showsOutput = true }
                     withAnimation(.knobs) { proxy.scrollTo("outcome", anchor: .bottom) }
                 }
             }

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "ocrmypdf",
+  "name": "OCRmyPDF",
+  "summary": "Make scanned PDFs searchable and selectable.",
+  "executable": "ocrmypdf",
+  "install": { "brew": "ocrmypdf" },
+  "homepage": "https://ocrmypdf.readthedocs.io",
+  "symbol": "doc.text.viewfinder",
+  "tint": "blue",
+  "tasks": [
+    {
+      "id": "make-searchable",
+      "title": "Make a PDF searchable",
+      "summary": "Add a hidden text layer to a scanned PDF, so you can search and copy its text.",
+      "symbol": "text.magnifyingglass",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "language", "label": "Language", "kind": "text", "default": "eng",
+          "help": "Tesseract language codes, such as eng or eng+hin. Extra languages: brew install tesseract-lang." }
+      ],
+      "output": { "template": "{input.stem} searchable.pdf", "nextTo": "input" },
+      "arguments": ["--skip-text", "-l", "{language}", "{extra}", "--", "{input}", "{output}"]
+    },
+    {
+      "id": "clean-scan",
+      "title": "Straighten and clean a scan",
+      "summary": "Fix crooked and sideways pages, remove speckles, and make the PDF searchable.",
+      "symbol": "wand.and.stars",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "language", "label": "Language", "kind": "text", "default": "eng",
+          "help": "Tesseract language codes, such as eng or eng+hin." }
+      ],
+      "output": { "template": "{input.stem} cleaned.pdf", "nextTo": "input" },
+      "arguments": ["--deskew", "--clean", "--rotate-pages", "--skip-text", "-l", "{language}", "{extra}", "--", "{input}", "{output}"]
+    },
+    {
+      "id": "redo-text",
+      "title": "Redo the text layer",
+      "summary": "Replace a PDF's existing text layer, for scans whose search text is wrong.",
+      "symbol": "arrow.clockwise.circle",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "language", "label": "Language", "kind": "text", "default": "eng",
+          "help": "Tesseract language codes, such as eng or eng+hin." }
+      ],
+      "output": { "template": "{input.stem} OCR.pdf", "nextTo": "input" },
+      "arguments": ["--force-ocr", "-l", "{language}", "{extra}", "--", "{input}", "{output}"]
+    }
+  ]
+}

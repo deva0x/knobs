@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "yt-dlp",
+  "name": "yt-dlp",
+  "summary": "Download video and audio from YouTube and over a thousand other sites.",
+  "executable": "yt-dlp",
+  "install": { "brew": "yt-dlp" },
+  "homepage": "https://github.com/yt-dlp/yt-dlp",
+  "symbol": "arrow.down.circle",
+  "tint": "red",
+  "tasks": [
+    {
+      "id": "download-video",
+      "title": "Download a video",
+      "summary": "Save a video from a web page, in the quality you choose.",
+      "symbol": "play.rectangle",
+      "fields": [
+        { "id": "url", "label": "Link", "kind": "text", "required": true, "placeholder": "https://www.youtube.com/watch?v=…" },
+        { "id": "quality", "label": "Quality", "kind": "choice", "default": "bv*[height<=1080]+ba/b[height<=1080]",
+          "options": [
+            { "value": "bv*+ba/b", "label": "Best available" },
+            { "value": "bv*[height<=2160]+ba/b[height<=2160]", "label": "Up to 4K" },
+            { "value": "bv*[height<=1080]+ba/b[height<=1080]", "label": "Up to 1080p" },
+            { "value": "bv*[height<=720]+ba/b[height<=720]", "label": "Up to 720p" },
+            { "value": "bv*[height<=480]+ba/b[height<=480]", "label": "Up to 480p" }
+          ] },
+        { "id": "folder", "label": "Save in", "kind": "outputFolder", "default": "~/Downloads" }
+      ],
+      "arguments": [
+        "--newline", "--progress", "--no-simulate", "--no-playlist",
+        "--print", "after_move:filepath",
+        "-f", "{quality}", "--merge-output-format", "mp4",
+        "-P", "{folder}", "-o", "%(title)s.%(ext)s",
+        "{extra}", "--", "{url}"
+      ],
+      "progress": { "percent": "\\[download\\]\\s+(\\d+(?:\\.\\d+)?)%" },
+      "outputPathPattern": "^(/.+)$"
+    },
+    {
+      "id": "download-audio",
+      "title": "Download just the audio",
+      "summary": "Save only the sound, such as a podcast or a song.",
+      "symbol": "music.note",
+      "fields": [
+        { "id": "url", "label": "Link", "kind": "text", "required": true, "placeholder": "https://…" },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "m4a",
+          "options": [
+            { "value": "m4a", "label": "M4A (AAC)" },
+            { "value": "mp3", "label": "MP3" },
+            { "value": "opus", "label": "Opus" },
+            { "value": "flac", "label": "FLAC (lossless)" }
+          ] },
+        { "id": "folder", "label": "Save in", "kind": "outputFolder", "default": "~/Downloads" }
+      ],
+      "arguments": [
+        "--newline", "--progress", "--no-simulate", "--no-playlist",
+        "--print", "after_move:filepath",
+        "-x", "--audio-format", "{format}", "--audio-quality", "0",
+        "-P", "{folder}", "-o", "%(title)s.%(ext)s",
+        "{extra}", "--", "{url}"
+      ],
+      "progress": { "percent": "\\[download\\]\\s+(\\d+(?:\\.\\d+)?)%" },
+      "outputPathPattern": "^(/.+)$"
+    },
+    {
+      "id": "download-playlist",
+      "title": "Download a whole playlist",
+      "summary": "Save every video in a playlist into its own numbered folder.",
+      "symbol": "list.and.film",
+      "fields": [
+        { "id": "url", "label": "Playlist link", "kind": "text", "required": true, "placeholder": "https://www.youtube.com/playlist?list=…" },
+        { "id": "quality", "label": "Quality", "kind": "choice", "default": "bv*[height<=1080]+ba/b[height<=1080]",
+          "options": [
+            { "value": "bv*+ba/b", "label": "Best available" },
+            { "value": "bv*[height<=1080]+ba/b[height<=1080]", "label": "Up to 1080p" },
+            { "value": "bv*[height<=720]+ba/b[height<=720]", "label": "Up to 720p" },
+            { "value": "ba/b", "label": "Audio only" }
+          ] },
+        { "id": "folder", "label": "Save in", "kind": "outputFolder", "default": "~/Downloads" }
+      ],
+      "arguments": [
+        "--newline", "--progress", "--yes-playlist", "--ignore-errors",
+        "-f", "{quality}",
+        "-P", "{folder}", "-o", "%(playlist_title)s/%(playlist_index)03d %(title)s.%(ext)s",
+        "{extra}", "--", "{url}"
+      ],
+      "progress": { "percent": "\\[download\\]\\s+(\\d+(?:\\.\\d+)?)%" }
+    },
+    {
+      "id": "subtitles",
+      "title": "Get the subtitles",
+      "summary": "Save a video's subtitles as an SRT file, without downloading the video.",
+      "symbol": "captions.bubble",
+      "fields": [
+        { "id": "url", "label": "Link", "kind": "text", "required": true, "placeholder": "https://…" },
+        { "id": "languages", "label": "Languages", "kind": "text", "default": "en.*",
+          "help": "Language codes separated by commas, such as en,hi. A * matches variants." },
+        { "id": "folder", "label": "Save in", "kind": "outputFolder", "default": "~/Downloads" }
+      ],
+      "arguments": [
+        "--skip-download", "--write-subs", "--write-auto-subs", "--sub-langs", "{languages}", "--convert-subs", "srt",
+        "-P", "{folder}", "-o", "%(title)s.%(ext)s",
+        "{extra}", "--", "{url}"
+      ]
+    },
+    {
+      "id": "thumbnail",
+      "title": "Save the thumbnail",
+      "summary": "Save a video's cover picture as a JPEG.",
+      "symbol": "photo",
+      "fields": [
+        { "id": "url", "label": "Link", "kind": "text", "required": true, "placeholder": "https://…" },
+        { "id": "folder", "label": "Save in", "kind": "outputFolder", "default": "~/Downloads" }
+      ],
+      "arguments": [
+        "--skip-download", "--write-thumbnail", "--convert-thumbnails", "jpg",
+        "-P", "{folder}", "-o", "%(title)s.%(ext)s",
+        "{extra}", "--", "{url}"
+      ]
+    }
+  ]
+}

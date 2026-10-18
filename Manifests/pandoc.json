@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "pandoc",
+  "name": "pandoc",
+  "summary": "Convert documents between Markdown, Word, HTML and EPUB.",
+  "executable": "pandoc",
+  "install": { "brew": "pandoc" },
+  "homepage": "https://pandoc.org",
+  "symbol": "doc.richtext",
+  "tint": "indigo",
+  "tasks": [
+    {
+      "id": "markdown-to-word",
+      "title": "Markdown to Word",
+      "summary": "Turn a Markdown file into a Word document.",
+      "symbol": "doc.text",
+      "fields": [
+        { "id": "input", "label": "Markdown file", "kind": "inputFile", "contentTypes": ["net.daringfireball.markdown", "public.plain-text"] },
+        { "id": "toc", "label": "Add a table of contents", "kind": "toggle", "default": false }
+      ],
+      "output": { "template": "{input.stem}.docx", "nextTo": "input" },
+      "arguments": ["{input}", "--standalone", { "if": "toc", "then": ["--toc"] }, "{extra}", "-o", "{output}"]
+    },
+    {
+      "id": "word-to-markdown",
+      "title": "Word to Markdown",
+      "summary": "Turn a Word document into clean Markdown, keeping its pictures.",
+      "symbol": "text.alignleft",
+      "fields": [
+        { "id": "input", "label": "Word document", "kind": "inputFile", "contentTypes": ["org.openxmlformats.wordprocessingml.document"] }
+      ],
+      "output": { "template": "{input.stem}.md", "nextTo": "input" },
+      "arguments": ["{input}", "-t", "gfm", "--wrap=none", "--extract-media={output.base} media", "{extra}", "-o", "{output}"]
+    },
+    {
+      "id": "markdown-to-html",
+      "title": "Markdown to a web page",
+      "summary": "Turn Markdown into a single HTML file with everything built in.",
+      "symbol": "globe",
+      "fields": [
+        { "id": "input", "label": "Markdown file", "kind": "inputFile", "contentTypes": ["net.daringfireball.markdown", "public.plain-text"] }
+      ],
+      "output": { "template": "{input.stem}.html", "nextTo": "input" },
+      "arguments": ["{input}", "--standalone", "--embed-resources", "--metadata", "pagetitle={input.stem}", "{extra}", "-o", "{output}"]
+    },
+    {
+      "id": "to-epub",
+      "title": "Make an ebook",
+      "summary": "Turn Markdown or a Word document into an EPUB for Books and e-readers.",
+      "symbol": "book.closed",
+      "fields": [
+        { "id": "input", "label": "Document", "kind": "inputFile", "contentTypes": ["net.daringfireball.markdown", "public.plain-text", "org.openxmlformats.wordprocessingml.document"] },
+        { "id": "title", "label": "Book title", "kind": "text", "placeholder": "My Book" },
+        { "id": "author", "label": "Author", "kind": "text", "placeholder": "Your Name" }
+      ],
+      "output": { "template": "{input.stem}.epub", "nextTo": "input" },
+      "arguments": [
+        "{input}",
+        { "if": "title", "then": ["--metadata", "title={title}"], "else": ["--metadata", "title={input.stem}"] },
+        { "if": "author", "then": ["--metadata", "author={author}"] },
+        "{extra}", "-o", "{output}"
+      ]
+    }
+  ]
+}

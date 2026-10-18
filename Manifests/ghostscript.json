@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "ghostscript",
+  "name": "Ghostscript",
+  "summary": "Compress, merge and convert PDFs.",
+  "executable": "gs",
+  "install": { "brew": "ghostscript" },
+  "homepage": "https://www.ghostscript.com",
+  "symbol": "doc.on.doc",
+  "tint": "gray",
+  "tasks": [
+    {
+      "id": "compress-pdf",
+      "title": "Compress a PDF",
+      "summary": "Make a PDF much smaller, for email and uploads.",
+      "symbol": "arrow.down.right.and.arrow.up.left",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "quality", "label": "Quality", "kind": "choice", "default": "ebook",
+          "options": [
+            { "value": "screen", "label": "Smallest (72 dpi)" },
+            { "value": "ebook", "label": "Balanced (150 dpi)" },
+            { "value": "printer", "label": "High (300 dpi)" },
+            { "value": "prepress", "label": "Print (300 dpi, exact color)" }
+          ] }
+      ],
+      "output": { "template": "{input.stem} compressed.pdf", "nextTo": "input" },
+      "arguments": [
+        "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.6", "-dPDFSETTINGS=/{quality}",
+        "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
+        "{extra}", "-sOutputFile={output}", "{input}"
+      ]
+    },
+    {
+      "id": "merge-pdfs",
+      "title": "Merge PDFs",
+      "summary": "Join several PDFs into one, in the order you add them.",
+      "symbol": "doc.on.doc.fill",
+      "fields": [
+        { "id": "pages", "label": "PDFs", "kind": "inputFile", "multiple": true, "contentTypes": ["com.adobe.pdf"] }
+      ],
+      "output": { "template": "{pages.stem} merged.pdf", "nextTo": "pages" },
+      "arguments": [
+        "-sDEVICE=pdfwrite", "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
+        "{extra}", "-sOutputFile={output}", "{pages}"
+      ]
+    },
+    {
+      "id": "grayscale",
+      "title": "Convert to black and white",
+      "summary": "Remove the color from a PDF, for cheaper printing.",
+      "symbol": "circle.lefthalf.filled",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] }
+      ],
+      "output": { "template": "{input.stem} grayscale.pdf", "nextTo": "input" },
+      "arguments": [
+        "-sDEVICE=pdfwrite", "-sColorConversionStrategy=Gray", "-dProcessColorModel=/DeviceGray",
+        "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
+        "{extra}", "-sOutputFile={output}", "{input}"
+      ]
+    },
+    {
+      "id": "extract-pages",
+      "title": "Extract pages",
+      "summary": "Save a range of pages as a new PDF.",
+      "symbol": "doc.badge.ellipsis",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "first", "label": "From page", "kind": "integer", "default": 1, "minimum": 1, "maximum": 9999 },
+        { "id": "last", "label": "To page", "kind": "integer", "default": 1, "minimum": 1, "maximum": 9999 }
+      ],
+      "output": { "template": "{input.stem} pages {first}-{last}.pdf", "nextTo": "input" },
+      "arguments": [
+        "-sDEVICE=pdfwrite", "-dFirstPage={first}", "-dLastPage={last}",
+        "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
+        "{extra}", "-sOutputFile={output}", "{input}"
+      ]
+    }
+  ]
+}

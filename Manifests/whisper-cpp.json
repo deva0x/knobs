@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "whisper-cpp",
+  "name": "whisper.cpp",
+  "summary": "Turn speech into text and subtitles, privately on your Mac.",
+  "executable": "whisper-cli",
+  "install": { "brew": "whisper-cpp" },
+  "homepage": "https://github.com/ggml-org/whisper.cpp",
+  "symbol": "waveform",
+  "tint": "green",
+  "tasks": [
+    {
+      "id": "transcribe",
+      "title": "Transcribe to text",
+      "summary": "Write down everything said in a recording.",
+      "symbol": "text.quote",
+      "fields": [
+        { "id": "input", "label": "Recording", "kind": "inputFile", "contentTypes": ["public.audio"],
+          "help": "WAV, MP3, FLAC or OGG." },
+        { "id": "model", "label": "Model", "kind": "inputFile",
+          "help": "A whisper.cpp model file such as ggml-base.en.bin, downloaded from the whisper.cpp project." },
+        { "id": "language", "label": "Language", "kind": "text", "default": "auto",
+          "help": "auto, or a code such as en, hi or es." }
+      ],
+      "output": { "template": "{input.stem} transcript.txt", "nextTo": "input" },
+      "arguments": ["-m", "{model}", "-l", "{language}", "-pp", "-otxt", "-of", "{output.base}", "{extra}", "-f", "{input}"],
+      "progress": { "percent": "progress =\\s+(\\d+)%" }
+    },
+    {
+      "id": "subtitles",
+      "title": "Make subtitles",
+      "summary": "Create a timed subtitle file for a recording.",
+      "symbol": "captions.bubble",
+      "fields": [
+        { "id": "input", "label": "Recording", "kind": "inputFile", "contentTypes": ["public.audio"],
+          "help": "WAV, MP3, FLAC or OGG." },
+        { "id": "model", "label": "Model", "kind": "inputFile",
+          "help": "A whisper.cpp model file such as ggml-base.en.bin." },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "srt",
+          "options": [
+            { "value": "srt", "label": "SRT (most players)" },
+            { "value": "vtt", "label": "WebVTT (web video)" }
+          ] },
+        { "id": "language", "label": "Language", "kind": "text", "default": "auto",
+          "help": "auto, or a code such as en, hi or es." }
+      ],
+      "output": { "template": "{input.stem}.{format}", "nextTo": "input" },
+      "arguments": ["-m", "{model}", "-l", "{language}", "-pp", "-o{format}", "-of", "{output.base}", "{extra}", "-f", "{input}"],
+      "progress": { "percent": "progress =\\s+(\\d+)%" }
+    },
+    {
+      "id": "translate",
+      "title": "Translate to English",
+      "summary": "Write an English translation of speech in another language.",
+      "symbol": "character.bubble",
+      "fields": [
+        { "id": "input", "label": "Recording", "kind": "inputFile", "contentTypes": ["public.audio"],
+          "help": "WAV, MP3, FLAC or OGG." },
+        { "id": "model", "label": "Model", "kind": "inputFile",
+          "help": "A multilingual model such as ggml-base.bin. Models ending in .en only know English." }
+      ],
+      "output": { "template": "{input.stem} English.txt", "nextTo": "input" },
+      "arguments": ["-m", "{model}", "-l", "auto", "-tr", "-pp", "-otxt", "-of", "{output.base}", "{extra}", "-f", "{input}"],
+      "progress": { "percent": "progress =\\s+(\\d+)%" }
+    }
+  ]
+}

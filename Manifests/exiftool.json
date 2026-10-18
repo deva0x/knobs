@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "exiftool",
+  "name": "ExifTool",
+  "summary": "See and remove the hidden details stored in photos, videos and documents.",
+  "executable": "exiftool",
+  "install": { "brew": "exiftool" },
+  "homepage": "https://exiftool.org",
+  "symbol": "camera.metering.matrix",
+  "tint": "orange",
+  "tasks": [
+    {
+      "id": "show-metadata",
+      "title": "Show hidden details",
+      "summary": "List everything stored inside a file: camera, date, location and more.",
+      "symbol": "list.bullet.rectangle",
+      "fields": [
+        { "id": "input", "label": "File", "kind": "inputFile", "contentTypes": ["public.image", "public.audiovisual-content", "com.adobe.pdf"] }
+      ],
+      "arguments": ["-G1", "-s", "{extra}", "{input}"]
+    },
+    {
+      "id": "remove-all",
+      "title": "Remove all hidden details",
+      "summary": "Make a clean copy with no camera, date, location or other details.",
+      "symbol": "eye.slash",
+      "fields": [
+        { "id": "input", "label": "File", "kind": "inputFile", "contentTypes": ["public.image", "public.audiovisual-content", "com.adobe.pdf"] }
+      ],
+      "output": { "template": "{input.stem} clean.{input.ext}", "nextTo": "input" },
+      "arguments": ["-all=", "-o", "{output}", "{extra}", "{input}"]
+    },
+    {
+      "id": "remove-location",
+      "title": "Remove the location",
+      "summary": "Make a copy without GPS coordinates, keeping everything else.",
+      "symbol": "location.slash",
+      "fields": [
+        { "id": "input", "label": "Photo", "kind": "inputFile", "contentTypes": ["public.image", "public.movie"] }
+      ],
+      "output": { "template": "{input.stem} no location.{input.ext}", "nextTo": "input" },
+      "arguments": ["-gps:all=", "-o", "{output}", "{extra}", "{input}"]
+    },
+    {
+      "id": "rename-by-date",
+      "title": "Rename photos by date taken",
+      "summary": "Rename photos to the date and time they were taken. The originals are renamed in place.",
+      "symbol": "calendar",
+      "fields": [
+        { "id": "photos", "label": "Photos", "kind": "inputFile", "multiple": true, "contentTypes": ["public.image", "public.movie"] }
+      ],
+      "arguments": ["-d", "%Y-%m-%d %H.%M.%S%%-c.%%e", "-FileName<DateTimeOriginal", "{extra}", "{photos}"]
+    }
+  ]
+}

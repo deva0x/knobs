@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "7zip",
+  "name": "7-Zip",
+  "summary": "Create and open archives, with strong encryption.",
+  "executable": "7zz",
+  "install": { "brew": "sevenzip" },
+  "homepage": "https://www.7-zip.org",
+  "symbol": "archivebox",
+  "tint": "brown",
+  "tasks": [
+    {
+      "id": "create",
+      "title": "Create an archive",
+      "summary": "Pack files and folders into one smaller archive.",
+      "symbol": "archivebox",
+      "fields": [
+        { "id": "items", "label": "Files and folders", "kind": "inputFile", "multiple": true },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "zip",
+          "options": [
+            { "value": "zip", "label": "ZIP (opens anywhere)" },
+            { "value": "7z", "label": "7z (smaller)" }
+          ] },
+        { "id": "level", "label": "Compression", "kind": "integer", "default": 5, "minimum": 1, "maximum": 9,
+          "help": "Higher is smaller but slower." }
+      ],
+      "output": { "template": "{items.stem}.{format}", "nextTo": "items" },
+      "arguments": ["a", "-t{format}", "-mx={level}", "-bsp1", "{extra}", "--", "{output}", "{items}"],
+      "progress": { "percent": "(\\d+)%" }
+    },
+    {
+      "id": "create-encrypted",
+      "title": "Create a password-protected archive",
+      "summary": "Pack files into a 7z archive that needs a password, including to see the file names.",
+      "symbol": "lock.doc",
+      "fields": [
+        { "id": "items", "label": "Files and folders", "kind": "inputFile", "multiple": true },
+        { "id": "password", "label": "Password", "kind": "secret", "required": true }
+      ],
+      "output": { "template": "{items.stem}.7z", "nextTo": "items" },
+      "arguments": ["a", "-t7z", "-mx=5", "-mhe=on", "-p{password}", "-bsp1", "{extra}", "--", "{output}", "{items}"],
+      "progress": { "percent": "(\\d+)%" }
+    },
+    {
+      "id": "extract",
+      "title": "Extract an archive",
+      "summary": "Unpack a ZIP, 7z, RAR, TAR or other archive into a new folder.",
+      "symbol": "archivebox.circle",
+      "fields": [
+        { "id": "archive", "label": "Archive", "kind": "inputFile" },
+        { "id": "password", "label": "Password", "kind": "secret", "help": "Only for protected archives." }
+      ],
+      "output": { "template": "{archive.stem}", "nextTo": "archive" },
+      "arguments": ["x", "-o{output}", "-bsp1", { "if": "password", "then": ["-p{password}"] }, "{extra}", "--", "{archive}"],
+      "progress": { "percent": "(\\d+)%" }
+    },
+    {
+      "id": "test",
+      "title": "Check an archive",
+      "summary": "Make sure an archive isn't damaged, without unpacking it.",
+      "symbol": "checkmark.seal",
+      "fields": [
+        { "id": "archive", "label": "Archive", "kind": "inputFile" },
+        { "id": "password", "label": "Password", "kind": "secret", "help": "Only for protected archives." }
+      ],
+      "arguments": ["t", "-bsp1", { "if": "password", "then": ["-p{password}"] }, "{extra}", "--", "{archive}"],
+      "progress": { "percent": "(\\d+)%" }
+    }
+  ]
+}

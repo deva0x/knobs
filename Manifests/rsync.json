@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "rsync",
+  "name": "rsync",
+  "summary": "Copy, back up and mirror folders reliably, picking up where it left off.",
+  "executable": "rsync",
+  "install": { "brew": "rsync" },
+  "homepage": "https://rsync.samba.org",
+  "symbol": "arrow.triangle.2.circlepath",
+  "tint": "cyan",
+  "tasks": [
+    {
+      "id": "copy-folder",
+      "title": "Copy a folder",
+      "summary": "Copy a folder into another place, skipping files that are already there.",
+      "symbol": "folder.badge.plus",
+      "fields": [
+        { "id": "source", "label": "Folder to copy", "kind": "inputFolder" },
+        { "id": "destination", "label": "Copy into", "kind": "outputFolder" }
+      ],
+      "arguments": ["-a", "--human-readable", "--info=progress2", "{extra}", "{source}", "{destination}"],
+      "progress": { "percent": "\\s(\\d+)%\\s" }
+    },
+    {
+      "id": "mirror-folder",
+      "title": "Mirror a folder",
+      "summary": "Make one folder an exact copy of another. Files found only in the copy are deleted.",
+      "symbol": "arrow.left.arrow.right.square",
+      "fields": [
+        { "id": "source", "label": "Original", "kind": "inputFolder" },
+        { "id": "destination", "label": "Mirror", "kind": "outputFolder" },
+        { "id": "preview", "label": "Preview only", "kind": "toggle", "default": true,
+          "help": "List what would change without changing anything. Turn off to mirror for real." }
+      ],
+      "arguments": [
+        "-a", "--delete", "--human-readable", "--info=progress2",
+        { "if": "preview", "then": ["--dry-run", "--itemize-changes"] },
+        "{extra}", "{source}/", "{destination}"
+      ],
+      "progress": { "percent": "\\s(\\d+)%\\s" }
+    },
+    {
+      "id": "compare-folders",
+      "title": "Compare two folders",
+      "summary": "List the files that differ between two folders, without changing anything.",
+      "symbol": "rectangle.split.2x1",
+      "fields": [
+        { "id": "source", "label": "First folder", "kind": "inputFolder" },
+        { "id": "destination", "label": "Second folder", "kind": "inputFolder" }
+      ],
+      "arguments": ["-a", "--dry-run", "--itemize-changes", "--checksum", "{extra}", "{source}/", "{destination}"]
+    },
+    {
+      "id": "backup",
+      "title": "Back up a folder",
+      "summary": "Copy a folder to a backup drive, leaving out files you don't need.",
+      "symbol": "externaldrive.badge.timemachine",
+      "fields": [
+        { "id": "source", "label": "Folder to back up", "kind": "inputFolder" },
+        { "id": "destination", "label": "Back up into", "kind": "outputFolder" },
+        { "id": "skipHidden", "label": "Skip hidden files", "kind": "toggle", "default": true },
+        { "id": "exclude", "label": "Also skip", "kind": "text", "placeholder": "node_modules",
+          "help": "A file or folder name pattern to leave out, such as *.tmp." }
+      ],
+      "arguments": [
+        "-a", "--human-readable", "--info=progress2",
+        { "if": "skipHidden", "then": ["--exclude=.*"] },
+        { "if": "exclude", "then": ["--exclude={exclude}"] },
+        "{extra}", "{source}", "{destination}"
+      ],
+      "progress": { "percent": "\\s(\\d+)%\\s" }
+    }
+  ]
+}

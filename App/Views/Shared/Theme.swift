@@ -51,6 +51,12 @@ extension Animation {
 }
 
 extension View {
+    /// A neutral glass button for second choices. `.glass` fills with any tint set above it, and task screens set
+    /// the tool's tint for their one accent (docs/DESIGN.md, Brand).
+    func secondaryGlassButton() -> some View {
+        buttonStyle(.glass).tint(nil)
+    }
+
     /// A transition that becomes a plain crossfade when Reduce Motion is on (docs/DESIGN.md, Motion).
     func knobsTransition(_ transition: AnyTransition) -> some View {
         modifier(MotionAwareTransition(transition: transition))

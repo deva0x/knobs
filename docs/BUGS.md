@@ -60,3 +60,16 @@ Template:
 - Expected: the newest lines, following as more arrive.
 - Actual: the top of the log, which then never followed, because the console counted itself as scrolled up.
 - Fix: the console starts anchored at the bottom (`defaultScrollAnchor(.bottom, for: .initialOffset)`).
+
+## BUG-006: A failed run crashed the app on the redesigned failure screen (fixed before commit)
+- Found: 2026-10-18, Claude (Opus 5.5), on-screen pass of the uncommitted redesign
+- Steps: open a video in Shrink a video, put `-not_a_real_option 1` in Extra arguments, press Run.
+- Expected: the failure screen with ffmpeg's error line.
+- Actual: the app quit. AppKit raised "The window has been marked as needing another Update Constraints in
+  Window pass…" (and, without text selection, the same loop as a layout pass), from the split view updating its
+  column's minimum size again and again.
+- Cause: the error text had `.fixedSize(horizontal: false, vertical: true)`, so the stage's minimum height
+  depended on its width, which the split view and inspector kept renegotiating. Removing only text selection
+  still crashed; removing only `fixedSize` stopped it.
+- Fix: the error text wraps normally inside the 560 pt column. Checked on screen: the same run now shows
+  "ffmpeg stopped with an error" with Change Settings and Show Output, and the app stays up.

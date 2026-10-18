@@ -72,7 +72,7 @@ struct CommandBar: View {
                     .padding(.horizontal, 6)
             }
             .buttonStyle(.glassProminent)
-            .tint(.signal)
+            // The tool's tint, inherited from the screen: one accent per screen (docs/DESIGN.md, Brand).
             .controlSize(.large)
             .disabled(!model.canRun(session))
             .help(runHelp)

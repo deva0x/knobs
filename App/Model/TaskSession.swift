@@ -83,6 +83,33 @@ final class TaskSession: Identifiable {
         task.fields.first { if case .inputFile = $0.kind { true } else { false } }
     }
 
+    /// Tasks without an input file but with a required text field, such as a link, show that field large instead.
+    var heroTextField: Field? {
+        guard primaryInputField == nil else { return nil }
+        return task.fields.first { field in
+            if case .text = field.kind { return field.isRequired }
+            return false
+        }
+    }
+
+    /// Everything that isn't shown large on the stage, for the inspector.
+    var settingFields: [Field] {
+        task.fields.filter { $0.id != primaryInputField?.id && $0.id != heroTextField?.id }
+    }
+
+    /// A plain-words reason the Extra arguments can't be used, or nil.
+    var extraArgumentsProblem: String? {
+        for problem in draft.problems {
+            if case .extraArguments(let error) = problem {
+                return switch error {
+                case .unclosedQuote(let quote): "A \(quote) quote isn't closed."
+                case .trailingBackslash: "The text ends with a backslash."
+                }
+            }
+        }
+        return nil
+    }
+
     var isRunning: Bool {
         if case .running = phase { return true }
         return false

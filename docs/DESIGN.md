@@ -75,20 +75,23 @@ The window is one `Window` scene: sidebar, a content area, and on a task an insp
 - **Tool home:** a hero header washed with the tool's tint (a soft mesh gradient that fades into the window),
   a large glyph tile, the tool's name and summary, and a status line: where it's installed, or the install
   command. Below it, the task cards, larger than before, each naming what it takes ("Video", "PDF") in words
-  from the system's own type names. Dropping a file anywhere on the tool home highlights the tasks that take
-  it and dims the rest; dropping on a card opens that task with the file.
+  from the system's own type names. Cards lift slightly and take a tint border on hover (no lift under
+  Reduce Motion). Dropping files anywhere on the tool home outlines the page in the tint and opens them in
+  that tool's task that takes them, offering a choice when several do; files no task takes are refused and
+  the section header says so for a moment.
 - **Task stage:** the content area is a stage for the task's main input, not a form.
   - Empty: one large drop target with the kind of file it wants ("Drop a video") and Choose.
   - Filled: a large Quick Look preview with the file's facts underneath as quiet chips, read by file type,
     never by tool: duration and dimensions for video, dimensions for images, page count for PDFs, size and
     kind for everything. Several files show as an overlapping stack with a count.
   - A task whose main input is text, such as a link, shows that field large in the stage.
-  - Running: the preview dims slightly under a dial gauge, a 270° arc of tick marks like the app icon that
-    fills with the tool's tint as progress comes in, the percentage at its center. Without progress, the
-    ticks sweep gently.
+  - Running: a dial gauge over the preview, a 270° arc of tick marks like the app icon that fills with the
+    tool's tint as progress comes in, the percentage and elapsed time at its center. It sits on dark glass so
+    it reads over any picture. Without progress, the ticks sweep gently (still under Reduce Motion).
   - Done: before and after. The output's preview takes the stage with the size change as the hero number
-    ("−92%"), the input to output sizes and time beneath, and Open, Show in Finder and drag-out. Report-only
-    tasks show the output text instead.
+    ("−92%", spoken as "92% smaller"), the input to output sizes and time beneath, and Open, Show in Finder
+    and drag-out. Only Open is tinted; the other buttons are neutral glass. Report-only tasks show the output
+    text instead.
   - Failed or cancelled: a calm panel in the stage with the last useful error line and Show Output.
 - **Inspector:** the native trailing inspector (`.inspector`), toggled from the toolbar. Sections: Settings
   (each field as label, help and a full-width control), Output (where the file will go and its name), and

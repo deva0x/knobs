@@ -179,6 +179,8 @@ private struct FailureCard: View {
 /// The tool's own output: monospaced, selectable, following the newest line until the user scrolls up to read.
 struct OutputConsole: View {
     let log: OutputLog
+    /// A fixed height, or nil to fill the space given.
+    var height: CGFloat? = 220
     @State private var followsNewestLine = true
     /// How close to the bottom still counts as "at the bottom", so a partial line doesn't stop following.
     private static let bottomTolerance: CGFloat = 24
@@ -219,7 +221,8 @@ struct OutputConsole: View {
                     .textSelection(.enabled)
                     .padding(12)
                 }
-                .frame(height: 220)
+                .frame(height: height)
+                .frame(maxHeight: height == nil ? .infinity : nil)
                 // Opened mid-run, the console starts at the newest line rather than the first.
                 .defaultScrollAnchor(.bottom, for: .initialOffset)
                 .onScrollGeometryChange(for: Bool.self) { geometry in

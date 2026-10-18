@@ -120,7 +120,18 @@ private struct AllOptionsContent: View {
 
                 if let files = fieldsByID[HelpTaskBuilder.filesFieldID] {
                     SettingsGroup(title: "Files") {
-                        FieldRow(field: files, session: session)
+                        LabeledContent {
+                            PathPicker(field: files, session: session)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(files.label)
+                                if let help = files.help {
+                                    Text(help).font(.helpText).foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 11)
                     }
                 }
                 ExtraArgumentsSection(session: session, isExpanded: $showsExtraArguments)
@@ -130,7 +141,6 @@ private struct AllOptionsContent: View {
             .padding(.vertical, 24)
             .frame(maxWidth: Metrics.contentMaxWidth)
             .frame(maxWidth: .infinity)
-            .tint(manifest.tint.color)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             CommandBar(session: session, showsOutput: $showsOutput)
@@ -138,6 +148,8 @@ private struct AllOptionsContent: View {
                 .padding(.bottom, 16)
                 .padding(.top, 6)
         }
+        // Over the command bar too, so Run takes the tool's tint like every task screen (docs/DESIGN.md, Brand).
+        .tint(manifest.tint.color)
         .onChange(of: session.phase) { _, phase in
             if case .finished = phase { showsOutput = true }
         }

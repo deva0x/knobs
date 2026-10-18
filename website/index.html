@@ -14,6 +14,28 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css">
   <script defer src="main.js"></script>
+  <!-- The files of the current release, by their exact names in dist/. scripts/release.sh refuses to print the
+       release command until every one of them is there, so these links can't point at a missing file. -->
+  <script type="application/json" id="release">
+  {
+    "version": "0.1.0",
+    "mac": "Knobs-0.1.0.dmg",
+    "linux": [
+      { "id": "ubuntu", "label": "Ubuntu", "install": "sudo apt install ./{file}",
+        "note": "apt also installs GTK and libadwaita if they’re missing. Then open Knobs from your apps.",
+        "files": { "x86_64": "knobs_0.1.0_amd64.deb", "arm": "knobs_0.1.0_arm64.deb" } },
+      { "id": "fedora", "label": "Fedora", "install": "sudo dnf install ./{file}",
+        "note": "dnf also installs what Knobs needs. Fedora’s own ffmpeg works; for Shrink a video’s Quality setting, use the full ffmpeg from RPM Fusion.",
+        "files": { "x86_64": "knobs-0.1.0-1.fc44.x86_64.rpm", "arm": "knobs-0.1.0-1.fc44.aarch64.rpm" } },
+      { "id": "arch", "label": "Arch", "install": "sudo pacman -U ./{file}",
+        "note": "pacman also installs GTK and libadwaita if they’re missing. Then open Knobs from your apps.",
+        "files": { "x86_64": "knobs-bin-0.1.0-1-x86_64.pkg.tar.zst" } },
+      { "id": "other", "label": "Other", "install": "tar -xzf {file} && knobs/usr/bin/knobs",
+        "note": "Knobs runs from the folder it unpacks to. GTK 4.20 or later and libadwaita must already be installed.",
+        "files": { "x86_64": "knobs-0.1.0-linux-x86_64.tar.gz", "arm": "knobs-0.1.0-linux-aarch64.tar.gz" } }
+    ]
+  }
+  </script>
   <!-- The Shrink a video task exactly as in Manifests/ffmpeg.json; the demo builds its command from it, and
        WebsiteTests fails if the two differ. -->
   <script type="application/json" id="demo-task">
@@ -179,14 +201,14 @@
         <div class="hero-copy">
           <p class="hero-lede">Pick a task, drop in a file, set plain controls, press Run. The exact command stays in view.</p>
           <div class="cta-row">
-            <a class="btn btn-primary" href="#get" data-link="download">
+            <a class="btn btn-primary" href="#get" data-download="mac" id="hero-download">
               <svg class="icon" aria-hidden="true"><use href="#g-download"/></svg>
               <span>Download for Mac</span>
               <span class="btn-meta">macOS 26+</span>
             </a>
             <a class="btn btn-quiet" href="#get" data-link="github">View on GitHub</a>
           </div>
-          <p class="hero-also">Also on Linux: Ubuntu, Fedora and Arch. <a href="#get">Linux downloads</a></p>
+          <p class="hero-also" id="hero-also">Also on Linux: Ubuntu, Fedora and Arch. <a href="#linux">Linux downloads</a></p>
         </div>
 
         <figure class="shot" data-screenshot-slot="hero">
@@ -532,20 +554,46 @@
         <svg class="get-icon" aria-hidden="true"><use href="#mark"/></svg>
         <div class="get-copy">
           <h2 id="get-title">Free, open source, for the Mac and Linux.</h2>
-          <p>Knobs is MIT licensed. On the Mac it runs on macOS 26 or later with Apple Silicon. On Linux it runs on Ubuntu 26.04, Fedora 43, current Arch Linux or newer, on ARM or x86 computers.</p>
+          <p>Knobs is MIT licensed, with no account and no subscription. The Mac app needs macOS 26 or later on a Mac with Apple Silicon.</p>
           <div class="cta-row">
-            <a class="btn btn-primary" href="#get" data-link="download">
+            <a class="btn btn-primary" href="#get" data-download="mac">
               <svg class="icon" aria-hidden="true"><use href="#g-download"/></svg>
               <span>Download for Mac</span>
               <span class="btn-meta">macOS 26+</span>
             </a>
-            <a class="btn btn-quiet" href="#get" data-link="download">
-              <svg class="icon" aria-hidden="true"><use href="#g-download"/></svg>
-              <span>Download for Linux</span>
-              <span class="btn-meta">.deb, .rpm, Arch</span>
-            </a>
             <a class="btn btn-quiet" href="#get" data-link="github">View on GitHub</a>
           </div>
+        </div>
+        <div class="linux-get" id="linux" aria-labelledby="linux-title">
+          <h3 id="linux-title">Knobs for Linux</h3>
+          <p class="linux-needs">A native GTK app. It needs GTK 4.20 or later, which means Ubuntu 26.04, Fedora 43, current Arch Linux or newer.</p>
+          <div class="linux-pick" id="linux-pick" hidden>
+            <fieldset class="control">
+              <legend class="silk">Distribution</legend>
+              <div class="segmented" id="linux-distro"></div>
+            </fieldset>
+            <fieldset class="control">
+              <legend class="silk">Processor</legend>
+              <div class="segmented" id="linux-arch">
+                <input type="radio" name="linux-arch" id="arch-x86" value="x86_64" checked><label for="arch-x86">Intel or AMD</label>
+                <input type="radio" name="linux-arch" id="arch-arm" value="arm"><label for="arch-arm">ARM</label>
+              </div>
+            </fieldset>
+          </div>
+          <div class="linux-result" id="linux-result">
+            <a class="btn btn-quiet" id="linux-file" href="#linux" data-link="download">
+              <svg class="icon" aria-hidden="true"><use href="#g-download"/></svg>
+              <span id="linux-file-name">Linux packages</span>
+            </a>
+            <div class="well" id="linux-install-well" hidden>
+              <code id="linux-install"></code>
+              <button class="btn-copy" type="button" data-copy="#linux-install">
+                <svg class="icon" aria-hidden="true"><use href="#g-copy"/></svg><span>Copy</span>
+              </button>
+            </div>
+            <p class="linux-note" id="linux-note">There’s a .deb for Ubuntu, an .rpm for Fedora, a package for Arch, and a tarball for anything else, for Intel, AMD and ARM computers.</p>
+          </div>
+          <p class="linux-all"><a href="#linux" data-link="download">Every file of this release</a></p>
         </div>
         <div class="brew-well">
           <p>Missing a tool? Knobs shows the command to copy into Terminal.</p>

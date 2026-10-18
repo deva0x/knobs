@@ -27,6 +27,23 @@ if ! grep -q "^## \[$version\]" CHANGELOG.md; then
     echo "FAIL: CHANGELOG.md has no '## [$version]' section." >&2
     exit 1
 fi
+# The website's download links name this release's files, listed in the page's #release: its version first, then
+# each file name.
+website_release=$(python3 -I - website/index.html <<'PY'
+import json, re, sys
+page = open(sys.argv[1], encoding="utf-8").read()
+release = json.loads(re.search(r'<script type="application/json" id="release">(.*?)</script>', page, re.S).group(1))
+print(release["version"])
+print(release["mac"])
+for distro in release["linux"]:
+    print(*distro["files"].values(), sep="\n")
+PY
+)
+if [ "$(head -1 <<<"$website_release")" != "$version" ]; then
+    echo "FAIL: website/index.html's #release is for version $(head -1 <<<"$website_release"), not $version." >&2
+    echo "Update its version and file names first." >&2
+    exit 1
+fi
 
 step() { printf '\n==> %s\n' "$1"; }
 
@@ -94,6 +111,17 @@ if [ "$can_notarize" = no ]; then
     echo
     echo "NOT NOTARIZED: the '$notary_profile' keychain profile is missing. See docs/WORKFLOW.md, Releasing."
     exit 0
+fi
+# Publishing without a file the website links to would leave a download button that leads nowhere.
+missing=""
+while read -r file; do
+    [ -f "dist/$file" ] || [ -f "dist/linux/$file" ] || missing="$missing $file"
+done < <(tail -n +2 <<<"$website_release")
+if [ -n "$missing" ]; then
+    echo
+    echo "NOT READY: the website links to files that aren't in dist/ yet:$missing" >&2
+    echo "Build the Linux ones with scripts/linux.sh package $version arm64 and amd64, then run this again." >&2
+    exit 1
 fi
 echo
 echo "When Deva approves publishing, Deva runs:"

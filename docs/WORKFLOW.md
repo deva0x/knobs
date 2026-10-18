@@ -88,7 +88,8 @@ printed URL in a browser at desktop and phone widths before pointing a domain at
 4. Builds the DMG with `diskutil image create`, then signs, notarizes and staples the DMG too.
 5. Writes `dist/Knobs-0.1.0.dmg` and its SHA-256.
 6. Prints the `gh release create` command for Deva to run, with the DMG and the same version's Linux packages
-   from `dist/linux/`. It doesn't run it.
+   from `dist/linux/`. It doesn't run it. Before that it checks the website: the version in
+   `website/index.html`'s `#release` block must match, and every file it links to must be in `dist/`.
 
 Without the certificate it skips steps 2 to 4 and leaves an unsigned DMG, saying so. Without the notary
 profile it signs but doesn't notarize, and says so.

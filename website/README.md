@@ -28,9 +28,14 @@ website/
 
 ## Where things live
 
-- **Links:** the GitHub, download, manifest-format and license URLs are set once in `LINKS` at the top of
+- **Links:** the GitHub, releases-page, manifest-format and license URLs are set once in `LINKS` at the top of
   `main.js` and applied to every `[data-link]` element. Without JavaScript those links fall back to the
   download section of the page.
+- **Downloads:** the release's version and exact file names live in the page's
+  `<script type="application/json" id="release">`. `main.js` builds the Mac button's link and the Linux chooser
+  (distribution, processor, file, install command) from it, and on Linux makes the hero's first button a Linux
+  one. For a new release, update that block; `scripts/release.sh` stops if its version doesn't match or any file
+  it names is missing from `dist/`.
 - **Demo command:** the page holds the real Shrink a video task in `<script type="application/json" id="demo-task">`,
   copied exactly from `Manifests/ffmpeg.json`. `main.js` builds the demo's command from it with the same rules the
   app follows: conditionals, `{field.stem}`-style placeholders, `{extra}` and `{output}`. The safety example, the

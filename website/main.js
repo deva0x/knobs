@@ -157,6 +157,98 @@ function applyLinks() {
   });
 }
 
+/* ---------- Downloads ---------- */
+
+const RELEASE_FILES = "https://github.com/deva0x/knobs/releases/download";
+
+/** The current release's version and file names, from the page's #release. */
+function loadRelease() {
+  const source = document.getElementById("release");
+  return source ? JSON.parse(source.textContent) : null;
+}
+
+function releaseFileURL(release, file) {
+  return `${RELEASE_FILES}/v${release.version}/${file}`;
+}
+
+/** "mac", "linux", or null for anything else. Android says Linux too, and gets neither. */
+function visitorPlatform() {
+  const agent = navigator.userAgent;
+  if (/Android/i.test(agent)) return null;
+  if (/Macintosh/.test(agent)) return "mac";
+  if (/Linux|X11/.test(agent)) return "linux";
+  return null;
+}
+
+/** "arm" or "x86_64". Only a hint for the default choice: a browser that won't say gets x86_64, the common case. */
+async function visitorProcessor() {
+  if (/aarch64|arm64/i.test(navigator.userAgent)) return "arm";
+  const hints = await navigator.userAgentData?.getHighEntropyValues(["architecture"]).catch(() => null);
+  return hints?.architecture === "arm" ? "arm" : "x86_64";
+}
+
+function checkedValue(name) {
+  return document.querySelector(`input[name="${name}"]:checked`)?.value;
+}
+
+function initDownloads() {
+  const release = loadRelease();
+  if (!release) return;
+  document.querySelectorAll('[data-download="mac"]').forEach((anchor) => {
+    anchor.href = releaseFileURL(release, release.mac);
+  });
+
+  const distroGroup = document.getElementById("linux-distro");
+  release.linux.forEach((distro, index) => {
+    const input = Object.assign(document.createElement("input"), {
+      type: "radio", name: "linux-distro", id: `distro-${distro.id}`, value: distro.id, checked: index === 0,
+    });
+    const label = Object.assign(document.createElement("label"), { htmlFor: input.id, textContent: distro.label });
+    distroGroup.append(input, label);
+  });
+  document.getElementById("linux-pick").hidden = false;
+
+  const fileLink = document.getElementById("linux-file");
+  const fileName = document.getElementById("linux-file-name");
+  const installWell = document.getElementById("linux-install-well");
+  const install = document.getElementById("linux-install");
+  const note = document.getElementById("linux-note");
+
+  function update() {
+    const distro = release.linux.find((candidate) => candidate.id === checkedValue("linux-distro"));
+    const file = distro.files[checkedValue("linux-arch")];
+    fileLink.hidden = !file;
+    installWell.hidden = !file;
+    if (!file) {
+      note.textContent = `The ${distro.label} package is for Intel and AMD computers. On ARM, choose Other.`;
+      return;
+    }
+    fileLink.href = releaseFileURL(release, file);
+    fileName.textContent = `Download ${file}`;
+    install.textContent = distro.install.replace("{file}", file);
+    note.textContent = distro.note;
+  }
+  document.querySelectorAll('input[name="linux-distro"], input[name="linux-arch"]').forEach((input) => {
+    input.addEventListener("change", update);
+  });
+  update();
+
+  // A Linux visitor's first button is for Linux, the Mac becomes the aside, and the chooser starts on their
+  // processor. Anyone else is downloading for another computer, so the chooser keeps its plain defaults.
+  if (visitorPlatform() === "linux") {
+    visitorProcessor().then((processor) => {
+      document.getElementById(processor === "arm" ? "arch-arm" : "arch-x86").checked = true;
+      update();
+    });
+    const hero = document.getElementById("hero-download");
+    hero.href = "#linux";
+    hero.querySelector("span").textContent = "Download for Linux";
+    hero.querySelector(".btn-meta").textContent = "Ubuntu, Fedora, Arch";
+    const macLink = Object.assign(document.createElement("a"), { href: "#get", textContent: "Mac download" });
+    document.getElementById("hero-also").replaceChildren("Also on the Mac, with macOS 26 or later. ", macLink);
+  }
+}
+
 /* ---------- Demo: the dial and its controls ---------- */
 
 function qualityWord(value) {
@@ -397,7 +489,7 @@ function initCopyButtons() {
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
-        label.textContent = "Selected, press ⌘C";
+        label.textContent = visitorPlatform() === "mac" ? "Selected, press ⌘C" : "Selected, press Ctrl+C";
       }
       clearTimeout(button._reset);
       button._reset = setTimeout(() => { label.textContent = original; }, 1800);
@@ -406,6 +498,7 @@ function initCopyButtons() {
 }
 
 applyLinks();
+initDownloads();
 initDemo();
 initExtraArguments();
 initAllOptions();

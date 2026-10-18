@@ -70,6 +70,10 @@ scripts/run-app.sh
 
 All checks run locally on your Mac. This project uses no hosted CI.
 
+## Security
+
+See [SECURITY.md](SECURITY.md) for how Knobs runs tools safely, its known limits, and how to report a problem.
+
 ## License
 
 MIT. See [LICENSE](LICENSE). The tools Knobs runs belong to their authors and keep their own licenses.

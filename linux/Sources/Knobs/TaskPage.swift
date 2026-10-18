@@ -13,6 +13,9 @@ struct TaskPage: View {
     @State private var revision = 0
     /// Narrows a long settings list, such as a tool's All options, to the ones whose name or help has every word.
     @State private var query = ""
+    /// What is in the search box right now. Typing changes only this, which redraws nothing; `query` follows
+    /// when the box reports a pause in typing, so a fast typist doesn't rebuild hundreds of rows per key.
+    @State private var typed = TypedText()
     /// Below this many settings the whole list fits on screen, and a search box would only get in the way.
     private static let searchThreshold = 12
 
@@ -28,7 +31,14 @@ struct TaskPage: View {
                 }
                 if fields(.setting).count >= Self.searchThreshold {
                     SearchEntry()
-                        .text($query)
+                        .text(
+                            Binding {
+                                typed.text
+                            } set: {
+                                typed.text = $0
+                            }
+                        )
+                        .searchChanged { query = typed.text }
                         .placeholderText("Search \(fields(.setting).count) settings")
                         .padding(8, .bottom)
                     if matchingSettings.isEmpty {
@@ -263,4 +273,9 @@ enum SystemOpener {
             FileHandle.standardError.write(Data("knobs: couldn't open \(url.path) with xdg-open: \(error)\n".utf8))
         }
     }
+}
+
+/// Text held by reference, so changing it doesn't count as a state change.
+final class TypedText {
+    var text = ""
 }

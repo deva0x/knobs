@@ -1,4 +1,5 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// Every option a tool lists in its help, searchable, built into the same live command as any task.

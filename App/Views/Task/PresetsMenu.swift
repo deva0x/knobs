@@ -1,4 +1,5 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// The toolbar menu for a task's saved settings: apply, save, rename, delete, reset.

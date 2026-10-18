@@ -1,4 +1,5 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// One task: the stage shows the input large, the inspector holds the settings, and the command bar floats at

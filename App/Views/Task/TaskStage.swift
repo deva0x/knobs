@@ -1,4 +1,5 @@
 import KnobsCore
+import KnobsSession
 import QuickLookThumbnailing
 import SwiftUI
 import UniformTypeIdentifiers

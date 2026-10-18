@@ -1,4 +1,5 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// The floating Liquid Glass bar: the live command and Run, which turns into progress and Cancel while running.

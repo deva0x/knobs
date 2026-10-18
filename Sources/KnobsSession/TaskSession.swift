@@ -6,41 +6,41 @@ import Observation
 /// Each (tool, task) pair has its own session, so a run keeps going while the user looks at other tasks.
 @MainActor
 @Observable
-final class TaskSession: Identifiable {
-    enum Phase: Equatable {
+public final class TaskSession: Identifiable {
+    public enum Phase: Equatable, Sendable {
         case idle
         case running(startedAt: Date)
         case finished(RunOutcome)
     }
 
     /// What a successful run produced, for the result card.
-    struct RunResult: Equatable {
-        let outputURL: URL?
+    public struct RunResult: Equatable, Sendable {
+        public let outputURL: URL?
         /// Where results went when the task has no single output file, such as yt-dlp's download folder.
-        let folderURL: URL?
+        public let folderURL: URL?
         /// Sizes are measured off the main thread after the run ends, so they arrive a moment later.
-        var inputBytes: Int64?
-        var outputBytes: Int64?
-        let duration: TimeInterval
+        public var inputBytes: Int64?
+        public var outputBytes: Int64?
+        public let duration: TimeInterval
     }
 
-    let manifest: ToolManifest
-    let task: ManifestTask
-    nonisolated var id: String { KnobsLibrary.key(toolID: manifest.id, taskID: task.id) }
+    public let manifest: ToolManifest
+    public let task: ManifestTask
+    public nonisolated var id: String { KnobsLibrary.key(toolID: manifest.id, taskID: task.id) }
 
-    var values: [String: FieldValue] {
+    public var values: [String: FieldValue] {
         didSet { rebuildDraft() }
     }
-    var extraArguments = "" {
+    public var extraArguments = "" {
         didSet { rebuildDraft() }
     }
 
-    private(set) var draft: CommandDraft
-    private(set) var phase: Phase = .idle
+    public private(set) var draft: CommandDraft
+    public private(set) var phase: Phase = .idle
     /// From 0 to 1 when the tool reports progress, otherwise nil.
-    private(set) var progress: Double?
-    private(set) var log = OutputLog()
-    private(set) var result: RunResult?
+    public private(set) var progress: Double?
+    public private(set) var log = OutputLog()
+    public private(set) var result: RunResult?
 
     private let builder: CommandBuilder
     private var toolRun: ToolRun?
@@ -50,9 +50,9 @@ final class TaskSession: Identifiable {
     private let outputPathExpression: NSRegularExpression?
     private let clock: () -> Date
     /// Called once per run when it ends, with the outcome and the file it produced.
-    var onFinish: ((RunOutcome, URL?) -> Void)?
+    public var onFinish: ((RunOutcome, URL?) -> Void)?
 
-    init(
+    public init(
         manifest: ToolManifest, task: ManifestTask, initialValues: [String: FieldValue],
         clock: @escaping () -> Date = Date.init
     ) {
@@ -70,7 +70,7 @@ final class TaskSession: Identifiable {
 
     /// Whether a run leaves a file or folder to show. Tasks that only report (such as showing metadata) don't,
     /// so their output is shown instead.
-    var producesResult: Bool {
+    public var producesResult: Bool {
         task.output != nil || task.outputPathPattern != nil || outputFolderField != nil
     }
 
@@ -79,12 +79,12 @@ final class TaskSession: Identifiable {
     }
 
     /// The task's main input: the first single- or multi-file field, shown as the big drop zone.
-    var primaryInputField: Field? {
+    public var primaryInputField: Field? {
         task.fields.first { if case .inputFile = $0.kind { true } else { false } }
     }
 
     /// Tasks without an input file but with a required text field, such as a link, show that field large instead.
-    var heroTextField: Field? {
+    public var heroTextField: Field? {
         guard primaryInputField == nil else { return nil }
         return task.fields.first { field in
             if case .text = field.kind { return field.isRequired }
@@ -93,12 +93,12 @@ final class TaskSession: Identifiable {
     }
 
     /// Everything that isn't shown large on the stage, for the inspector.
-    var settingFields: [Field] {
+    public var settingFields: [Field] {
         task.fields.filter { $0.id != primaryInputField?.id && $0.id != heroTextField?.id }
     }
 
     /// A plain-words reason the Extra arguments can't be used, or nil.
-    var extraArgumentsProblem: String? {
+    public var extraArgumentsProblem: String? {
         for problem in draft.problems {
             if case .extraArguments(let error) = problem {
                 return switch error {
@@ -110,23 +110,23 @@ final class TaskSession: Identifiable {
         return nil
     }
 
-    var isRunning: Bool {
+    public var isRunning: Bool {
         if case .running = phase { return true }
         return false
     }
 
     /// The value a field shows: what the user set, else the manifest default.
-    func value(of field: Field) -> FieldValue? {
+    public func value(of field: Field) -> FieldValue? {
         values[field.id] ?? field.defaultValue
     }
 
-    func setValue(_ value: FieldValue?, for field: Field) {
+    public func setValue(_ value: FieldValue?, for field: Field) {
         values[field.id] = value
     }
 
     /// Values worth remembering between launches and in presets: everything except the main input file, which
     /// changes every time, and secrets, which are never stored.
-    var rememberableValues: [String: FieldValue] {
+    public var rememberableValues: [String: FieldValue] {
         values.filter { id, _ in
             guard let field = task.field(withID: id) else { return false }
             return field.kind != .secret && field.id != primaryInputField?.id
@@ -134,7 +134,7 @@ final class TaskSession: Identifiable {
     }
 
     /// Applies a preset's settings, keeping the main input file the user already chose.
-    func applyPreset(_ presetValues: [String: FieldValue]) {
+    public func applyPreset(_ presetValues: [String: FieldValue]) {
         var merged = values.filter { id, _ in id == primaryInputField?.id }
         for (id, value) in presetValues where task.field(withID: id) != nil {
             merged[id] = value
@@ -142,12 +142,12 @@ final class TaskSession: Identifiable {
         values = merged
     }
 
-    func resetToDefaults() {
+    public func resetToDefaults() {
         values = values.filter { id, _ in id == primaryInputField?.id }
         extraArguments = ""
     }
 
-    func start(executable: URL, runner: ToolRunner) {
+    public func start(executable: URL, runner: ToolRunner) {
         guard !isRunning else { return }
         rebuildDraft()
         guard draft.isRunnable else { return }
@@ -179,11 +179,11 @@ final class TaskSession: Identifiable {
         }
     }
 
-    func cancel() {
+    public func cancel() {
         toolRun?.cancel()
     }
 
-    func dismissResult() {
+    public func dismissResult() {
         guard !isRunning else { return }
         phase = .idle
         result = nil
@@ -266,12 +266,12 @@ final class TaskSession: Identifiable {
 }
 
 extension FieldValue {
-    var firstPath: String? {
+    public var firstPath: String? {
         if case .paths(let paths) = self { return paths.first }
         return nil
     }
 
-    var pathList: [String] {
+    public var pathList: [String] {
         if case .paths(let paths) = self { return paths }
         return []
     }

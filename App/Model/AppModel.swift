@@ -1,5 +1,6 @@
 import Foundation
 import KnobsCore
+import KnobsSession
 import Observation
 
 /// The app's state: the tools, where they are installed, what is selected, and one session per task.

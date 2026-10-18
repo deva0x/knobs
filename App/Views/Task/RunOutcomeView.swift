@@ -1,4 +1,5 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// What happened: the live output while running (when shown), then a result, failure or cancelled card.

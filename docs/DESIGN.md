@@ -29,7 +29,8 @@ the checklist at the end of this file.
 - **Neutrals:** the system's own grays in the app. On the web, warm paper `#F4F1EA` and graphite `#141414`.
 - **Icon concept:** a single machined dial seen from the front, with an orange indicator mark at about
   two o'clock and fine tick marks around it, on a warm graphite rounded-square base. It must still read at
-  16 px.
+  16 px. `scripts/make-icon.swift` draws every size from vector into `App/Assets.xcassets/AppIcon.appiconset`;
+  edit the script and rerun it rather than editing the PNGs.
 - **Tool tints:** each tool has its own tint for its glyph tile, so the sidebar can be scanned by color as
   well as by name. Tints come from the system palette, so they adapt to dark mode:
 

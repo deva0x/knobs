@@ -45,3 +45,4 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.deva0x.Knobs
         PRODUCT_NAME: Knobs
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

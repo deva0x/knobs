@@ -39,6 +39,9 @@ struct KnobsCommands: Commands {
     let model: AppModel
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About Knobs") { AboutPanel.show() }
+        }
         CommandGroup(after: .sidebar) {
             Button("Go to Task…") { model.isPaletteVisible = true }
                 .keyboardShortcut("k")

@@ -14,4 +14,14 @@ Template:
 - Fix: commit, and the test or check that proves it
 ```
 
-No bugs yet.
+## BUG-001: Ghostscript misnames output when the file name contains `%` (open)
+- Found: 2026-10-18, Claude (Opus 5.5) while testing Ghostscript tasks
+- Steps:
+  1. Name a PDF `a 50%d.pdf`.
+  2. Run Ghostscript → Compress a PDF on it.
+- Expected: the output is `a 50%d compressed.pdf`.
+- Actual: Ghostscript reads `%d` in `-sOutputFile` as a page-number pattern, so it writes `a 501 compressed.pdf`
+  (reproduced on the command line with `gs -sDEVICE=pdfwrite -o "out 50%d off.pdf" ...`, which wrote
+  `out 501 off.pdf`). Knobs then can't find the output it expected. `%%` is Ghostscript's escape for a literal `%`.
+- Fix: none yet. Needs a manifest-level way to escape `%` in `{output}` for Ghostscript only (tool behavior
+  belongs in the manifest, not in Swift). Workaround: rename the file without `%`.

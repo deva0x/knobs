@@ -29,8 +29,10 @@ the checklist at the end of this file.
 - **Neutrals:** the system's own grays in the app. On the web, warm paper `#F4F1EA` and graphite `#141414`.
 - **Icon concept:** a single machined dial seen from the front, with an orange indicator mark at about
   two o'clock and fine tick marks around it, on a warm graphite rounded-square base. It must still read at
-  16 px. `scripts/make-icon.swift` draws every size from vector into `App/Assets.xcassets/AppIcon.appiconset`;
-  edit the script and rerun it rather than editing the PNGs.
+  16 px. It is an Icon Composer bundle, `App/AppIcon.icon`: three layers (tick marks, knob, glass indicator)
+  over a graphite fill, so macOS 26 adds the glass and tints each layer properly in tinted and clear modes.
+  `scripts/make-icon.swift App/AppIcon.icon` draws the layers and writes `icon.json`; edit the script and rerun
+  it rather than editing the PNGs. `docs/assets/app-icon.png` is the system's rendering, for the README.
 - **Tool tints:** each tool has its own tint for its glyph tile, so the sidebar can be scanned by color as
   well as by name. Tints come from the system palette, so they adapt to dark mode:
 

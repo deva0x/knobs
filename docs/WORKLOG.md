@@ -189,3 +189,20 @@ Follow-up checks after review.
 Correction to the 04:27 entry: the knobs-shots container isn't stopped but gone. I removed it with
 `docker rm -f knobs-shots` (a container this session created for the screenshots) before rebuilding the
 packages. The start script for it, .cache/shots/start.sh, also removes and recreates it on each start.
+
+## 2026-10-19 04:55 IST · Claude Code (Opus 5.5) · HEAD 4f091ae
+
+Full code review of the whole repository (Deva: "do a full /code-review, the whole thing"). Read-only; no code
+changed. Ten findings reported in the review tool, most severe first:
+1. Linux: closing the window mid-run quits without asking or stopping the tool (hasRunningTasks unused).
+2. ToolRunner.cancel(): Cancel just after a tool exits (before terminationHandler) marks a successful run cancelled.
+3. Check Again re-locates only the launch-time executable, not alternativeExecutables (Mac and Linux).
+4. Integer/number fields without a default show a value the command omits; Linux floors unranged numbers at 0.
+5. Optional field inside a mixed template leaves stray text such as `--title=`; the validator allows it.
+6. Website displayQuote differs from ShellQuoting (`^`, leading `=`).
+7. Linux TaskPage redraws every row every 50 ms during a run.
+8. ToolRunner line splitting copies the buffer per line (quadratic per chunk).
+9. LinuxModel duplicates AppModel and has drifted.
+10. finishIfDone(ignoringOpenStreams:) is a behaviour-switching boolean (engineering rules).
+Also noted, not reported: the temporary image knobs-shots-tmp can now be removed (its container is gone).
+Next: Deva picks which findings to fix.

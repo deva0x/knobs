@@ -16,7 +16,7 @@ Each tool is described by a JSON manifest in [Manifests/](Manifests/). The forma
 
 ## Building
 
-Requires macOS 15 or later on Apple Silicon, Xcode 26 or later, and XcodeGen (`brew install xcodegen`).
+Requires macOS 26 or later on Apple Silicon, Xcode 26 or later, and XcodeGen (`brew install xcodegen`).
 
 ```bash
 scripts/install-hooks.sh

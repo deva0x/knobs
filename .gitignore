@@ -12,3 +12,4 @@ CLAUDE.local.md
 *.p12
 *.cer
 App/Info.plist
+.cache/

@@ -1,6 +1,6 @@
 # Knobs: build plan for v0.1.0
 
-Knobs is an open-source native Mac app that turns command-line tools into ordinary Mac windows.
+Knobs is an open-source native Mac app that turns command-line tools into beautiful Mac windows.
 You pick a tool and a task ("Shrink a video"), drop in a file, set plain controls, and press Run. The exact
 command is always shown, and Knobs runs it as an argument list, never through a shell.
 
@@ -9,14 +9,23 @@ command is always shown, and Knobs runs it as an argument list, never through a 
 This file is the ordered checklist. Check a box only when its exit check has passed in the same session,
 and record the evidence in `docs/WORKLOG.md`. `docs/STATUS.md` says where work currently stands.
 
+## Quality bar
+
+Deva's direction (2026-10-18): a very premium app with a new, modern UI, and a website that stands out.
+Keep iterating the UI until a demanding human would call it excellent. The code must be written properly.
+`docs/DESIGN.md` holds the design direction and the review checklist that UI work is judged against.
+
 ## Scope of v0.1.0
 
 - 10 tools with hand-written manifests: ffmpeg, yt-dlp, ImageMagick, pandoc, exiftool, ocrmypdf,
   Ghostscript, whisper.cpp, rsync, 7-Zip.
-- Each manifest offers 2 to 4 everyday tasks, not every flag.
-- "Add any tool": a best-effort window built from a tool's `--help` text.
-- Presets: save a task's current settings under a name.
-- A signed, notarized DMG, plus a README with screenshots.
+- Three layers for every tool (DEC-011):
+  1. Tasks: the everyday jobs in plain words. 5 to 6 for ffmpeg, yt-dlp and ImageMagick, 3 to 4 for the others.
+  2. An "Extra arguments" box on every task, for options the task doesn't show.
+  3. "All options": a generated view of every option from the tool's own help text.
+- "Add any tool": the same generated view for tools that have no manifest.
+- Presets, recent runs, and a command palette (⌘K) that reaches every task.
+- A signed, notarized DMG, a README with screenshots, and a standout website.
 
 Out of scope for v0.1.0: installing tools for the user (Knobs shows the `brew install` command to copy),
 chaining tools into recipes, auto-update, the Mac App Store (Knobs can't be sandboxed, see DEC-003),
@@ -32,12 +41,13 @@ Every milestone ends with `scripts/ci.sh` passing, plus the milestone's own chec
 
 ### M1. Core: manifests and command building (KnobsCore, no UI)
 - [ ] `ToolManifest` model decoded from JSON, following `docs/MANIFEST_FORMAT.md`
-- [ ] Validation with clear errors: unknown field references, defaults outside their range, duplicate ids
+- [ ] Validation with clear errors: unknown keys and field references, defaults outside their range, duplicate ids, a missing or repeated `{extra}`
 - [ ] `CommandBuilder`: manifest task plus field values gives an argv `[String]`; a value is always exactly one argument
+- [ ] Extra arguments: the box's text is split into words with quote rules, by Knobs itself, never by a shell
 - [ ] Output path derivation that never overwrites an existing file (adds " 2", " 3", and so on)
 - [ ] Display rendering of argv with shell-style quoting, used only for the command preview and copying
 - [ ] ffmpeg manifest written as the reference example
-- Exit: unit tests cover decoding, every validation error, argv building (golden tests), quoting and output naming.
+- Exit: unit tests cover decoding, every validation error, argv building (golden tests), word splitting, quoting and output naming.
 
 ### M2. Core: running tools
 - [ ] `ToolLocator`: finds executables in `/opt/homebrew/bin`, `/usr/local/bin` and the system paths, because apps opened from Finder don't get the shell's PATH
@@ -46,60 +56,78 @@ Every milestone ends with `scripts/ci.sh` passing, plus the milestone's own chec
 - [ ] Integration test: really runs ffmpeg on a generated 1-second clip (`-f lavfi testsrc`); skips with a message if ffmpeg is missing
 - Exit: tests pass, and the integration test passes on this Mac.
 
-### M3. App: thin end-to-end slice with ffmpeg
-- [ ] App shell: sidebar of tools, list of tasks, form area (SwiftUI, macOS 15+)
-- [ ] Form renderer: one control per field kind (file, folder, choice, integer, number, toggle, text)
-- [ ] File drag-and-drop onto the form
-- [ ] Live command preview with a Copy button
-- [ ] Run and Cancel, a streaming output view, done and failed states, Reveal in Finder for the output
-- [ ] "Not installed" state showing the `brew install` command with a Copy button
-- Exit: build and launch the app, shrink a real video with ffmpeg, confirm the output exists and plays. Screenshot saved in `docs/screenshots/`.
+### M3. Design direction
+- [ ] `docs/DESIGN.md`: principles, layout, type, color, motion, components, and the review checklist
+- [ ] Brand basics shared by the app and the website: name treatment, accent color, icon concept
+- Exit: DESIGN.md exists and the app and website briefs both point to it.
 
-### M4. Presets and polish of the slice
+### M4. App: end-to-end with ffmpeg, premium from the start
+- [ ] App shell: sidebar of tools, task gallery per tool, task workspace (SwiftUI, macOS 26+, Liquid Glass)
+- [ ] Field controls for every field kind, styled to DESIGN.md
+- [ ] Drop zone for files, with a Quick Look thumbnail of what was dropped
+- [ ] Live command preview, colored by part (tool, flags, values, paths), with Copy
+- [ ] Extra arguments box (collapsed by default)
+- [ ] Run and Cancel, live progress and output, done and failed states, result card with Open, Reveal in Finder and drag-out
+- [ ] "Not installed" state showing the `brew install` command with Copy
+- Exit: build and launch the app, shrink a real video with ffmpeg, confirm the output exists and plays. Screenshot saved in `docs/screenshots/`, and the DESIGN.md checklist passes.
+
+### M5. App: presets, history, palette, polish
 - [ ] Save, apply, rename and delete presets per task (JSON in Application Support)
-- [ ] Remember the last values per task
-- [ ] Keyboard: ⌘R runs, ⌘. cancels, ⌘C in the preview copies
+- [ ] Remember the last values per task, and a recent-runs list
+- [ ] Command palette (⌘K) across every tool and task
+- [ ] Keyboard: ⌘R runs, ⌘. cancels, ⌘K opens the palette
 - [ ] Empty states and error messages in plain words
-- Exit: tests for the preset store, and a manual check of presets surviving a relaunch.
+- [ ] UI review loop: screenshot every screen in light and dark mode, judge it against DESIGN.md, fix, repeat until it passes
+- Exit: preset store tests pass, presets survive a relaunch, and the review loop's final screenshots are in `docs/screenshots/`.
 
-### M5. The other nine tools
-For each tool: install it with Homebrew, write its manifest with 2 to 4 tasks, add golden argv tests,
-add an integration test that runs one real task on a tiny fixture, and try it once in the app.
-- [ ] yt-dlp: download video, download audio only, choose quality (integration test uses `--simulate` against a local file URL, no network)
-- [ ] ImageMagick: resize, convert format, compress
-- [ ] pandoc: Markdown to Word, Word to Markdown, Markdown to HTML
-- [ ] exiftool: show metadata, remove all metadata (copy kept), remove GPS location only
-- [ ] ocrmypdf: make a scanned PDF searchable
-- [ ] Ghostscript: compress a PDF, merge PDFs
-- [ ] whisper.cpp: transcribe to text, transcribe to subtitles (needs a model file; the task asks for it)
-- [ ] rsync: copy a folder, mirror a folder (with a dry-run preview first)
-- [ ] 7-Zip: create an archive (optional password), extract an archive
+### M6. All ten tools
+For each tool: install it with Homebrew, write its manifest, add golden argv tests, add an integration test
+that runs one real task on a tiny fixture, and try it once in the app.
+- [ ] ffmpeg (5 to 6 tasks): shrink, convert, trim, extract audio, make a GIF, remove sound
+- [ ] yt-dlp (5 to 6): video, audio only, choose quality, subtitles, a whole playlist, thumbnail (integration test uses a local file, no network)
+- [ ] ImageMagick (5 to 6): resize, convert format, compress, crop or pad to a square, add a watermark text, strip metadata
+- [ ] pandoc (3 to 4): Markdown to Word, Word to Markdown, Markdown to HTML, to EPUB
+- [ ] exiftool (3 to 4): show metadata, remove all metadata (copy kept), remove GPS location only, rename photos by date taken
+- [ ] ocrmypdf (3 to 4): make searchable, deskew and clean, force OCR, choose language
+- [ ] Ghostscript (3 to 4): compress a PDF, merge PDFs, convert to grayscale, extract pages
+- [ ] whisper.cpp (3 to 4): transcribe to text, to subtitles (SRT, VTT), translate to English
+- [ ] rsync (3 to 4): copy a folder, mirror a folder, preview changes (dry run), back up with exclusions
+- [ ] 7-Zip (3 to 4): create an archive, create with a password, extract, test an archive
 - Exit: every manifest validates, golden and integration tests pass, and each tool was run once in the app.
 
-### M6. "Add any tool" from help text (time-boxed: 3 hours)
+### M7. All options and Add any tool (time-boxed: 4 hours)
 - [ ] Parser for common `--help` layouts (`-x, --long VALUE  description`)
-- [ ] Generated generic task: a toggle or text field per option, plus a free "Other arguments" field
-- [ ] Fixture tests using real `--help` output captured from 5 tools
-- Exit: tests pass, and "Add a tool" works for at least 3 tools that have no manifest (for example `jq`, `fd`, `curl`).
+- [ ] "All options" view for every tool: searchable list, a toggle or field per option, built into argv
+- [ ] "Add any tool": choose any executable and get the same view
+- [ ] Fixture tests using real `--help` output captured from at least 6 tools
+- Exit: tests pass, "All options" works for all 10 tools, and "Add any tool" works for `jq`, `fd` or `curl`.
 - If the time box runs out, ship what's solid behind clear "best effort" wording and log the rest in BUGS.
 
-### M7. Ship-ready
+### M8. Website
+- [ ] Static site in `website/` (no build server needed), following DESIGN.md and studied reference sites
+- [ ] Hero, live demo of a command turning into controls, tool gallery, how manifests work, download, open-source section
+- [ ] Real app screenshots, fast, accessible, works at phone width, light and dark
+- [ ] Reviewed in a browser at desktop and phone sizes, then iterated until it stands out
+- Exit: screenshots of the site in `docs/screenshots/website/`, Lighthouse-style checks noted in WORKLOG.
+
+### M9. Ship-ready
 - [ ] App icon and About window (version, license, link to the repo)
 - [ ] Accessibility pass: labels on every control, VoiceOver reads the form in order, keyboard-only use works
-- [ ] Light and dark mode checked
 - [ ] `scripts/release.sh`: archive, sign with Developer ID, notarize, staple, DMG, checksum
-- [ ] README with screenshots and a GIF, CONTRIBUTING (how to add a manifest), CHANGELOG
+- [ ] README with screenshots, CONTRIBUTING (how to add a manifest), CHANGELOG
 - Exit: `scripts/ci.sh release` passes, a notarized DMG installs and opens on this Mac without a warning, and `spctl -a -vv` accepts the app.
 - If the Developer ID certificate or the notary profile is missing, build everything else, leave an unsigned DMG, and list the missing step under "Waiting on Deva" in STATUS.
 
-### M8. Publish (only Deva can do this)
+### M10. Publish (only Deva can do this)
 - [ ] Deva approves the name and license
 - [ ] Deva creates the GitHub repo (or approves creating it)
 - [ ] Deva turns off GitHub Actions for the repo before the first push (Settings → Actions → General → Disable actions), and leaves CodeQL default setup and Dependabot off. An empty `.github/workflows` doesn't stop GitHub's own default workflows.
 - [ ] Deva pushes
 - [ ] Deva approves uploading the DMG with `gh release create` (a release upload, not GitHub Actions)
+- [ ] Deva chooses where the website is hosted. GitHub Pages builds run on Actions, so a direct upload (for example Cloudflare Pages through `wrangler pages deploy` from this Mac) fits DEC-002 better.
 
 ## Order and dependencies
 
-M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M8. M5's tools are independent of each other, so a blocked tool is
-logged and skipped. M6 never blocks M7.
+M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M9 → M10. M8 (website) can run alongside M4 to M7 because it only
+touches `website/`; its screenshots come from the app once M5 is done. Tools in M6 are independent of each
+other, so a blocked tool is logged and skipped. M7 never blocks M9.

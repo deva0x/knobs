@@ -20,7 +20,7 @@ can't be sandboxed. It ships as a notarized DMG signed with Developer ID, with h
 JSON decodes with Swift's built-in `Codable`, so no YAML dependency is needed. The format is in
 `docs/MANIFEST_FORMAT.md`. Manifests are the extension surface: adding a tool never needs Swift code.
 
-## DEC-005: Swift 6, SwiftUI, macOS 15 and later, Apple Silicon (2026-10-18)
+## DEC-005: Swift 6, SwiftUI, macOS 15 and later, Apple Silicon (2026-10-18). Deployment target superseded by DEC-012
 macOS 15 reaches most current Macs while allowing modern SwiftUI. It's built with Xcode 27 on macOS 27.
 Intel isn't supported in v0.1.0 because Homebrew paths and testing are Apple Silicon only.
 
@@ -39,11 +39,33 @@ problems.
 It ships with Xcode, so there's nothing to install. Configuration is in `.swift-format`. SwiftLint is
 installed on this Mac but isn't used, to keep one way of doing things.
 
-## DEC-009: Allowed downloads for development (2026-10-18, pending Deva's yes)
+## DEC-009: Allowed downloads for development (2026-10-18, approved by Deva; model location changed by DEC-013)
 - Homebrew formulas for the 10 tools: ffmpeg, yt-dlp, imagemagick, pandoc, exiftool, ocrmypdf,
   ghostscript, whisper-cpp, rsync, sevenzip.
 - One whisper.cpp model for tests: `ggml-tiny.en.bin` (about 75 MB) from the whisper.cpp model repository
   on Hugging Face, stored outside the repo in `~/Library/Caches/knobs-dev/`.
 
-## DEC-010: Name "Knobs" and the MIT license are working choices (2026-10-18, pending Deva)
-Both can change until the first public release (PLAN M8).
+## DEC-010: Name "Knobs", the MIT license and bundle id `io.github.deva0x.Knobs` are working choices (2026-10-18, pending Deva)
+Both can change until the first public release (PLAN M10).
+
+## DEC-011: Three layers per tool: tasks, extra arguments, all options (2026-10-18)
+Deva asked whether every option of tools like ffmpeg would be included. Showing every option would be as
+intimidating as the Terminal and impossible to maintain. So each tool gets curated everyday tasks (5 to 6
+for the big three, 3 to 4 for the rest), every task gets an "Extra arguments" box, and every tool gets a
+generated "All options" view from its help text. Deva approved this for all tools.
+
+## DEC-012: Deployment target macOS 26 (2026-10-18). Supersedes the macOS 15 target in DEC-005
+Deva asked for a very premium app with new, modern UI. macOS 26 brings the Liquid Glass design language and
+its SwiftUI APIs. macOS 27 is current, so macOS 26 and later still covers most active Macs. Apple Silicon
+only, as in DEC-005.
+
+## DEC-013: Standing authorization and boundaries (2026-10-18)
+Deva's words: work without stopping for anything that needs Deva, with permission to do anything except
+obviously risky things such as `rm`, and touch nothing outside this project folder. In practice:
+- Allowed: create, edit and commit files inside the repo; install the DEC-009 Homebrew formulas (part of
+  the approved plan; Homebrew is the one place outside the folder that the plan needs); build and launch the
+  app; use design tools and skills; preview the website locally.
+- The whisper test model goes inside the repo at `.cache/models/` (gitignored), not in `~/Library`.
+- Not allowed: deleting anything outside the repo, `sudo`, pushing, creating remote repos, publishing
+  releases or websites, changing GitHub or system settings, or entering credentials.
+- Questions go under "Waiting on Deva" in STATUS, and work continues on everything else.

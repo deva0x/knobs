@@ -2,7 +2,7 @@
 name: Knobs
 options:
   deploymentTarget:
-    macOS: "15.0"
+    macOS: "26.0"
   createIntermediateGroups: true
 packages:
   KnobsCore:
@@ -10,7 +10,7 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
     ARCHS: arm64
     DEVELOPMENT_TEAM: P564YR8496
     ENABLE_HARDENED_RUNTIME: YES
@@ -33,7 +33,7 @@ targets:
         CFBundleDisplayName: Knobs
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
-        LSMinimumSystemVersion: "15.0"
+        LSMinimumSystemVersion: "26.0"
         LSApplicationCategoryType: public.app-category.utilities
     settings:
       base:

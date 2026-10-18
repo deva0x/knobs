@@ -41,6 +41,7 @@ This document is the specification. `KnobsCore` implements it, and its tests use
         { "if": "size", "then": ["-vf", "scale={size}:-2"] },
         "-crf", "{quality}",
         { "if": "mute", "then": ["-an"] },
+        "{extra}",
         "{output}"
       ]
     }
@@ -102,6 +103,10 @@ An `inputFile` field with `multiple: true` expands to one argument per file, in 
   field is set. A toggle is set when it's true. Any other kind is set when its value isn't empty.
   `"else": [ ... ]` is optional. Conditionals can nest.
 - **`{output}`** is the derived output path from `output`.
+- **`{extra}`** marks where the task's "Extra arguments" box goes. Every task must contain it exactly once,
+  as a whole string. Knobs splits the box's text into words itself, following shell quote rules
+  (`"two words"` and `'two words'` stay one argument, and a backslash escapes the next character), and inserts
+  those words at this position. Nothing is ever passed to a shell. When the box is empty, it adds nothing.
 
 Placeholders that can be used:
 - `{fieldId}` is the field's value.
@@ -128,6 +133,7 @@ happen:
 - a `default` outside `minimum`/`maximum`, or not one of the `options`
 - `executable` containing `/`
 - `schemaVersion` other than 1
+- a task without exactly one `{extra}`, or a field whose id is `extra` or `output` (both are reserved)
 
 ## Versioning
 

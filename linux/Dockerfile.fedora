@@ -4,3 +4,5 @@ FROM fedora:44
 RUN dnf install -y --setopt=install_weak_deps=False \
       swift-lang gtk4-devel libadwaita-devel sqlite-devel pkgconf-pkg-config rpm-build binutils \
     && dnf clean all
+# SwiftPM clones the app's dependencies with git. A separate layer, so adding it reused the slow Swift download.
+RUN dnf install -y --setopt=install_weak_deps=False git-core && dnf clean all

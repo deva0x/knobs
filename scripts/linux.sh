@@ -50,12 +50,14 @@ package)
     fi
     docker build -q -t "$image" linux >/dev/null
     docker build -q -t knobs-linux-fedora -f linux/Dockerfile.fedora linux >/dev/null
-    # Each distribution builds its own binary, with Swift's runtime linked in, against its own GTK.
-    release="swift build -c release --static-swift-stdlib -Xswiftc -warnings-as-errors"
+    # Each distribution builds its own binary against its own GTK. Ubuntu has no Swift runtime package, so the
+    # runtime is linked in; Fedora ships it as swift-lang-runtime (and no static copy), which rpm then requires,
+    # in /usr/lib64, so the toolchain's library folder is left out of the binary's search path.
+    release="swift build -c release -Xswiftc -warnings-as-errors"
     docker run --rm -v "$PWD:/knobs" -w /knobs/linux "$image" bash -c \
-        "$release --scratch-path .build/ubuntu && packaging/package-deb.sh .build/ubuntu/release/knobs $version /knobs/dist/linux"
+        "$release --static-swift-stdlib --scratch-path .build/ubuntu && packaging/package-deb.sh .build/ubuntu/release/knobs $version /knobs/dist/linux"
     docker run --rm -v "$PWD:/knobs" -w /knobs/linux knobs-linux-fedora bash -c \
-        "$release --scratch-path .build/fedora && packaging/package-rpm.sh .build/fedora/release/knobs $version /knobs/dist/linux"
+        "$release -Xswiftc -no-toolchain-stdlib-rpath --scratch-path .build/fedora && packaging/package-rpm.sh .build/fedora/release/knobs $version /knobs/dist/linux"
     ls -l dist/linux
     ;;
 *)

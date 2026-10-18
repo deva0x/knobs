@@ -183,3 +183,9 @@ Follow-up checks after review.
 - STATUS: Download buttons now described as direct release-file links; checks above recorded.
 - Left running/present for Deva: containers knobs-linux and knobs-*-test from earlier sessions (running),
   knobs-tarball-test and knobs-shots (stopped), image knobs-shots-tmp. Not removed by me.
+
+## 2026-10-19 04:27 IST · Claude Code (Opus 5.5) · HEAD fef48f8
+
+Correction to the 04:27 entry: the knobs-shots container isn't stopped but gone. I removed it with
+`docker rm -f knobs-shots` (a container this session created for the screenshots) before rebuilding the
+packages. The start script for it, .cache/shots/start.sh, also removes and recreates it on each start.

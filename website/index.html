@@ -14,6 +14,108 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css">
   <script defer src="main.js"></script>
+  <!-- The Shrink a video task exactly as in Manifests/ffmpeg.json; the demo builds its command from it, and
+       WebsiteTests fails if the two differ. -->
+  <script type="application/json" id="demo-task">
+  {
+    "id": "shrink-video",
+    "title": "Shrink a video",
+    "summary": "Make a video file much smaller, for sharing or email.",
+    "symbol": "arrow.down.right.and.arrow.up.left",
+    "fields": [
+      {
+        "id": "input",
+        "label": "Video",
+        "kind": "inputFile",
+        "contentTypes": [
+          "public.movie"
+        ]
+      },
+      {
+        "id": "size",
+        "label": "Size",
+        "kind": "choice",
+        "default": "1280",
+        "options": [
+          {
+            "value": "854",
+            "label": "480p"
+          },
+          {
+            "value": "1280",
+            "label": "720p"
+          },
+          {
+            "value": "1920",
+            "label": "1080p"
+          },
+          {
+            "value": "",
+            "label": "Keep original"
+          }
+        ]
+      },
+      {
+        "id": "quality",
+        "label": "Quality",
+        "kind": "integer",
+        "default": 26,
+        "minimum": 18,
+        "maximum": 34,
+        "help": "Lower numbers look better and make bigger files."
+      },
+      {
+        "id": "mute",
+        "label": "Remove sound",
+        "kind": "toggle",
+        "default": false
+      }
+    ],
+    "output": {
+      "template": "{input.stem} small.mp4",
+      "nextTo": "input"
+    },
+    "arguments": [
+      "-hide_banner",
+      "-nostdin",
+      "-i",
+      "{input}",
+      {
+        "if": "size",
+        "then": [
+          "-vf",
+          "scale='min({size},iw)':-2"
+        ]
+      },
+      "-c:v",
+      "h264",
+      "-preset",
+      "medium",
+      "-crf",
+      "{quality}",
+      {
+        "if": "mute",
+        "then": [
+          "-an"
+        ],
+        "else": [
+          "-c:a",
+          "aac",
+          "-b:a",
+          "128k"
+        ]
+      },
+      "-movflags",
+      "+faststart",
+      "{extra}",
+      "{output}"
+    ],
+    "progress": {
+      "total": "Duration: (\\d+):(\\d+):(\\d+(?:\\.\\d+)?)",
+      "current": "time=(\\d+):(\\d+):(\\d+(?:\\.\\d+)?)"
+    }
+  }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -113,15 +215,15 @@
                 <svg class="dial-scale" viewBox="0 0 320 320" aria-hidden="true"></svg>
                 <div class="dial" id="dial" role="slider" tabindex="0"
                      aria-labelledby="dial-label" aria-describedby="dial-help"
-                     aria-valuemin="18" aria-valuemax="32" aria-valuenow="23" aria-valuetext="23, Balanced">
+                     aria-valuemin="18" aria-valuemax="34" aria-valuenow="26" aria-valuetext="26, Balanced">
                   <div class="dial-skirt"></div>
                   <div class="dial-cap"><span class="dial-indicator"></span></div>
                 </div>
               </div>
               <div class="dial-ends" aria-hidden="true"><span>Better</span><span>Smaller</span></div>
               <p class="silk dial-silk" id="dial-label">Quality</p>
-              <p class="dial-readout"><output id="dial-value" for="dial">23</output> <span id="dial-word">Balanced</span></p>
-              <p class="dial-help" id="dial-help">Lower is better quality and a bigger file. Drag the dial, or focus it and use the arrow keys.</p>
+              <p class="dial-readout"><output id="dial-value" for="dial">26</output> <span id="dial-word">Balanced</span></p>
+              <p class="dial-help" id="dial-help">Lower numbers look better and make bigger files. Drag the dial, or focus it and use the arrow keys.</p>
             </div>
 
             <div class="plate-controls">
@@ -140,6 +242,7 @@
               <fieldset class="control">
                 <legend class="silk">Size</legend>
                 <div class="segmented">
+                  <input type="radio" name="size" id="size-480" value="854"><label for="size-480">480p</label>
                   <input type="radio" name="size" id="size-720" value="1280" checked><label for="size-720">720p</label>
                   <input type="radio" name="size" id="size-1080" value="1920"><label for="size-1080">1080p</label>
                   <input type="radio" name="size" id="size-keep" value=""><label for="size-keep">Keep original</label>
@@ -154,9 +257,9 @@
           </div>
 
           <div class="cmdbar" id="demo-bar">
-            <code class="cmd tint-purple" id="demo-cmd" aria-label="Command">ffmpeg -hide_banner -i holiday.mov -vf scale=1280:-2 -crf 23 'holiday small.mp4'</code>
+            <code class="cmd tint-purple" id="demo-cmd" aria-label="Command">ffmpeg -hide_banner -nostdin -i holiday.mov -vf 'scale='\''min(1280,iw)'\'':-2' -c:v h264 -preset medium -crf 26 -c:a aac -b:a 128k -movflags +faststart 'holiday small.mp4'</code>
             <div class="cmdbar-side">
-              <span class="argc" id="demo-argc">9 arguments</span>
+              <span class="argc" id="demo-argc">20 arguments</span>
               <button class="btn-copy" type="button" data-copy="#demo-cmd">
                 <svg class="icon" aria-hidden="true"><use href="#g-copy"/></svg><span>Copy</span>
               </button>
@@ -204,14 +307,14 @@
           </li>
           <li class="strip" style="--tint: var(--orange)">
             <span class="tile t-orange"><svg class="g"><use href="#g-exiftool"/></svg></span>
-            <h3>exiftool</h3>
+            <h3>ExifTool</h3>
             <p class="strip-what">Photo metadata</p>
             <ul class="strip-tasks"><li>Show hidden details</li><li>Remove the location</li><li>Rename photos by date taken</li></ul>
             <code class="strip-brew">brew install exiftool</code>
           </li>
           <li class="strip" style="--tint: var(--blue)">
             <span class="tile t-blue"><svg class="g"><use href="#g-ocrmypdf"/></svg></span>
-            <h3>ocrmypdf</h3>
+            <h3>OCRmyPDF</h3>
             <p class="strip-what">Scanned PDFs</p>
             <ul class="strip-tasks"><li>Make a PDF searchable</li><li>Straighten and clean a scan</li><li>Redo the text layer</li></ul>
             <code class="strip-brew">brew install ocrmypdf</code>
@@ -280,7 +383,7 @@
             <div class="extra-field">
               <label for="extra-input">Extra arguments</label>
               <input id="extra-input" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
-                     value="-preset slow -metadata title=&quot;Summer 2026&quot;" aria-describedby="extra-status">
+                     value="-r 30 -metadata title=&quot;Summer 2026&quot;" aria-describedby="extra-status">
               <p class="extra-status" id="extra-status" aria-live="polite"></p>
               <ol class="argv-chips" id="extra-chips" aria-label="Words Knobs will add"></ol>
             </div>
@@ -342,12 +445,23 @@
             <ol class="argv-list" start="0" aria-label="Arguments passed to ffmpeg">
               <li><code>ffmpeg</code></li>
               <li><code>-hide_banner</code></li>
+              <li><code>-nostdin</code></li>
               <li><code>-i</code></li>
               <li class="is-focus"><code>my video; rm -rf ~.mov</code></li>
               <li><code>-vf</code></li>
-              <li><code>scale=1280:-2</code></li>
+              <li><code>scale='min(1280,iw)':-2</code></li>
+              <li><code>-c:v</code></li>
+              <li><code>h264</code></li>
+              <li><code>-preset</code></li>
+              <li><code>medium</code></li>
               <li><code>-crf</code></li>
-              <li><code>23</code></li>
+              <li><code>26</code></li>
+              <li><code>-c:a</code></li>
+              <li><code>aac</code></li>
+              <li><code>-b:a</code></li>
+              <li><code>128k</code></li>
+              <li><code>-movflags</code></li>
+              <li><code>+faststart</code></li>
               <li><code>my video; rm -rf ~ small.mp4</code></li>
             </ol>
           </div>
@@ -377,14 +491,16 @@
 <span class="ln">    <span class="j-k">"fields"</span>: [</span>
 <span class="ln" data-ref="input">      { <span class="j-k">"id"</span>: <span class="j-s">"input"</span>, <span class="j-k">"label"</span>: <span class="j-s">"Video"</span>, <span class="j-k">"kind"</span>: <span class="j-s">"inputFile"</span> },</span>
 <span class="ln" data-ref="quality">      { <span class="j-k">"id"</span>: <span class="j-s">"quality"</span>, <span class="j-k">"label"</span>: <span class="j-s">"Quality"</span>, <span class="j-k">"kind"</span>: <span class="j-s">"integer"</span>,</span>
-<span class="ln" data-ref="quality">        <span class="j-k">"default"</span>: <span class="j-n">23</span>, <span class="j-k">"minimum"</span>: <span class="j-n">18</span>, <span class="j-k">"maximum"</span>: <span class="j-n">32</span> },</span>
+<span class="ln" data-ref="quality">        <span class="j-k">"default"</span>: <span class="j-n">26</span>, <span class="j-k">"minimum"</span>: <span class="j-n">18</span>, <span class="j-k">"maximum"</span>: <span class="j-n">34</span> },</span>
 <span class="ln" data-ref="mute">      { <span class="j-k">"id"</span>: <span class="j-s">"mute"</span>, <span class="j-k">"label"</span>: <span class="j-s">"Remove sound"</span>, <span class="j-k">"kind"</span>: <span class="j-s">"toggle"</span> }</span>
 <span class="ln">    ],</span>
 <span class="ln" data-ref="output">    <span class="j-k">"output"</span>: { <span class="j-k">"template"</span>: <span class="j-s">"{input.stem} small.mp4"</span>, <span class="j-k">"nextTo"</span>: <span class="j-s">"input"</span> },</span>
 <span class="ln">    <span class="j-k">"arguments"</span>: [</span>
-<span class="ln" data-ref="input">      <span class="j-s">"-hide_banner"</span>, <span class="j-s">"-i"</span>, <span class="j-s">"{input}"</span>,</span>
-<span class="ln" data-ref="quality">      <span class="j-s">"-crf"</span>, <span class="j-s">"{quality}"</span>,</span>
-<span class="ln" data-ref="mute">      { <span class="j-k">"if"</span>: <span class="j-s">"mute"</span>, <span class="j-k">"then"</span>: [<span class="j-s">"-an"</span>] },</span>
+<span class="ln" data-ref="input">      <span class="j-s">"-hide_banner"</span>, <span class="j-s">"-nostdin"</span>, <span class="j-s">"-i"</span>, <span class="j-s">"{input}"</span>,</span>
+<span class="ln" data-ref="quality">      <span class="j-s">"-c:v"</span>, <span class="j-s">"h264"</span>, <span class="j-s">"-preset"</span>, <span class="j-s">"medium"</span>, <span class="j-s">"-crf"</span>, <span class="j-s">"{quality}"</span>,</span>
+<span class="ln" data-ref="mute">      { <span class="j-k">"if"</span>: <span class="j-s">"mute"</span>, <span class="j-k">"then"</span>: [<span class="j-s">"-an"</span>],</span>
+<span class="ln" data-ref="mute">        <span class="j-k">"else"</span>: [<span class="j-s">"-c:a"</span>, <span class="j-s">"aac"</span>, <span class="j-s">"-b:a"</span>, <span class="j-s">"128k"</span>] },</span>
+<span class="ln" data-ref="output">      <span class="j-s">"-movflags"</span>, <span class="j-s">"+faststart"</span>,</span>
 <span class="ln" data-ref="extra">      <span class="j-s">"{extra}"</span>, <span class="j-s">"{output}"</span></span>
 <span class="ln">    ]</span>
 <span class="ln">  }]</span>
@@ -396,12 +512,12 @@
             <div class="mini-body">
               <p class="mini-title" data-ref="title">Shrink a video</p>
               <div class="mini-drop" data-ref="input"><span class="mac-thumb"></span><span><b>Video</b><small>holiday.mov</small></span></div>
-              <div class="mini-row" data-ref="quality"><span>Quality</span><span class="mac-slider"><i style="--p:.36"></i></span><span class="mini-num">23</span></div>
+              <div class="mini-row" data-ref="quality"><span>Quality</span><span class="mac-slider"><i style="--p:.5"></i></span><span class="mini-num">26</span></div>
               <div class="mini-row" data-ref="mute"><span>Remove sound</span><span class="mac-check is-on"></span></div>
               <div class="mini-row" data-ref="extra"><span>Extra arguments</span><span class="mini-field"></span></div>
             </div>
             <div class="mini-bar" data-ref="output">
-              <code class="cmd tint-purple"><span class="t-exe">ffmpeg</span> <span class="t-flag">-hide_banner</span> <span class="t-flag">-i</span> <span class="t-path">holiday.mov</span> <span class="t-flag">-crf</span> <span class="t-val">23</span> <span class="t-flag">-an</span> <span class="t-path">'holiday small.mp4'</span></code>
+              <code class="cmd tint-purple"><span class="t-exe">ffmpeg</span> <span class="t-flag">-hide_banner</span> <span class="t-flag">-nostdin</span> <span class="t-flag">-i</span> <span class="t-path">holiday.mov</span> <span class="t-flag">-c:v</span> <span class="t-val">h264</span> <span class="t-flag">-preset</span> <span class="t-val">medium</span> <span class="t-flag">-crf</span> <span class="t-val">26</span> <span class="t-flag">-an</span> <span class="t-flag">-movflags</span> <span class="t-val">+faststart</span> <span class="t-path">'holiday small.mp4'</span></code>
               <span class="mac-run">Run</span>
             </div>
           </div>

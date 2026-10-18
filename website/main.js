@@ -8,31 +8,23 @@ const LINKS = {
   license: "https://github.com/deva0x/knobs/blob/main/LICENSE",
 };
 
-// The Shrink a video task, as written in docs/MANIFEST_FORMAT.md. The demo builds its command from this.
-const SHRINK_VIDEO = {
-  executable: "ffmpeg",
-  fields: {
-    input: { kind: "inputFile" },
-    size: { kind: "choice", default: "1280" },
-    quality: { kind: "integer", default: 23, minimum: 18, maximum: 32 },
-    mute: { kind: "toggle", default: false },
-  },
-  output: { template: "{input.stem} small.mp4" },
-  arguments: [
-    "-hide_banner", "-i", "{input}",
-    { if: "size", then: ["-vf", "scale={size}:-2"] },
-    "-crf", "{quality}",
-    { if: "mute", then: ["-an"] },
-    "{extra}",
-    "{output}",
-  ],
-};
+/**
+ * The Shrink a video task, read from the page's #demo-task, which holds it exactly as in Manifests/ffmpeg.json.
+ * Fields are keyed by id here so the builder can look them up.
+ */
+function loadDemoTask() {
+  const source = document.getElementById("demo-task");
+  if (!source) return null;
+  const task = JSON.parse(source.textContent);
+  return { ...task, executable: "ffmpeg", fields: Object.fromEntries(task.fields.map((field) => [field.id, field])) };
+}
 
 const QUALITY_WORDS = [
-  [20, "Best"],
-  [24, "Balanced"],
-  [28, "Smaller"],
-  [32, "Smallest"],
+  [21, "Best"],
+  [24, "Better"],
+  [28, "Balanced"],
+  [31, "Smaller"],
+  [34, "Smallest"],
 ];
 
 const DIAL_SWEEP_DEGREES = 270;
@@ -175,10 +167,11 @@ function drawDialScale(svg, minimum, maximum) {
   const ns = "http://www.w3.org/2000/svg";
   const center = 160;
   const steps = maximum - minimum;
+  const middle = Math.round((minimum + maximum) / 2);
   for (let step = 0; step <= steps; step++) {
     const value = minimum + step;
     const angle = (-DIAL_SWEEP_DEGREES / 2 + (step / steps) * DIAL_SWEEP_DEGREES) * Math.PI / 180;
-    const major = value === minimum || value === maximum || value === 25;
+    const major = value === minimum || value === maximum || value === middle;
     const inner = major ? 124 : 128;
     const outer = 140;
     const line = document.createElementNS(ns, "line");
@@ -202,9 +195,10 @@ function drawDialScale(svg, minimum, maximum) {
 function initDemo() {
   const dial = document.getElementById("dial");
   const command = document.getElementById("demo-cmd");
-  if (!dial || !command) return;
+  const task = loadDemoTask();
+  if (!dial || !command || !task) return;
 
-  const quality = SHRINK_VIDEO.fields.quality;
+  const quality = task.fields.quality;
   const scale = document.querySelector(".dial-scale");
   const readout = document.getElementById("dial-value");
   const word = document.getElementById("dial-word");
@@ -216,13 +210,13 @@ function initDemo() {
   drawDialScale(scale, quality.minimum, quality.maximum);
   const ticks = scale.querySelectorAll(".tick");
 
-  const state = { input: fileSelect.value, size: SHRINK_VIDEO.fields.size.default, quality: quality.default, mute: false };
+  const state = { input: fileSelect.value, size: task.fields.size.default, quality: quality.default, mute: false };
 
   const angleFor = (value) =>
     -DIAL_SWEEP_DEGREES / 2 + ((value - quality.minimum) / (quality.maximum - quality.minimum)) * DIAL_SWEEP_DEGREES;
 
   function update() {
-    const argv = buildArguments(SHRINK_VIDEO, state, []);
+    const argv = buildArguments(task, state, []);
     renderCommand(command, argv);
     count.textContent = `${argv.length} arguments`;
   }
@@ -301,8 +295,10 @@ function initExtraArguments() {
   const chips = document.getElementById("extra-chips");
   const status = document.getElementById("extra-status");
   const command = document.getElementById("extra-cmd");
-  if (!input) return;
-  const values = { input: "holiday.mov", size: "1280", quality: 23, mute: false };
+  const task = loadDemoTask();
+  if (!input || !task) return;
+  const values = Object.fromEntries(Object.values(task.fields).map((field) => [field.id, field.default]));
+  values.input = "holiday.mov";
 
   function update() {
     const { words, error } = splitWords(input.value);
@@ -322,7 +318,7 @@ function initExtraArguments() {
       chip.textContent = wordText;
       chips.append(chip);
     });
-    renderCommand(command, buildArguments(SHRINK_VIDEO, values, words));
+    renderCommand(command, buildArguments(task, values, words));
   }
   input.addEventListener("input", update);
   document.querySelectorAll("[data-extra]").forEach((button) => {

@@ -65,3 +65,6 @@ func loadingError(_ object: [String: Any]) -> ManifestError? {
 func builder(existingFiles: Set<String> = []) -> CommandBuilder {
     CommandBuilder(outputNamer: OutputNamer(fileExists: { existingFiles.contains($0) }), homeDirectory: "/Users/me")
 }
+
+/// The website's single page, beside `Manifests/` in the repository.
+let websitePage = manifestsDirectory.deletingLastPathComponent().appending(path: "website/index.html")

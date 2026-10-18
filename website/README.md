@@ -31,10 +31,14 @@ website/
 - **Links:** the GitHub, download, manifest-format and license URLs are set once in `LINKS` at the top of
   `main.js` and applied to every `[data-link]` element. Without JavaScript those links fall back to the
   download section of the page.
-- **Demo command:** `main.js` holds the Shrink a video task in manifest form (`SHRINK_VIDEO`, copied from
-  `docs/MANIFEST_FORMAT.md`) and builds the command from it with the same rules the app follows: conditionals,
-  `{field.stem}`-style placeholders, `{extra}` and `{output}`. If the ffmpeg manifest changes, update it here too.
-- **Tool tasks:** the gallery lists tasks from `docs/PLAN.md` (M6). Keep them in step with the real manifests.
+- **Demo command:** the page holds the real Shrink a video task in `<script type="application/json" id="demo-task">`,
+  copied exactly from `Manifests/ffmpeg.json`. `main.js` builds the demo's command from it with the same rules the
+  app follows: conditionals, `{field.stem}`-style placeholders, `{extra}` and `{output}`. The safety example, the
+  manifest excerpt and the small window in the manifests section show the same task by hand.
+- **Tool tasks:** the gallery's tool names, tasks and brew formulas come from `Manifests/`.
+- **Kept in step by tests:** `WebsiteTests` (run by `scripts/ci.sh fast`) fails when `#demo-task` differs from the
+  manifest or the gallery names a tool, task or formula the manifests don't have. Update the page when a manifest
+  changes.
 
 ## Real screenshots
 

@@ -77,6 +77,7 @@ npx wrangler pages deploy website --project-name knobs
 
 The first run asks Wrangler to sign in to Cloudflare in the browser and creates the `knobs` project. Check the
 printed URL in a browser at desktop and phone widths before pointing a domain at it.
+Once the address is known, add the link-preview image tags listed in `website/README.md` and deploy again.
 
 ## Releasing (from M9 on)
 

@@ -19,11 +19,15 @@ Then visit http://localhost:8000.
 ```
 website/
   index.html        the page: hero, dial demo, tools, three layers, safe by design, manifests, download, FAQ
+  404.html          what Cloudflare Pages shows for a missing address; absolute paths, since it can be at any depth
   styles.css        all styles; colors are custom properties on :root, with dark values under prefers-color-scheme
   main.js           links, downloads and the Linux chooser, the demo's command builder, the dial, the
                     extra-arguments splitter, copy buttons
+  _headers          response headers for Cloudflare Pages: no sniffing, no framing, a day's cache for assets
   assets/
     favicon.svg            the dial mark
+    apple-touch-icon.png   the mark at 180 px, square, for home screens
+    og.png                 the 1200 × 630 link-preview image
     screenshots/           real app screenshots, light and dark: the Mac hero and the Linux card
 ```
 
@@ -58,6 +62,18 @@ in a local container through GTK's Broadway backend with GNOME's Adwaita Sans fo
 Ubuntu's archive, and `ADW_DEBUG_COLOR_SCHEME=prefer-dark` for the dark one. Headless Chrome drew the Broadway
 page at 1440 × 833 and twice the pixels; the capture was cropped to 1500 px high and saved at 1760 px wide.
 The video's path is `/home/alex/Videos/Sunset over Goa.mov`, a made-up home folder, never a real one.
+
+## Link previews
+
+`og:title` and `og:description` are set. The preview image, `assets/og.png`, is made, but `og:image` and
+`twitter:card` need the site's absolute address, which is known only after the first deploy. Then add, with
+that address:
+
+```html
+<meta property="og:image" content="https://<address>/assets/og.png">
+<meta property="og:url" content="https://<address>/">
+<meta name="twitter:card" content="summary_large_image">
+```
 
 ## Hosting
 

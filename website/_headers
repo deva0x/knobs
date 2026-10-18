@@ -1,0 +1,10 @@
+# Response headers for Cloudflare Pages (https://developers.cloudflare.com/pages/configuration/headers/).
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Screenshots and icons change rarely; a day of caching, then a check for a new version.
+/assets/*
+  Cache-Control: public, max-age=86400, must-revalidate

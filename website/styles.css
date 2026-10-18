@@ -802,3 +802,8 @@ h2 {
 .cell-extra .cmd-mini { order: 2; margin-top: 0; }
 .cell-extra .extra-try { order: 3; margin-top: auto; }
 
+/* The 404 page */
+.missing { display: grid; justify-items: start; gap: 20px; padding-top: clamp(32px, 6vw, 72px); padding-bottom: 96px; }
+.missing h1 { margin-top: clamp(32px, 8vw, 96px); font-stretch: 125%; font-weight: 660; font-size: clamp(2.2rem, 1rem + 5vw, 4.5rem); line-height: 1; letter-spacing: -0.038em; }
+.missing p { color: var(--ink-2); font-size: 18px; }
+.missing-cmd code { display: inline-block; padding: 10px 16px; border-radius: 12px; background: var(--plate); color: var(--ink); }

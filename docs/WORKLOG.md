@@ -145,3 +145,28 @@ Website and release command now cover Linux.
 - Commits: 90ea2c0 (website), plus the release-command commit with this entry.
 - Next: nothing for an agent. Waiting on Deva: Developer ID cert and notary profile, GitHub repo and push plus
   release upload, website deploy; optional AUR and accessibility checks.
+
+## 2026-10-19 04:11 IST · Claude Code (Opus 5.5) · HEAD a99aa87
+
+Website "full send" (Deva: "can you go full send on the website...").
+Outcome: a deploy-ready site that shows the real app on both platforms. Evidence: WebsiteTests, ci.sh fast, browser
+checks at eight widths in light and dark, keyboard and no-JS. Boundaries: no deploy, no push, nothing outside the
+repo except the session scratchpad. Stop: when the site needs only Deva's deploy.
+- a98f908: the demo, safety example and manifest excerpt showed an older Shrink a video (quality 23 of 18-32, no
+  -c:v h264). The page now carries the real task in #demo-task; new WebsiteTests fail if it or the tool gallery
+  drifts from Manifests/ (checked by breaking both on purpose). ExifTool and OCRmyPDF named as in the app.
+- 917dbcb: Linux chooser (distribution x processor -> direct file link + install command, copy button) built from
+  one #release block; Linux visitors get a Linux hero button. release.sh refuses to print the release command
+  until every file the site links to is in dist/ (exercised with a missing name and a wrong version).
+- 026f959 BUG-013: while taking Linux screenshots, a chosen file came back as garbage bytes. Cause: Adwaita for
+  Swift's C callback frees the GFile before passing the borrowed path (still so upstream at af5598f). Knobs now
+  opens GTK's file dialog itself (FileChooser.swift) and copies the path first. Checked: 5 picks in a row exact,
+  Escape silent, Shrink a video ran (Done in 11 s). 70e2bf4: command/output card padding sat outside the card.
+- All seven dist/linux packages rebuilt with both fixes (04:00-04:08 IST); the fix string is in both tarball
+  binaries. Not reinstalled in clean containers this time.
+- e614051: Linux screenshots (Broadway in a throwaway image with Ubuntu's tools and Adwaita Sans, made-up
+  /home/alex path), card layout, 320 px fixes. a99aa87: apple-touch icon, 404.html, _headers, og tags + og.png
+  (og:image waits for the deploy address; README and WORKFLOW say what to add).
+- Note: I ran `rm -f` on two output videos my own test run wrote into the gitignored .cache/shots; nothing else
+  was deleted. The throwaway Docker image knobs-shots-tmp is left in place for Deva to remove or keep.
+- Next: nothing for an agent. Deva: certificate, GitHub repo + release upload, deploy, then og:image tags.

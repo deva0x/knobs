@@ -12,12 +12,13 @@ public struct ToolLocator: Sendable {
     public let searchPaths: [String]
     private let isExecutableFile: @Sendable (String) -> Bool
 
-    /// `environmentPath` is the `PATH` the app was launched with, if any; its folders are searched last.
+    /// `environmentPath` is the `PATH` the app was launched with, if any; its folders are searched last. Relative
+    /// folders such as `.` are left out: they would depend on whatever folder a tool happens to run in.
     public init(
         environmentPath: String?,
-        isExecutableFile: @escaping @Sendable (String) -> Bool = { FileManager.default.isExecutableFile(atPath: $0) }
+        isExecutableFile: @escaping @Sendable (String) -> Bool = ToolLocator.isExecutableRegularFile
     ) {
-        let extra = (environmentPath ?? "").split(separator: ":").map(String.init).filter { !$0.isEmpty }
+        let extra = (environmentPath ?? "").split(separator: ":").map(String.init).filter { $0.hasPrefix("/") }
         var seen: Set<String> = []
         self.searchPaths = (Self.standardSearchPaths + extra).filter { seen.insert($0).inserted }
         self.isExecutableFile = isExecutableFile
@@ -25,12 +26,19 @@ public struct ToolLocator: Sendable {
 
     /// The full path of `executable`, or nil when it isn't installed in any search folder.
     public func locate(_ executable: String) -> URL? {
-        guard !executable.isEmpty, !executable.contains("/") else { return nil }
+        guard !executable.isEmpty, !executable.contains("/"), executable != ".", executable != ".." else { return nil }
         for folder in searchPaths {
             let candidate = (folder as NSString).appendingPathComponent(executable)
             if isExecutableFile(candidate) { return URL(filePath: candidate) }
         }
         return nil
+    }
+
+    /// `FileManager.isExecutableFile` is also true for folders, which can't be run.
+    @Sendable public static func isExecutableRegularFile(_ path: String) -> Bool {
+        var isFolder: ObjCBool = false
+        return FileManager.default.fileExists(atPath: path, isDirectory: &isFolder) && !isFolder.boolValue
+            && FileManager.default.isExecutableFile(atPath: path)
     }
 
     /// A `PATH` value for launched tools, so tools that call other tools (ocrmypdf calls Ghostscript and

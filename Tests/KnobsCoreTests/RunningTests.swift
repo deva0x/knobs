@@ -9,6 +9,17 @@ import Testing
         #expect(locator.locate("tool")?.path == "/opt/homebrew/bin/tool")
     }
 
+    @Test func relativeLaunchPathFoldersAreIgnored() {
+        let locator = ToolLocator(environmentPath: ".:bin:/custom/bin", isExecutableFile: { _ in false })
+        #expect(locator.searchPaths.allSatisfy { $0.hasPrefix("/") })
+        #expect(locator.searchPaths.contains("/custom/bin"))
+    }
+
+    @Test func foldersAreNeverTools() {
+        #expect(ToolLocator(environmentPath: nil).locate(".") == nil)
+        #expect(ToolLocator(environmentPath: nil).locate("..") == nil)
+    }
+
     @Test func launchPathFoldersAreSearchedLastWithoutDuplicates() {
         let locator = ToolLocator(
             environmentPath: "/custom/bin:/usr/bin:", isExecutableFile: { $0 == "/custom/bin/tool" })
@@ -54,6 +65,12 @@ import Testing
     @Test func progressNeverLeavesZeroToOne() throws {
         var parser = try #require(ProgressParser(.percent(pattern: #"(\d+)%"#)))
         #expect(parser.progress(after: "150%") == 1)
+    }
+
+    @Test func numbersThatArentFiniteAreIgnored() throws {
+        var parser = try #require(ProgressParser(.percent(pattern: #"(\w+)%"#)))
+        #expect(parser.progress(after: "nan%") == nil)
+        #expect(parser.progress(after: "inf%") == nil)
     }
 
     @Test func badPatternGivesNoParser() {
@@ -136,6 +153,24 @@ import Testing
         }
         #expect(await events(of: run).last == .finished(.cancelled))
         #expect(ContinuousClock.now - started < .seconds(5))
+    }
+
+    @Test func cancelAlsoStopsChildrenThatIgnoreTheFirstSignal() async throws {
+        let quickRunner = ToolRunner(
+            environment: ProcessInfo.processInfo.environment, cancelGracePeriod: .milliseconds(200))
+        // The child inherits the ignored SIGTERM, so only the group-wide SIGKILL can stop it.
+        let run = quickRunner.start(
+            executable: URL(filePath: "/bin/sh"), arguments: ["-c", "trap '' TERM; /bin/sleep 30 & echo $!; wait"],
+            workingDirectory: nil, progress: nil)
+        var childID: pid_t?
+        for await event in run.events {
+            if case .line(let text, _) = event, childID == nil {
+                childID = pid_t(text)
+                run.cancel()
+            }
+        }
+        let child = try #require(childID)
+        #expect(kill(child, 0) != 0)
     }
 
     @Test func progressEventsFollowTheLinesThatReportThem() async {

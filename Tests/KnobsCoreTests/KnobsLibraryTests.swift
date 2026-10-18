@@ -88,6 +88,19 @@ import Testing
         #expect(loaded.recentRuns == library.recentRuns)
     }
 
+    @Test func aDamagedFileCanBeSetAsideInsteadOfOverwritten() throws {
+        let url = temporaryFile()
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("{ broken".utf8).write(to: url)
+
+        let kept = try LibraryFile(url: url).setAside(at: Date(timeIntervalSince1970: 0))
+
+        #expect(!FileManager.default.fileExists(atPath: url.path))
+        #expect(try Data(contentsOf: kept) == Data("{ broken".utf8))
+        #expect(kept.deletingLastPathComponent() == url.deletingLastPathComponent())
+    }
+
     @Test func damagedFileIsReportedNotIgnored() throws {
         let url = temporaryFile()
         defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }

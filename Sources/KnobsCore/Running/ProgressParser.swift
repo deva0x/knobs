@@ -30,7 +30,7 @@ public struct ProgressParser: Sendable {
             guard let percent = expression.numbers(in: line).first else { return nil }
             return Self.clamp(percent / 100)
         case .elapsedOfTotal(let current, let total):
-            if let seconds = Self.seconds(from: total.numbers(in: line)), seconds > 0 {
+            if let seconds = Self.seconds(from: total.numbers(in: line)), seconds > 0, seconds.isFinite {
                 totalSeconds = seconds
                 return nil
             }
@@ -48,8 +48,10 @@ public struct ProgressParser: Sendable {
         }
     }
 
-    private static func clamp(_ fraction: Double) -> Double {
-        min(max(fraction, 0), 1)
+    /// `Double` reads "nan" and "inf" from tool output too; those are never progress.
+    private static func clamp(_ fraction: Double) -> Double? {
+        guard fraction.isFinite else { return nil }
+        return min(max(fraction, 0), 1)
     }
 }
 

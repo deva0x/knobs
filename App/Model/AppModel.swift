@@ -28,6 +28,8 @@ final class AppModel {
     var libraryProblem: String?
 
     private var sessions: [String: TaskSession] = [:]
+    /// False when an unreadable library couldn't be moved aside, so saving would destroy it.
+    private var isSavingLibraryAllowed = true
     private let locator: ToolLocator
     private let runner: ToolRunner
     private let libraryFile: LibraryFile
@@ -59,8 +61,17 @@ final class AppModel {
         do {
             library = try libraryFile.load()
         } catch {
+            // Start fresh, but never by overwriting the old file: keep it beside the new one, or don't save at all.
             library = KnobsLibrary()
-            libraryProblem = "Your saved settings couldn't be read, so Knobs started fresh. (\(error))"
+            do {
+                let kept = try libraryFile.setAside(at: Date())
+                libraryProblem =
+                    "Your saved settings couldn't be read (\(error)), so Knobs started fresh. The old file was kept as \(kept.lastPathComponent)."
+            } catch {
+                isSavingLibraryAllowed = false
+                libraryProblem =
+                    "Your saved settings couldn't be read, so Knobs started fresh and won't save over them this time. (\(error))"
+            }
         }
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
         bundledManifests = catalog.manifests
@@ -247,6 +258,7 @@ final class AppModel {
     }
 
     private func saveLibrary() {
+        guard isSavingLibraryAllowed else { return }
         do {
             try libraryFile.save(library)
         } catch {

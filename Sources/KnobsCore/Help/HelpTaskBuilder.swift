@@ -7,6 +7,8 @@ public enum HelpTaskBuilder {
     static let informationalFlags: Set<String> = [
         "-h", "--help", "-help", "-?", "--usage", "-usage", "--version", "-version",
     ]
+    /// Words in a flag that mark its value as a secret, so it is masked and never remembered or saved in presets.
+    static let secretWords = ["password", "passwd", "passphrase", "secret", "token", "apikey", "api-key"]
 
     /// A generated task plus which field belongs to which option, for the searchable list.
     public struct GeneratedTask: Sendable, Hashable {
@@ -22,14 +24,16 @@ public enum HelpTaskBuilder {
         }
     }
 
-    /// Every option becomes an optional field: a toggle when it takes no value, otherwise a text field. Files
-    /// chosen by the user go last, after any extra arguments.
+    /// Every option becomes an optional field: a toggle when it takes no value, otherwise a text field, or a
+    /// secret field for passwords and tokens. Options that take several values (jq's `--arg name value`) are left
+    /// to Extra arguments: one field can only give one argument. Files chosen by the user go last, after any
+    /// extra arguments.
     public static func task(from options: [HelpOption], toolName: String) -> GeneratedTask {
         var fields: [Field] = []
         var arguments: [ArgumentTemplate] = []
         var mapping: [(fieldID: String, option: HelpOption)] = []
 
-        let useful = options.filter { informationalFlags.isDisjoint(with: $0.flags) }
+        let useful = options.filter { informationalFlags.isDisjoint(with: $0.flags) && !$0.takesSeveralValues }
         for (index, option) in useful.enumerated() {
             let fieldID = "option\(index + 1)"
             let flag = escapeBraces(option.preferredFlag)
@@ -37,7 +41,7 @@ public enum HelpTaskBuilder {
                 fields.append(
                     Field(
                         id: fieldID, label: option.preferredFlag, help: option.summary.nonEmpty, isRequired: false,
-                        kind: .text(placeholder: valueName), defaultValue: nil))
+                        kind: isSecret(option) ? .secret : .text(placeholder: valueName), defaultValue: nil))
                 let then: [ArgumentTemplate] =
                     switch option.valueStyle {
                     case .separate: [.text(flag), .text("{\(fieldID)}")]
@@ -67,6 +71,10 @@ public enum HelpTaskBuilder {
             summary: "Every option \(toolName) lists in its help, to switch on as needed.",
             symbol: "list.bullet.rectangle", fields: fields, output: nil, arguments: arguments, progress: nil)
         return GeneratedTask(task: task, options: mapping)
+    }
+
+    private static func isSecret(_ option: HelpOption) -> Bool {
+        option.flags.contains { flag in secretWords.contains { flag.lowercased().contains($0) } }
     }
 
     private static func escapeBraces(_ text: String) -> String {

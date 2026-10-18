@@ -23,6 +23,28 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
         #expect(options.first?.preferredFlag == "--output")
     }
 
+    @Test func wrappedDescriptionsThatStartWithAFlagStayDescriptions() {
+        let options = HelpParser.options(
+            in: """
+                  --skip-text          Skip OCR on any pages that already contain text, unlike
+                                       --force-ocr).
+                  --force-ocr          Rasterize any text or vector objects on each page
+                """)
+        #expect(options.map(\.flags) == [["--skip-text"], ["--force-ocr"]])
+        #expect(option("--skip-text", in: options)?.summary.hasSuffix("--force-ocr).") == true)
+    }
+
+    @Test func optionalBracketsBeforeAValueStillTakeTheValue() {
+        let options = HelpParser.options(in: "  -i[r[-|0]]{@listfile|!wildcard} : Include filenames\n")
+        #expect(option("-i", in: options)?.valueStyle == .attached)
+        #expect(option("-i", in: options)?.valueName != nil)
+    }
+
+    @Test func optionsTakingSeveralValuesAreMarked() {
+        let options = HelpParser.options(in: "  --arg name value          set $name to value;\n")
+        #expect(option("--arg", in: options)?.takesSeveralValues == true)
+    }
+
     @Test func onOffOptionHasNoValue() {
         let option = HelpParser.options(in: "  -y                  overwrite output files").first
         #expect(option?.valueName == nil)
@@ -124,6 +146,23 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
         HelpOption(flags: ["--info"], valueName: "FLAGS", valueStyle: .equals, summary: ""),
         HelpOption(flags: ["-o"], valueName: "Directory", valueStyle: .attached, summary: ""),
     ]
+
+    @Test func passwordsBecomeSecretFields() {
+        let generated = HelpTaskBuilder.task(
+            from: [HelpOption(flags: ["--video-password"], valueName: "PASSWORD", valueStyle: .separate, summary: "")],
+            toolName: "tool")
+        #expect(generated.task.fields.first?.kind == .secret)
+    }
+
+    @Test func optionsTakingSeveralValuesAreLeftToExtraArguments() {
+        let generated = HelpTaskBuilder.task(
+            from: [
+                HelpOption(
+                    flags: ["--arg"], valueName: "name value", valueStyle: .separate, summary: "",
+                    takesSeveralValues: true)
+            ], toolName: "jq")
+        #expect(generated.options.isEmpty)
+    }
 
     @Test func onlySwitchedOnOptionsAppearInTheCommand() throws {
         let generated = HelpTaskBuilder.task(from: options, toolName: "tool")

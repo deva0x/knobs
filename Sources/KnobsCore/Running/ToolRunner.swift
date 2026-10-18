@@ -20,15 +20,17 @@ public enum RunOutcome: Sendable, Hashable {
 /// Launches tools as an argv array with `Process`, never through a shell (DEC-006).
 public struct ToolRunner: Sendable {
     /// How long a cancelled tool gets to exit after SIGTERM before it is killed.
-    public static let cancelGracePeriod: TimeInterval = 3
+    public static let defaultCancelGracePeriod = Duration.seconds(3)
     /// How long to wait for output to drain after the tool exits, in case a child process holds the pipe open.
-    public static let drainTimeout: TimeInterval = 2
+    public static let drainTimeout = Duration.seconds(2)
 
     private let environment: [String: String]
+    private let cancelGracePeriod: Duration
 
     /// `environment` is passed to every tool. Build it with `ToolRunner.environment(base:locator:)`.
-    public init(environment: [String: String]) {
+    public init(environment: [String: String], cancelGracePeriod: Duration = defaultCancelGracePeriod) {
         self.environment = environment
+        self.cancelGracePeriod = cancelGracePeriod
     }
 
     /// The app's environment with `PATH` replaced by the locator's folders, so tools find their helpers.
@@ -45,7 +47,7 @@ public struct ToolRunner: Sendable {
         workingDirectory: URL?,
         progress: ProgressRule?
     ) -> ToolRun {
-        let run = ToolRun(progress: progress.flatMap(ProgressParser.init))
+        let run = ToolRun(progress: progress.flatMap(ProgressParser.init), cancelGracePeriod: cancelGracePeriod)
         run.launch(
             executable: executable, arguments: arguments, environment: environment,
             workingDirectory: workingDirectory)
@@ -58,38 +60,58 @@ public final class ToolRun: Sendable {
     public let events: AsyncStream<RunEvent>
     private let continuation: AsyncStream<RunEvent>.Continuation
     private let state: Mutex<State>
+    /// Progress has its own lock: a slow pattern must never hold up `cancel()` or the end of the run.
+    private let progress: Mutex<ProgressParser?>
+    private let cancelGracePeriod: Duration
 
     /// Partial lines longer than this are emitted anyway, so a tool that never prints a newline can't grow memory.
     private static let maximumPendingBytes = 64 * 1024
+    /// Progress is read from the end of a line only; status lines are short, and a pattern's cost grows with input.
+    private static let maximumProgressLineLength = 512
+    /// Events waiting for a slow reader. Past this, the oldest lines are dropped (the output log keeps only the
+    /// newest lines anyway), so a chatty tool can't grow memory without bound. `.finished` is never dropped,
+    /// because it is always the newest.
+    private static let maximumBufferedEvents = 20_000
 
     private struct State: ~Copyable {
         var process: Process?
+        /// Foundation starts each tool as the leader of its own process group; recorded at launch to be sure.
+        var leadsProcessGroup = false
         var isCancelled = false
         var exitStatus: (status: Int32, reason: Process.TerminationReason)?
         var openStreams: Set<OutputLog.Stream> = [.standardOutput, .standardError]
         var pending: [OutputLog.Stream: Data] = [:]
-        var progress: ProgressParser?
         var isFinished = false
     }
 
-    fileprivate init(progress: ProgressParser?) {
-        (events, continuation) = AsyncStream.makeStream(of: RunEvent.self, bufferingPolicy: .unbounded)
-        state = Mutex(State(progress: progress))
+    fileprivate init(progress: ProgressParser?, cancelGracePeriod: Duration) {
+        (events, continuation) = AsyncStream.makeStream(
+            of: RunEvent.self, bufferingPolicy: .bufferingNewest(Self.maximumBufferedEvents))
+        state = Mutex(State())
+        self.progress = Mutex(progress)
+        self.cancelGracePeriod = cancelGracePeriod
     }
 
-    /// Asks the tool to stop: SIGTERM now, SIGKILL after the grace period if it is still running.
+    /// Asks the tool to stop: SIGTERM now, SIGKILL after the grace period. Both go to the tool's whole process
+    /// group, so helpers it started (yt-dlp's ffmpeg, ocrmypdf's Ghostscript) stop too. A tool that has already
+    /// exited is left alone, so a run that finished just before Cancel still counts as finished.
     public func cancel() {
-        let process = state.withLock { state -> Process? in
-            guard !state.isFinished else { return nil }
+        let target = state.withLock { state -> (process: Process, leadsGroup: Bool)? in
+            guard !state.isFinished, state.exitStatus == nil, let process = state.process else { return nil }
             state.isCancelled = true
-            return state.process
+            return (process, state.leadsProcessGroup)
         }
-        guard let process, process.isRunning else { return }
-        process.terminate()
-        let pid = process.processIdentifier
-        DispatchQueue.global().asyncAfter(deadline: .now() + ToolRunner.cancelGracePeriod) {
-            if process.isRunning { kill(pid, SIGKILL) }
+        guard let target, target.process.isRunning else { return }
+        let pid = target.process.processIdentifier
+        Self.send(SIGTERM, to: pid, group: target.leadsGroup)
+        DispatchQueue.global().asyncAfter(deadline: .now() + cancelGracePeriod.timeInterval) {
+            // Sent even if the tool itself has exited: a helper that ignored SIGTERM may still be running.
+            Self.send(SIGKILL, to: pid, group: target.leadsGroup)
         }
+    }
+
+    private static func send(_ signal: Int32, to pid: pid_t, group: Bool) {
+        if group { killpg(pid, signal) } else { kill(pid, signal) }
     }
 
     fileprivate func launch(
@@ -121,6 +143,8 @@ public final class ToolRun: Sendable {
         state.withLock { $0.process = process }
         do {
             try process.run()
+            let pid = process.processIdentifier
+            state.withLock { $0.leadsProcessGroup = getpgid(pid) == pid }
         } catch {
             standardOutput.fileHandleForReading.readabilityHandler = nil
             standardError.fileHandleForReading.readabilityHandler = nil
@@ -141,7 +165,8 @@ public final class ToolRun: Sendable {
     }
 
     private func received(_ data: Data, from stream: OutputLog.Stream) {
-        let events = state.withLock { state -> [RunEvent] in
+        let lines = state.withLock { state -> [String] in
+            guard !state.isFinished else { return [] }
             var buffer = state.pending[stream, default: Data()]
             buffer.append(data)
             var lines: [String] = []
@@ -155,37 +180,45 @@ public final class ToolRun: Sendable {
                 buffer = Data()
             }
             state.pending[stream] = buffer
-            return lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.flatMap { line in
-                Self.events(for: line, from: stream, state: &state)
-            }
+            return lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         }
-        for event in events { continuation.yield(event) }
+        emit(lines, from: stream)
     }
 
     private static func isLineBreak(_ byte: UInt8) -> Bool {
         byte == UInt8(ascii: "\n") || byte == UInt8(ascii: "\r") || byte == 0x08
     }
 
-    private static func events(for line: String, from stream: OutputLog.Stream, state: inout State) -> [RunEvent] {
-        var events: [RunEvent] = [.line(line, stream)]
-        if let fraction = state.progress?.progress(after: line) { events.append(.progress(fraction)) }
-        return events
+    /// Reads progress outside the run's lock, then yields under it, so nothing can follow `.finished`.
+    private func emit(_ lines: [String], from stream: OutputLog.Stream) {
+        guard !lines.isEmpty else { return }
+        let events = lines.flatMap { line -> [RunEvent] in
+            let tail = String(line.suffix(Self.maximumProgressLineLength))
+            guard let fraction = progress.withLock({ $0?.progress(after: tail) }) else { return [.line(line, stream)] }
+            return [.line(line, stream), .progress(fraction)]
+        }
+        state.withLock { state in
+            guard !state.isFinished else { return }
+            for event in events { continuation.yield(event) }
+        }
     }
 
     private func streamClosed(_ stream: OutputLog.Stream) {
-        let events = state.withLock { state -> [RunEvent] in
+        let rest = state.withLock { state -> String? in
             state.openStreams.remove(stream)
-            guard let rest = state.pending.removeValue(forKey: stream), !rest.isEmpty else { return [] }
-            return Self.events(for: String(decoding: rest, as: UTF8.self), from: stream, state: &state)
+            guard !state.isFinished, let rest = state.pending.removeValue(forKey: stream), !rest.isEmpty else {
+                return nil
+            }
+            return String(decoding: rest, as: UTF8.self)
         }
-        for event in events { continuation.yield(event) }
+        if let rest, !rest.trimmingCharacters(in: .whitespaces).isEmpty { emit([rest], from: stream) }
         finishIfDone()
     }
 
     private func processExited(status: Int32, reason: Process.TerminationReason) {
         state.withLock { $0.exitStatus = (status, reason) }
         finishIfDone()
-        DispatchQueue.global().asyncAfter(deadline: .now() + ToolRunner.drainTimeout) { [weak self] in
+        DispatchQueue.global().asyncAfter(deadline: .now() + ToolRunner.drainTimeout.timeInterval) { [weak self] in
             self?.finishIfDone(ignoringOpenStreams: true)
         }
     }
@@ -199,15 +232,21 @@ public final class ToolRun: Sendable {
         if let outcome { finish(with: outcome) }
     }
 
+    /// Yields `.finished` and ends the stream under the lock, so it is always the last event.
     private func finish(with outcome: RunOutcome) {
-        let isFirst = state.withLock { state -> Bool in
-            guard !state.isFinished else { return false }
+        state.withLock { state in
+            guard !state.isFinished else { return }
             state.isFinished = true
             state.process = nil
-            return true
+            continuation.yield(.finished(outcome))
+            continuation.finish()
         }
-        guard isFirst else { return }
-        continuation.yield(.finished(outcome))
-        continuation.finish()
+    }
+}
+
+extension Duration {
+    /// Seconds as a `TimeInterval`, for Dispatch deadlines.
+    fileprivate var timeInterval: TimeInterval {
+        Double(components.seconds) + Double(components.attoseconds) / 1e18
     }
 }

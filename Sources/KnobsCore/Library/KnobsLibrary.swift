@@ -171,7 +171,26 @@ public struct LibraryFile: Sendable {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             encoder.dateEncodingStrategy = .iso8601
-            try encoder.encode(library).write(to: url, options: .atomic)
+            let data = try encoder.encode(library)
+            // Never write a file that `load` would then refuse.
+            guard data.count <= Self.maximumFileSize else { throw LibraryFileError.tooLarge(data.count) }
+            try data.write(to: url, options: .atomic)
+        } catch let error as LibraryFileError {
+            throw error
+        } catch {
+            throw .unwritable(error.localizedDescription)
+        }
+    }
+
+    /// Moves a library that couldn't be read out of the way, next to where it was, so starting fresh never
+    /// overwrites the user's presets. Returns where it went. `date` names the copy, so several never collide.
+    public func setAside(at date: Date) throws(LibraryFileError) -> URL {
+        let stamp = date.formatted(.iso8601.year().month().day().time(includingFractionalSeconds: false))
+            .replacing(":", with: "-")
+        let kept = url.deletingPathExtension().appendingPathExtension("unreadable-\(stamp).json")
+        do {
+            try FileManager.default.moveItem(at: url, to: kept)
+            return kept
         } catch {
             throw .unwritable(error.localizedDescription)
         }

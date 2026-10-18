@@ -19,14 +19,18 @@ Updated: 2026-10-18 IST
     and ran Shrink a video (36.3 MB to 1.34 MB). 7-Zip is found as Ubuntu's `7z` (DEC-016) and made a valid ZIP.
   - The .rpm: installed in a clean Fedora 44 container (pulling in swift-lang-runtime and GTK 4.22) and ran
     Remove the sound. Shrink a video fails there with Fedora's `ffmpeg-free`, which lacks libx264 (BUG-012).
-  - Not yet: x86_64 packages, a real desktop session (only Broadway), and typing speed in long option lists
-    outside Broadway.
+  - Arch (DEC-017): the `knobs-bin` package installed in a clean archlinux container (GTK 4.24) and ran Shrink a
+    video. The x86_64 build runs on a real Omarchy (Arch, Hyprland) desktop on Deva's omarchy-1; only looked at,
+    not clicked through (no safe way to send clicks to a desktop someone may be using).
+  - x86_64: the .deb and .rpm installed in clean x86_64 Ubuntu 26.04 and Fedora 44 containers and drew their
+    window; their arm64 twins ran the real tasks.
+  - Not yet: clicking through on a real Linux desktop, and typing speed in long option lists outside Broadway.
 - Not yet seen on screen (Mac): preset rename through the toolbar menu, drag and drop onto the tool home,
   Reduce Motion, real VoiceOver, the About window, the quit-while-running dialog.
 - Release: `scripts/ci.sh release` passes and `scripts/release.sh 0.1.0` builds an unsigned DMG; signing and
   notarizing need Deva's certificate and notary profile.
-- Next action: x86_64 (amd64) packages through Rosetta containers, then the Mac on-screen items above
-  (they need full-screen control, so they wait for Deva to approve it or check them)
+- Next action: remove ~/knobs-test from omarchy-1 once Deva has looked at Knobs there; then the Mac on-screen
+  items, which need full-screen control
 
 ## Waiting on Deva
 1. Create the Developer ID Application certificate (see WORKFLOW, "Releasing"). Only Apple Development and

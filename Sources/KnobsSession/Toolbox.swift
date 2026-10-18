@@ -15,14 +15,16 @@ public final class Toolbox {
         case unavailable
     }
 
-    /// The bundled tools, each under the name it is installed as (7-Zip as `7z` on Ubuntu), found once at launch.
-    public let bundledManifests: [ToolManifest]
+    /// The bundled tools, each under the name it is installed as (7-Zip as `7z` on Ubuntu).
+    public private(set) var bundledManifests: [ToolManifest]
     public let manifestFailures: [ManifestError]
     public private(set) var allOptions: [String: AllOptionsState] = [:]
     public private(set) var library: KnobsLibrary
     /// A problem reading or writing the saved settings, in plain words, for the app to show.
     public var libraryProblem: String?
 
+    /// The bundled tools as written, before `bundledManifests` picks the installed name of each.
+    private let catalogManifests: [ToolManifest]
     private var executables: [String: URL] = [:]
     private var sessions: [String: TaskSession] = [:]
     /// False when an unreadable library couldn't be moved aside, so saving would destroy it.
@@ -61,6 +63,7 @@ public final class Toolbox {
         }
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
         let locator = ToolLocator(environmentPath: environment["PATH"], isExecutableFile: isExecutableFile)
+        catalogManifests = catalog.manifests
         bundledManifests = catalog.manifests.map(locator.resolve)
         manifestFailures = catalog.failures
         self.locator = locator
@@ -99,8 +102,15 @@ public final class Toolbox {
         locator.locate(executable.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
-    /// Looks every tool up again, for "Check again" after the user installs one.
+    /// Looks every tool up again, for "Check again" after the user installs one. A bundled tool is matched to the
+    /// name it is installed under now, so one installed under another of its names after launch is found too.
     public func refreshAvailability() {
+        let resolved = catalogManifests.map(locator.resolve)
+        let renamed = Set(zip(bundledManifests, resolved).filter { $0.executable != $1.executable }.map(\.0.id))
+        bundledManifests = resolved
+        // A session keeps the manifest it was made with, so its command would show the old name. Those of a
+        // renamed tool are made again; a tool that wasn't installed had nothing running.
+        sessions = sessions.filter { !renamed.contains($0.value.manifest.id) || $0.value.isRunning }
         allOptions = allOptions.filter { $0.value != .unavailable }
         var found: [String: URL] = [:]
         for manifest in manifests {

@@ -15,5 +15,6 @@ let package = Package(
         .target(name: "KnobsSession", dependencies: ["KnobsCore"]),
         // Fixtures are read from disk by path (see Support/Fixtures.swift), not bundled as resources.
         .testTarget(name: "KnobsCoreTests", dependencies: ["KnobsCore"], exclude: ["Fixtures"]),
+        .testTarget(name: "KnobsSessionTests", dependencies: ["KnobsCore", "KnobsSession"]),
     ]
 )

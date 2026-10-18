@@ -232,17 +232,29 @@ public final class ToolRun: Sendable {
         state.withLock { $0.exitStatus = (status, reason) }
         finishIfDone()
         DispatchQueue.global().asyncAfter(deadline: .now() + ToolRunner.drainTimeout.timeInterval) { [weak self] in
-            self?.finishIfDone(ignoringOpenStreams: true)
+            self?.finishAfterDrainTimeout()
         }
     }
 
-    private func finishIfDone(ignoringOpenStreams: Bool = false) {
+    /// Finishes once the tool has exited and both of its output streams have closed.
+    private func finishIfDone() {
         let outcome = state.withLock { state -> RunOutcome? in
-            guard let exit = state.exitStatus, ignoringOpenStreams || state.openStreams.isEmpty else { return nil }
-            if state.isCancelled { return .cancelled }
-            return exit.reason == .exit && exit.status == 0 ? .succeeded : .failed(exitCode: exit.status)
+            guard state.openStreams.isEmpty else { return nil }
+            return Self.outcome(of: state)
         }
         if let outcome { finish(with: outcome) }
+    }
+
+    /// Finishes once the tool has exited, even if a helper it started still holds an output stream open.
+    private func finishAfterDrainTimeout() {
+        if let outcome = state.withLock({ Self.outcome(of: $0) }) { finish(with: outcome) }
+    }
+
+    /// How the run ended, or nil while the tool is still running.
+    private static func outcome(of state: borrowing State) -> RunOutcome? {
+        guard let exit = state.exitStatus else { return nil }
+        if state.isCancelled { return .cancelled }
+        return exit.reason == .exit && exit.status == 0 ? .succeeded : .failed(exitCode: exit.status)
     }
 
     /// Yields `.finished` and ends the stream under the lock, so it is always the last event.

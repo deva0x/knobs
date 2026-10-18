@@ -200,6 +200,49 @@ import Testing
         #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[1]")
     }
 
+    @Test func anOptionalFieldInsideALongerStringNeedsAnIf() {
+        let task = minimalTask(
+            fields: [
+                ["id": "input", "label": "File", "kind": "inputFile"],
+                ["id": "title", "label": "Title", "kind": "text"],
+            ],
+            arguments: ["{input}", "--title={title}", "{extra}", "{output}"])
+        let error = loadingError(minimalManifest(task: task))
+        #expect(error?.path == "tasks[0].arguments[1]")
+        #expect(error?.problem.contains("can be empty") == true)
+    }
+
+    @Test func anOptionalFieldInsideALongerStringIsFineUnderItsOwnIf() throws {
+        let task = minimalTask(
+            fields: [
+                ["id": "input", "label": "File", "kind": "inputFile"],
+                ["id": "title", "label": "Title", "kind": "text"],
+            ],
+            arguments: ["{input}", ["if": "title", "then": ["--title={title}"]], "{extra}", "{output}"])
+        _ = try load(minimalManifest(task: task))
+    }
+
+    @Test func aNumberWithADefaultCanSitInsideALongerString() throws {
+        let task = minimalTask(
+            fields: [
+                ["id": "input", "label": "File", "kind": "inputFile"],
+                ["id": "size", "label": "Size", "kind": "integer", "minimum": 1, "maximum": 9, "default": 5],
+            ],
+            arguments: ["{input}", "--size={size}", "{extra}", "{output}"])
+        _ = try load(minimalManifest(task: task))
+    }
+
+    @Test func anIfOnAnotherFieldDoesNotGuardThisOne() {
+        let task = minimalTask(
+            fields: [
+                ["id": "input", "label": "File", "kind": "inputFile"],
+                ["id": "mute", "label": "Mute", "kind": "toggle"],
+                ["id": "title", "label": "Title", "kind": "text"],
+            ],
+            arguments: ["{input}", ["if": "mute", "then": ["--title={title}"]], "{extra}", "{output}"])
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[1].then[0]")
+    }
+
     @Test func outputPlaceholderNeedsAnOutputRule() {
         let task = minimalTask(arguments: ["{input}", "{extra}", "{output}"], output: nil)
         #expect(loadingError(minimalManifest(task: task))?.problem.contains("no output rule") == true)

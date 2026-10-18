@@ -236,7 +236,8 @@ import Testing
     @Test func secretsRunForRealButAreMaskedInThePreview() throws {
         let fields: [[String: Any]] = [
             ["id": "input", "label": "File", "kind": "inputFile"],
-            ["id": "password", "label": "Password", "kind": "secret"],
+            // Required, as in 7-Zip's "Create a password-protected archive", which is what makes "-p{password}" valid.
+            ["id": "password", "label": "Password", "kind": "secret", "required": true],
         ]
         let manifest = try load(
             minimalManifest(

@@ -116,7 +116,10 @@ enum ManifestValidator {
         var extraCount = 0
         var usesOutput = false
 
-        func walk(_ items: [ArgumentTemplate], path: String, isConditional: Bool) throws(ManifestError) {
+        /// `guarded` holds the fields that an enclosing `if` has already checked are set.
+        func walk(
+            _ items: [ArgumentTemplate], path: String, isConditional: Bool, guarded: Set<String>
+        ) throws(ManifestError) {
             for (index, item) in items.enumerated() {
                 let itemPath = "\(path)[\(index)]"
                 switch item {
@@ -130,8 +133,12 @@ enum ManifestValidator {
                     {
                         throw fail("\(itemPath).equals", "\"\(expected)\" isn't one of the option values")
                     }
-                    try walk(then, path: "\(itemPath).then", isConditional: true)
-                    try walk(otherwise, path: "\(itemPath).else", isConditional: true)
+                    // `equals: ""` holds for an empty value, so it guards nothing.
+                    let checksSet = condition.equals.map { !$0.isEmpty } ?? true
+                    try walk(
+                        then, path: "\(itemPath).then", isConditional: true,
+                        guarded: checksSet ? guarded.union([condition.fieldID]) : guarded)
+                    try walk(otherwise, path: "\(itemPath).else", isConditional: true, guarded: guarded)
                 case .text(let template):
                     let segments = try parse(template, path: itemPath, fail: fail)
                     let isWholePlaceholder = segments.count == 1
@@ -157,18 +164,42 @@ enum ManifestValidator {
                                 id: id, part: part, in: task, isWholePlaceholder: isWholePlaceholder,
                                 path: itemPath, fail: fail
                             )
+                            // A lone placeholder for an empty value gives no argument, but text around one would
+                            // still be passed on, as a stray `--title=`.
+                            if !isWholePlaceholder, !guarded.contains(id), let field = task.field(withID: id),
+                                !isAlwaysSet(field)
+                            {
+                                throw fail(
+                                    itemPath,
+                                    "uses {\(id)} inside a longer string, but \"\(id)\" can be empty; put this item "
+                                        + "inside { \"if\": \"\(id)\", \"then\": [...] }")
+                            }
                         }
                     }
                 }
             }
         }
 
-        try walk(task.arguments, path: "\(taskPath).arguments", isConditional: false)
+        try walk(task.arguments, path: "\(taskPath).arguments", isConditional: false, guarded: [])
         guard extraCount == 1 else {
             throw fail("\(taskPath).arguments", "must contain \"{extra}\" exactly once, but has it \(extraCount) times")
         }
         if task.output != nil, !usesOutput {
             throw fail("\(taskPath).output", "is defined, but no argument uses {output}")
+        }
+    }
+
+    /// Whether a field can never be empty: a required one, a number with a default, or a choice whose default is
+    /// set and whose options are all non-empty. Text can always be cleared, and toggles and files can be off.
+    private static func isAlwaysSet(_ field: Field) -> Bool {
+        if field.isRequired { return true }
+        switch field.kind {
+        case .integer, .number:
+            return field.defaultValue != nil
+        case .choice(let options):
+            return field.defaultValue?.isSet == true && options.allSatisfy { !$0.value.isEmpty }
+        default:
+            return false
         }
     }
 

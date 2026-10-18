@@ -137,7 +137,11 @@ Placeholders that can be used:
 For a field that holds several files, a part placeholder used inside the output template stands for the first
 file.
 
-A string that consists only of a placeholder for an empty, optional value produces no argument.
+A string that consists only of a placeholder for an empty, optional value produces no argument. A longer
+string around a placeholder, such as `"--title={title}"`, would still be passed on with the value missing, so a
+field used that way must either always have a value (a required field, an `integer` or `number` with a
+`default`, or a `choice` whose `default` and options are all non-empty) or the string must sit inside an `if` on
+that same field: `{ "if": "title", "then": ["--title={title}"] }`.
 Validation rejects a reference to a field that doesn't exist.
 
 ## Output
@@ -174,6 +178,7 @@ happen:
 - a task without exactly one `{extra}`, `{extra}` inside an `if`, or a field whose id is `extra` or `output`
   (both are reserved)
 - `{extra}` or a field with several files used inside a longer string instead of as a list item of its own
+- a field that can be empty used inside a longer string, outside an `if` on that field
 - a path part (`.stem`, `.name`, `.ext`, `.dir`, `.base`, `.percentDoubled`) on a field that isn't a file or folder, an unknown
   or empty path part (`{input.}`), or an unbalanced `{` or `}`
 - `{output}` in a task without an `output` rule, or an `output` rule the arguments never use

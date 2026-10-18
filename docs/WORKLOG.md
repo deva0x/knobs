@@ -129,3 +129,19 @@ Commits: c595cb9 (BUG-012: Shrink a video asks for the h264 codec; ffmpeg picks 
 Evidence: BUG-012 reproduced before ("Encoder not found") and fixed in the installed Fedora app (5.0 MB to 2.6 MB, libopenh264); `-c:v h264` matched libx264 on macOS and Ubuntu. Search: "codec" typed in one burst through Broadway showed at once and filtered once. BUG-009 reproduced on the current build first, then fixed: 6 Recent switches with animations off and 4 with them on, plus the Open With chooser twice (Shrink a video, Convert a video), all opened the task. Mac on screen (full-screen control approved by Deva): preset saved as "Web" and renamed "For email"; About window; quit while running (Keep Running continued at 18%, Stop and Quit quit and left no ffmpeg); dragging a PDF onto the ImageMagick home was refused, dragging Beach sunset.jpg opened the chooser and Rotate or flip with the file. ci.sh full PASS (149 tests), ci.sh linux PASS (138), ci.sh release PASS, release.sh 0.1.0 built an unsigned DMG (hdiutil verify VALID, SHA-256 3db5b17f...). All seven Linux packages rebuilt 01:02-01:07 and carry the new ffmpeg manifest.
 Not done (needs Deva): Developer ID certificate and notary profile; GitHub repository and push; website deploy (Cloudflare Pages, WORKFLOW); AUR; Reduce Motion, VoiceOver and keyboard-only checks (system settings); clicking through on omarchy-1.
 Next: nothing until Deva does one of those.
+
+## 2026-10-19 03:16 IST · Claude Code (Opus 5.5) · HEAD 90ea2c0
+
+Website and release command now cover Linux.
+- Deva asked whether only signing was left and whether the website was made. The website existed but was Mac-only.
+- website/index.html and styles.css: Download for Linux button (.deb, .rpm, Arch), requirements for both platforms
+  in the download section, a hero note "Also on Linux", a Linux line under the brew well, and FAQ answers
+  ("What does it run on?", and how missing tools are handled on Linux). Debian not claimed: stable ships GTK 4.18.
+- scripts/release.sh now prints a `gh release create` command that includes the same version's dist/linux files;
+  WORKFLOW step 6 says so. STATUS item 2 now says to create release v0.1.0 after pushing.
+- Checked: served website/ on 127.0.0.1:8765 and looked in the browser pane at 1280 px light and 375 px dark,
+  FAQ item opened, no horizontal scroll (scrollWidth 375). ci.sh fast PASS (138 tests). Dry-ran the new
+  release.sh tail under set -euo pipefail with and without matching files.
+- Commits: 90ea2c0 (website), plus the release-command commit with this entry.
+- Next: nothing for an agent. Waiting on Deva: Developer ID cert and notary profile, GitHub repo and push plus
+  release upload, website deploy; optional AUR and accessibility checks.

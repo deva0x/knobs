@@ -97,4 +97,9 @@ if [ "$can_notarize" = no ]; then
 fi
 echo
 echo "When Deva approves publishing, Deva runs:"
-echo "  gh release create v$version '$dmg' 'dist/Knobs-$version.dmg.sha256' --title 'Knobs $version' --notes-file <notes>"
+# The Linux packages of the same version, from `scripts/linux.sh package`, go up beside the DMG.
+linux_files=""
+for file in dist/linux/*"$version"*; do
+    [ -f "$file" ] && linux_files="$linux_files '$file'"
+done
+echo "  gh release create v$version '$dmg' 'dist/Knobs-$version.dmg.sha256'$linux_files --title 'Knobs $version' --notes-file <notes>"

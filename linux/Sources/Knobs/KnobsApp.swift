@@ -54,8 +54,12 @@ struct RootView: View {
             }
         } content: {
             if let tool {
-                if let task = tool.task(withID: openTaskID) {
+                if let task = model.task(withID: openTaskID, of: tool) {
                     TaskPage(model: model, session: model.session(for: task, of: tool)) {
+                        openTaskID = ""
+                    }
+                } else if openTaskID == HelpTaskBuilder.taskID {
+                    AllOptionsPage(model: model, manifest: tool) {
                         openTaskID = ""
                     }
                 } else {

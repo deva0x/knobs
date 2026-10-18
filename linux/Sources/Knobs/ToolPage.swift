@@ -1,4 +1,5 @@
 import Adwaita
+import CAdw
 import KnobsCore
 
 /// A tool's page: its name, summary and where it's installed, then the everyday tasks it can do.
@@ -28,15 +29,20 @@ struct ToolPage: View {
                     .halign(.start)
                     .padding(24, .top)
                     .padding(8, .bottom)
-                List(
-                    manifest.tasks,
-                    selection: Binding {
-                        ""
-                    } set: {
-                        open($0)
-                    }
-                ) { task in
-                    TaskRow(task: task)
+                List(manifest.tasks, selection: nil) { task in
+                    NavigationRow(title: task.title, summary: task.summary) { open(task.id) }
+                }
+                .boxedList()
+                Text("Anything else")
+                    .heading()
+                    .halign(.start)
+                    .padding(24, .top)
+                    .padding(8, .bottom)
+                List([HelpTaskBuilder.taskID], id: \.self, selection: nil) { _ in
+                    NavigationRow(
+                        title: "All options",
+                        summary: "Every option \(manifest.name) lists in its help, as switches and fields."
+                    ) { open(HelpTaskBuilder.taskID) }
                 }
                 .boxedList()
             }
@@ -58,19 +64,26 @@ struct ToolPage: View {
     }
 }
 
-private struct TaskRow: View {
-    let task: ManifestTask
+/// A row that opens a page. Activation, not list selection, opens it: a selected row stays selected when the
+/// toolkit reuses the list, and clicking it again would do nothing.
+private struct NavigationRow: View {
+    let title: String
+    let summary: String
+    let open: () -> Void
 
     var view: Body {
-        VStack {
-            Text(task.title)
-                .heading()
-                .halign(.start)
-            Text(task.summary)
-                .dimLabel()
-                .halign(.start)
-                .padding(2, .top)
-        }
-        .padding(12)
+        ActionRow(title)
+            .subtitle(summary)
+            .useMarkup(false)
+            .suffix {
+                Image(icon: .default(icon: .goNext))
+                    .valign(.center)
+            }
+            .activated(open)
+            // An action row only reacts to clicks and Enter when it is activatable, which libadwaita otherwise
+            // turns on only for a row with an activatable widget.
+            .inspectOnAppear { storage in
+                gtk_list_box_row_set_activatable(storage.opaquePointer?.cast(), 1)
+            }
     }
 }

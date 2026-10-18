@@ -5,27 +5,21 @@ Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 Updated: 2026-10-18 IST
 
 ## Now
-- Done: M0 to M3. Most of M4 to M9 is built; see the boxes in PLAN. Code review round 1 is done and its fixes
-  are committed (WORKLOG, 15:36 IST); round 2 is reviewing the round-1 diff.
-- Verified in the app on this Mac (earlier): ffmpeg Shrink a video (21.2 MB to 1.6 MB, checked with ffprobe),
-  ExifTool Show hidden details, ImageMagick Compress, All options for ffmpeg, Add a Tool with `jq`, Go to Task
-  (⌘K), the Open With chooser, and the large link field on yt-dlp Download a video (seen with Paste and the
-  folder icon; typing a link and Run becoming enabled is not checked yet).
-- Verified by tests: `scripts/ci.sh` full passes (139 tests, every task of all ten tools running for real).
-- Verified by rendering: the layered app icon (`App/AppIcon.icon`) as the built app shows it, light and dark.
-- Built but not yet seen on screen (the screen has been locked): the About window, the icon in the Dock, the
-  quit-while-running dialog, Reduce Motion crossfades, the console's stop-following on scroll, and every view
-  change from the round-1 review.
-- Open milestone exits:
-  - M4/M5: the light-and-dark UI review loop across every screen, and final screenshots in `docs/screenshots/`.
-  - M5: renaming presets is built and unit tested; check it on screen.
-  - M6: run each of the other seven tools once in the app (their integration tests pass).
-  - M8: real app screenshots on the website.
-  - M9: accessibility pass with VoiceOver. `scripts/ci.sh release` passes, and `scripts/release.sh 0.1.0` builds
-    an unsigned `dist/Knobs-0.1.0.dmg` (verified with `hdiutil verify`); signing and notarizing need Deva's
-    certificate and notary profile.
-- Next action: finish code review round 2; then, when the screen is available, the UI pass (everything listed
-  above as not yet seen), final screenshots, and the website screenshots.
+- Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
+  screenshots in the README and on the website, and the Linux slice (M11). Open boxes are in PLAN.
+- Verified in the Mac app on this Mac: ffmpeg Shrink a video, Compress an image, a failing run, the Open With
+  chooser, link and folder tasks, All options, Add a Tool with `jq`, ⌘K, in light and dark.
+- Verified by tests: `scripts/ci.sh` full passes (every task of all ten tools running for real); `scripts/ci.sh
+  linux` passes on Ubuntu 24.04 and 26.04 containers.
+- Linux (M11): the app runs in a local container and was checked through GTK's Broadway backend (a real ffmpeg
+  run, Cancel, settings remembered). In progress: .deb and .rpm packages (`scripts/linux.sh package`), and All
+  options with a settings search on Linux. Neither is install-tested yet.
+- Not yet seen on screen (Mac): preset rename through the toolbar menu, drag and drop onto the tool home,
+  Reduce Motion, real VoiceOver, the About window, the quit-while-running dialog.
+- Release: `scripts/ci.sh release` passes and `scripts/release.sh 0.1.0` builds an unsigned DMG; signing and
+  notarizing need Deva's certificate and notary profile.
+- Next action: build both Linux packages, install each in a clean Ubuntu 26.04 and Fedora 44 container and run
+  Shrink a video through Broadway (the M11 exit), then check All options on Linux the same way.
 
 ## Waiting on Deva
 1. Create the Developer ID Application certificate (see WORKFLOW, "Releasing"). Only Apple Development and

@@ -117,3 +117,17 @@ Template:
   `/proc/<pid>/status`). The test still passed because its limit, 5 s, was above the grace period.
 - Fix: on Linux the runner spawns with an empty signal mask. The test now requires stopping within the grace
   period; without the fix it fails on Linux (3.2 s against 3.0 s), with it `scripts/ci.sh linux` passes.
+
+## BUG-011: On Linux, a task row clicked once before could not open again (fixed)
+- Found: 2026-10-18, Claude, checking All options on Linux through Broadway (`scripts/linux.sh run`)
+- Steps: open ffmpeg's All options, select 7-Zip in the sidebar, click 7-Zip's All options row.
+- Expected: 7-Zip's All options page ("7-Zip isn't installed" in the container).
+- Actual: the row lit up and nothing opened. With a freshly started app, the same click worked. The tool page
+  opened tasks through list selection. The toolkit reuses the page's list for the next tool and never clears a
+  selection whose value no longer matches a row, so the row clicked earlier stayed selected, and clicking a
+  selected row reports no change. Giving each page its own identity (`ViewStack(id:)`) rebuilt the list but left
+  a blank page when returning to one, with `gtk_root_get_focus` criticals; that attempt was reverted.
+- Fix: task rows are activatable `ActionRow`s that open on activation (click or Enter), not on selection. The
+  sequence above, Back and reopening the same row, and opening a task in a second tool all work through
+  Broadway. The same change turns off Pango markup on every row that shows manifest, help or path text, so a
+  file name with `&` or help with `<` shows as written.

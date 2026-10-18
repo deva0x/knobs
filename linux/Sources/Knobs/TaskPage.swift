@@ -11,6 +11,10 @@ struct TaskPage: View {
     /// The session is shared with KnobsSession and doesn't tell Adwaita when it changes, so every edit and every
     /// tick of a run (see `MainQueuePump`) bumps this to redraw the page.
     @State private var revision = 0
+    /// Narrows a long settings list, such as a tool's All options, to the ones whose name or help has every word.
+    @State private var query = ""
+    /// Below this many settings the whole list fits on screen, and a search box would only get in the way.
+    private static let searchThreshold = 12
 
     var view: Body {
         ScrollView {
@@ -22,7 +26,20 @@ struct TaskPage: View {
                 if !fields(.input).isEmpty {
                     section("Input", fields: fields(.input))
                 }
-                if !fields(.setting).isEmpty {
+                if fields(.setting).count >= Self.searchThreshold {
+                    SearchEntry()
+                        .text($query)
+                        .placeholderText("Search \(fields(.setting).count) settings")
+                        .padding(8, .bottom)
+                    if matchingSettings.isEmpty {
+                        Text("No setting matches “\(query)”.")
+                            .dimLabel()
+                            .halign(.start)
+                            .padding(12, .bottom)
+                    } else {
+                        section("Settings", fields: matchingSettings)
+                    }
+                } else if !fields(.setting).isEmpty {
                     section("Settings", fields: fields(.setting))
                 }
                 FormSection("Extra arguments") {
@@ -82,6 +99,14 @@ struct TaskPage: View {
                 default: false
                 }
             return group == .input ? isInput : !isInput
+        }
+    }
+
+    private var matchingSettings: [Field] {
+        let words = query.lowercased().split(separator: " ").map(String.init)
+        return fields(.setting).filter { field in
+            let haystack = (field.label + " " + (field.help ?? "")).lowercased()
+            return words.allSatisfy(haystack.contains)
         }
     }
 

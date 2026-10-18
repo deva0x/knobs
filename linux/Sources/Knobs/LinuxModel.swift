@@ -6,12 +6,23 @@ import KnobsSession
 /// remembered between launches. The task sessions are the same `TaskSession` the Mac app uses; only the windows
 /// differ.
 final class LinuxModel {
+    /// Where a tool's "All options" task stands. It is read from the tool's own help the first time it opens.
+    enum AllOptionsState {
+        case notInstalled
+        case notRead
+        case reading
+        case ready(ManifestTask)
+        case unavailable
+    }
+
     let manifests: [ToolManifest]
     let manifestFailures: [ManifestError]
     private(set) var executables: [String: URL] = [:]
     private var sessions: [String: TaskSession] = [:]
     private let locator: ToolLocator
     private let runner: ToolRunner
+    private let helpReader: HelpReader
+    private var allOptions: [String: AllOptionsState] = [:]
     private var library: KnobsLibrary
     private let libraryFile: LibraryFile
     private var isSavingLibraryAllowed = true
@@ -38,6 +49,7 @@ final class LinuxModel {
         manifestFailures = catalog.failures
         locator = ToolLocator(environmentPath: environment["PATH"])
         runner = ToolRunner(environment: ToolRunner.environment(base: environment, locator: locator))
+        helpReader = HelpReader(runner: runner)
         refreshAvailability()
     }
 
@@ -83,6 +95,32 @@ final class LinuxModel {
         let session = TaskSession(manifest: manifest, task: task, initialValues: library.lastValues(forTask: key))
         sessions[key] = session
         return session
+    }
+
+    /// A task by id, including the generated "All options" task once its help has been read.
+    func task(withID taskID: String, of manifest: ToolManifest) -> ManifestTask? {
+        if taskID == HelpTaskBuilder.taskID, case .ready(let task) = allOptionsState(of: manifest) {
+            return task
+        }
+        return manifest.task(withID: taskID)
+    }
+
+    func allOptionsState(of manifest: ToolManifest) -> AllOptionsState {
+        guard location(of: manifest) != nil else { return .notInstalled }
+        return allOptions[manifest.id] ?? .notRead
+    }
+
+    /// Reads the tool's help once, in the background, and builds its "All options" task from it.
+    func readAllOptions(of manifest: ToolManifest) {
+        guard case .notRead = allOptionsState(of: manifest), let executable = location(of: manifest) else { return }
+        allOptions[manifest.id] = .reading
+        Task {
+            let text = await helpReader.helpText(executable: executable, arguments: manifest.helpArguments)
+            let options = HelpParser.options(in: text)
+            allOptions[manifest.id] =
+                options.isEmpty
+                ? .unavailable : .ready(HelpTaskBuilder.task(from: options, toolName: manifest.name).task)
+        }
     }
 
     func canRun(_ session: TaskSession) -> Bool {

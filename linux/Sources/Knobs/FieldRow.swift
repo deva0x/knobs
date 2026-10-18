@@ -1,4 +1,5 @@
 import Adwaita
+import CAdw
 import Foundation
 import KnobsCore
 import KnobsSession
@@ -22,6 +23,7 @@ struct FieldRow: View {
                 values: options, id: \.value, description: \.label
             )
             .subtitle(field.help ?? "")
+            .useMarkup(false)
         case .integer(let range):
             SpinRow(
                 field.label,
@@ -33,6 +35,7 @@ struct FieldRow: View {
                 min: range.lowerBound, max: range.upperBound
             )
             .subtitle(field.help ?? "")
+            .useMarkup(false)
         case .number(let range):
             SpinRow(
                 field.label,
@@ -45,6 +48,7 @@ struct FieldRow: View {
             )
             .step(Self.numberStep)
             .subtitle(field.help ?? "")
+            .useMarkup(false)
         case .toggle:
             SwitchRow(
                 field.label,
@@ -55,6 +59,7 @@ struct FieldRow: View {
                 }
             )
             .subtitle(field.help ?? "")
+            .useMarkup(false)
         case .text:
             EntryRow(
                 field.label,
@@ -62,7 +67,10 @@ struct FieldRow: View {
                     textValue
                 } set: {
                     set($0.isEmpty ? nil : .text($0))
-                })
+                }
+            )
+            .useMarkup(false)
+            .tooltip(helpMarkup)
         case .secret:
             let text = Binding {
                 textValue
@@ -70,7 +78,9 @@ struct FieldRow: View {
                 set($0.isEmpty ? nil : .text($0))
             }
             EntryRow(field.label, text: text)
+                .useMarkup(false)
                 .secure(text: text)
+                .tooltip(helpMarkup)
         case .inputFile, .inputFolder, .outputFolder:
             PathRow(field: field, session: session, changed: changed)
         }
@@ -79,6 +89,14 @@ struct FieldRow: View {
     /// A number field without a range still needs a maximum for its spin button.
     private static let unboundedNumberMaximum = 1_000_000.0
     private static let numberStep = 0.1
+
+    /// Entry rows have no subtitle, so their help is a tooltip. GTK reads tooltips as Pango markup, and help
+    /// text comes from the tool (All options), so it is escaped rather than trusted.
+    private var helpMarkup: String {
+        guard let escaped = g_markup_escape_text(field.help ?? "", -1) else { return "" }
+        defer { g_free(escaped) }
+        return String(cString: escaped)
+    }
 
     private var textValue: String {
         if case .text(let text)? = session.value(of: field) { return text }
@@ -117,6 +135,7 @@ private struct PathRow: View {
         let chosen = session.value(of: field)?.pathList ?? []
         let row = ActionRow(field.label)
             .subtitle(chosen.isEmpty ? (field.help ?? emptyText) : chosen.map(Self.displayPath).joined(separator: ", "))
+            .useMarkup(false)
             .suffix {
                 HStack {
                     if allowsMultiple && !chosen.isEmpty {

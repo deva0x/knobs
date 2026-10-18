@@ -134,6 +134,65 @@ import Testing
         #expect(argv == ["-o", "/out/merged.pdf", "/a/1.pdf", "/a/2 two.pdf"])
     }
 
+    @Test func equalsConditionsPickTheBranchForTheChosenOption() throws {
+        let fields: [[String: Any]] = [
+            ["id": "input", "label": "File", "kind": "inputFile"],
+            [
+                "id": "mode", "label": "Mode", "kind": "choice", "default": "crop",
+                "options": [["value": "crop", "label": "Crop"], ["value": "pad", "label": "Pad"]],
+            ],
+        ]
+        let manifest = try load(
+            minimalManifest(
+                task: minimalTask(
+                    fields: fields,
+                    arguments: [
+                        "{input}", ["if": "mode", "equals": "pad", "then": ["-extent"], "else": ["-crop"]], "{extra}",
+                        "{output}",
+                    ])))
+        let input: [String: FieldValue] = ["input": .paths(["/a/x.png"])]
+
+        let cropped = builder().build(manifest.tasks[0], of: manifest, values: input, extraArguments: "")
+        let padded = builder().build(
+            manifest.tasks[0], of: manifest, values: input.merging(["mode": .text("pad")]) { $1 }, extraArguments: "")
+
+        #expect(cropped.command.argv.contains("-crop"))
+        #expect(padded.command.argv.contains("-extent"))
+    }
+
+    @Test func outputPathPartsAndFolderDefaultsWithTilde() throws {
+        let fields: [[String: Any]] = [
+            ["id": "input", "label": "File", "kind": "inputFile"],
+            ["id": "folder", "label": "Save in", "kind": "outputFolder", "default": "~/Downloads"],
+        ]
+        let manifest = try load(
+            minimalManifest(
+                task: minimalTask(
+                    fields: fields, arguments: ["-of", "{output.base}", "{input}", "{extra}"],
+                    output: ["template": "{input.stem} transcript.txt", "folder": "folder"])))
+
+        let draft = builder().build(
+            manifest.tasks[0], of: manifest, values: ["input": .paths(["/a/talk.wav"])], extraArguments: "")
+
+        #expect(draft.command.outputPath == "/Users/me/Downloads/talk transcript.txt")
+        #expect(draft.command.argv.prefix(2) == ["-of", "/Users/me/Downloads/talk transcript"])
+    }
+
+    @Test func outputNextToSeveralFilesGoesNextToTheFirst() throws {
+        let fields: [[String: Any]] = [["id": "pages", "label": "PDFs", "kind": "inputFile", "multiple": true]]
+        let manifest = try load(
+            minimalManifest(
+                task: minimalTask(
+                    fields: fields, arguments: ["-o", "{output}", "{pages}", "{extra}"],
+                    output: ["template": "{pages.stem} merged.pdf", "nextTo": "pages"])))
+
+        let draft = builder().build(
+            manifest.tasks[0], of: manifest, values: ["pages": .paths(["/a/one.pdf", "/b/two.pdf"])], extraArguments: ""
+        )
+
+        #expect(draft.command.outputPath == "/a/one merged.pdf")
+    }
+
     @Test func secretsRunForRealButAreMaskedInThePreview() throws {
         let fields: [[String: Any]] = [
             ["id": "input", "label": "File", "kind": "inputFile"],

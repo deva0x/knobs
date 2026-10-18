@@ -53,7 +53,8 @@ final class TaskSession: Identifiable {
         self.values = initialValues
         self.clock = clock
         let builder = CommandBuilder(
-            outputNamer: OutputNamer(fileExists: { FileManager.default.fileExists(atPath: $0) }))
+            outputNamer: OutputNamer(fileExists: { FileManager.default.fileExists(atPath: $0) }),
+            homeDirectory: NSHomeDirectory())
         self.builder = builder
         self.draft = builder.build(task, of: manifest, values: initialValues, extraArguments: "")
     }

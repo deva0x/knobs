@@ -185,6 +185,23 @@ import Testing
         #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].output")
     }
 
+    @Test func equalsMustMatchAChoiceOption() {
+        let fields: [[String: Any]] = [
+            ["id": "input", "label": "File", "kind": "inputFile"],
+            ["id": "mode", "label": "Mode", "kind": "choice", "options": [["value": "crop", "label": "Crop"]]],
+        ]
+        let task = minimalTask(
+            fields: fields,
+            arguments: [["if": "mode", "equals": "pad", "then": ["-p"]], "{input}", "{extra}", "{output}"])
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[0].equals")
+    }
+
+    @Test func outputPathPatternNeedsOneGroup() {
+        var task = minimalTask()
+        task["outputPathPattern"] = "saved to .+"
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].outputPathPattern")
+    }
+
     @Test func multiFileFieldMustBeAListItemOfItsOwn() {
         let fields: [[String: Any]] = [
             ["id": "input", "label": "File", "kind": "inputFile"],

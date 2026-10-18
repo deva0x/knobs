@@ -79,6 +79,7 @@ This document is the specification. `KnobsCore` implements it, and its tests use
 | `output` | object | no | How to name the output file, see below |
 | `arguments` | array | yes | The argv template, see below |
 | `progress` | object | no | How to read progress from the tool's output, see below |
+| `outputPathPattern` | string | no | A regular expression with one group that captures the output file's path from the tool's own output, for tools that name their files themselves (yt-dlp, whisper.cpp). The app uses it for the result card. |
 
 ## Fields
 
@@ -88,8 +89,8 @@ Every field has `id`, `label` and `kind`. A field `id` starts with a letter and 
 | `kind` | Control | Value | Extra keys |
 |---|---|---|---|
 | `inputFile` | File picker and drop target | absolute path | `contentTypes`: UTType identifiers. `multiple`: boolean |
-| `inputFolder` | Folder picker | absolute path | none |
-| `outputFolder` | Folder picker | absolute path | none |
+| `inputFolder` | Folder picker | absolute path | `default`: a path; `~/` means the home folder |
+| `outputFolder` | Folder picker | absolute path | `default`: a path such as `~/Downloads` |
 | `choice` | Pop-up menu | one option's `value` | `options` (required), `default` |
 | `integer` | Stepper and slider | whole number | `minimum`, `maximum` (both required), `default` |
 | `number` | Text field | decimal number | `minimum`, `maximum`, `default` |
@@ -108,7 +109,9 @@ An `inputFile` field with `multiple: true` expands to one argument per file, in 
   a shell, so a file named `my video; rm -rf ~.mov` is just a file name.
 - **A conditional object:** `{ "if": "fieldId", "then": [ ... ] }` includes the nested items only when the
   field is set. A toggle is set when it's true. Any other kind is set when its value isn't empty.
-  `"else": [ ... ]` is optional. Conditionals can nest.
+  With `"equals": "value"` the condition holds only when the field's value is exactly that text, which suits
+  choices (`{ "if": "mode", "equals": "pad", "then": [...] }`); for a choice, the value must be one of its
+  options. `"else": [ ... ]` is optional. Conditionals can nest.
 - **`{output}`** is the derived output path from `output`.
 - **`{extra}`** marks where the task's "Extra arguments" box goes. Every task must contain it exactly once,
   as a whole string. Knobs splits the box's text into words itself, following shell quote rules
@@ -121,6 +124,12 @@ Placeholders that can be used:
 - `{fieldId.name}` is a file name without its folder.
 - `{fieldId.ext}` is a file's extension without the dot (`mov`).
 - `{fieldId.dir}` is a file's folder.
+- `{fieldId.base}` is the whole path without its extension (`/a/clip`).
+- `{output}` takes the same parts: `{output.base}`, `{output.dir}` and so on, for tools that want an output
+  name without its extension.
+
+For a field that holds several files, a part placeholder used inside the output template stands for the first
+file.
 
 A string that consists only of a placeholder for an empty, optional value produces no argument.
 Validation rejects a reference to a field that doesn't exist.
@@ -128,7 +137,8 @@ Validation rejects a reference to a field that doesn't exist.
 ## Output
 
 `output.template` uses the same placeholders. `output.nextTo` names the file field whose folder receives the
-output, or `output.folder` names an `outputFolder` field. If the file already exists, Knobs adds " 2",
+output (the first file's folder, for a field with several files), or `output.folder` names an `outputFolder`
+field. If the file already exists, Knobs adds " 2",
 " 3" and so on before the extension. It never overwrites a file.
 
 ## Progress
@@ -152,6 +162,8 @@ happen:
 - `executable` containing `/`
 - `schemaVersion` other than 1
 - a task without exactly one `{extra}`, or a field whose id is `extra` or `output` (both are reserved)
+- an `equals` that isn't one of a choice's option values
+- an `outputPathPattern` that doesn't compile or doesn't have exactly one capture group
 
 ## Versioning
 

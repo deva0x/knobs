@@ -45,7 +45,7 @@ enum ManifestReader {
 
     private static func readTask(_ item: JSONElement) throws(ManifestError) -> ManifestTask {
         let task = try item.object(allowedKeys: [
-            "id", "title", "summary", "symbol", "fields", "output", "arguments", "progress",
+            "id", "title", "summary", "symbol", "fields", "output", "arguments", "progress", "outputPathPattern",
         ])
         return ManifestTask(
             id: try task.string("id"),
@@ -59,7 +59,8 @@ enum ManifestReader {
             arguments: try task.array("arguments").map { item throws(ManifestError) in try readArgument(item) },
             progress: try task.optionalObject("progress", allowedKeys: ["percent", "current", "total"]).map {
                 progress throws(ManifestError) in try readProgress(progress)
-            }
+            },
+            outputPathPattern: try task.optionalString("outputPathPattern")
         )
     }
 
@@ -74,6 +75,7 @@ enum ManifestReader {
             case "integer", "number": ["minimum", "maximum", "default"]
             case "toggle": ["default"]
             case "text": ["placeholder", "default"]
+            case "inputFolder", "outputFolder": ["default"]
             default: []
             }
         let field = try item.object(allowedKeys: commonFieldKeys.union(kindKeys))
@@ -85,8 +87,9 @@ enum ManifestReader {
                 contentTypes: try field.optionalStringArray("contentTypes") ?? [],
                 allowsMultiple: try field.optionalBool("multiple") ?? false
             )
-        case "inputFolder": kind = .inputFolder
-        case "outputFolder": kind = .outputFolder
+        case "inputFolder", "outputFolder":
+            kind = kindName == "inputFolder" ? .inputFolder : .outputFolder
+            defaultValue = try field.optionalString("default").map { FieldValue.paths([$0]) }
         case "choice":
             kind = .choice(
                 options: try field.array("options").map { option throws(ManifestError) in
@@ -140,9 +143,9 @@ enum ManifestReader {
 
     private static func readArgument(_ item: JSONElement) throws(ManifestError) -> ArgumentTemplate {
         if case .string(let text) = item.value { return .text(text) }
-        let conditional = try item.object(allowedKeys: ["if", "then", "else"])
+        let conditional = try item.object(allowedKeys: ["if", "equals", "then", "else"])
         return .conditional(
-            fieldID: try conditional.string("if"),
+            Condition(fieldID: try conditional.string("if"), equals: try conditional.optionalString("equals")),
             then: try conditional.array("then").map { item throws(ManifestError) in try readArgument(item) },
             otherwise: try conditional.optionalArray("else")?.map { item throws(ManifestError) in
                 try readArgument(item)

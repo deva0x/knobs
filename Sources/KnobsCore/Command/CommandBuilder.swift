@@ -4,9 +4,12 @@ import Foundation
 /// names with spaces, quotes or semicolons are never split or interpreted (DEC-006).
 public struct CommandBuilder: Sendable {
     private let outputNamer: OutputNamer
+    private let homeDirectory: String
 
-    public init(outputNamer: OutputNamer) {
+    /// `homeDirectory` replaces a leading `~` in paths, such as a folder default of `~/Downloads`.
+    public init(outputNamer: OutputNamer, homeDirectory: String) {
         self.outputNamer = outputNamer
+        self.homeDirectory = homeDirectory
     }
 
     /// Builds a command that can always be previewed. Missing values become `.missing` parts and are listed
@@ -17,7 +20,7 @@ public struct CommandBuilder: Sendable {
         values: [String: FieldValue],
         extraArguments: String
     ) -> CommandDraft {
-        var context = Context(task: task, values: values)
+        var context = Context(task: task, values: values, homeDirectory: homeDirectory)
 
         for field in task.fields where field.isRequired && context.value(of: field)?.isSet != true {
             context.problems.append(.missingValue(fieldID: field.id, label: field.label))
@@ -63,17 +66,34 @@ public struct CommandBuilder: Sendable {
 private struct Context {
     let task: ManifestTask
     let values: [String: FieldValue]
+    let homeDirectory: String
     var problems: [CommandProblem] = []
     var extraWords: [String] = []
     var outputPath: String?
 
-    init(task: ManifestTask, values: [String: FieldValue]) {
+    init(task: ManifestTask, values: [String: FieldValue], homeDirectory: String) {
         self.task = task
         self.values = values
+        self.homeDirectory = homeDirectory
     }
 
+    /// The user's value, else the manifest default, with `~` in paths expanded.
     func value(of field: Field) -> FieldValue? {
-        values[field.id] ?? field.defaultValue
+        guard let value = values[field.id] ?? field.defaultValue else { return nil }
+        guard case .paths(let paths) = value else { return value }
+        return .paths(paths.map(expandingTilde))
+    }
+
+    private func expandingTilde(_ path: String) -> String {
+        if path == "~" { return homeDirectory }
+        guard path.hasPrefix("~/") else { return path }
+        return (homeDirectory as NSString).appendingPathComponent(String(path.dropFirst(2)))
+    }
+
+    func holds(_ condition: Condition) -> Bool {
+        guard let field = task.field(withID: condition.fieldID), let value = value(of: field) else { return false }
+        if let expected = condition.equals { return value.argumentText == expected }
+        return value.isSet
     }
 
     func firstPath(of fieldID: String) -> String? {
@@ -84,9 +104,8 @@ private struct Context {
     func expand(_ items: [ArgumentTemplate]) -> [CommandPart] {
         items.flatMap { item -> [CommandPart] in
             switch item {
-            case .conditional(let fieldID, let then, let otherwise):
-                let isSet = task.field(withID: fieldID).flatMap(value(of:))?.isSet ?? false
-                return expand(isSet ? then : otherwise)
+            case .conditional(let condition, let then, let otherwise):
+                return expand(holds(condition) ? then : otherwise)
             case .text(let template):
                 return expand(template)
             }
@@ -113,9 +132,10 @@ private struct Context {
         switch placeholder {
         case .extra:
             return extraWords.map { CommandPart(text: $0, role: .extra) }
-        case .output:
+        case .output(let part):
             return [
-                outputPath.map { CommandPart(text: $0, role: .path) } ?? CommandPart(text: "Output", role: .missing)
+                outputPath.map { CommandPart(text: part.of($0), role: .path) }
+                    ?? CommandPart(text: "Output", role: .missing)
             ]
         case .field(let id, let part):
             guard let field = task.field(withID: id) else { return [] }
@@ -127,7 +147,7 @@ private struct Context {
             case .secret:
                 return [CommandPart(text: value.argumentText, role: .secret)]
             case .inputFile, .inputFolder, .outputFolder:
-                return value.paths.map { CommandPart(text: Self.pathPart(part, of: $0), role: .path) }
+                return value.paths.map { CommandPart(text: part.of($0), role: .path) }
             default:
                 return [CommandPart(text: value.argumentText, role: .value)]
             }
@@ -147,16 +167,16 @@ private struct Context {
             switch segment {
             case .literal(let literal):
                 text += literal
-            case .placeholder(.output):
+            case .placeholder(.output(let part)):
                 guard let outputPath else { return nil }
-                text += outputPath
+                text += part.of(outputPath)
             case .placeholder(.extra):
                 text += extraWords.joined(separator: " ")
             case .placeholder(.field(let id, let part)):
                 guard let field = task.field(withID: id), let value = value(of: field) else { continue }
                 text +=
                     field.kind.holdsPaths
-                    ? value.paths.first.map { Self.pathPart(part, of: $0) } ?? "" : value.argumentText
+                    ? value.paths.first.map(part.of) ?? "" : value.argumentText
             }
         }
         return text
@@ -186,14 +206,4 @@ private struct Context {
         text.count > 1 && text.hasPrefix("-")
     }
 
-    private static func pathPart(_ part: PathPart, of path: String) -> String {
-        let path = path as NSString
-        return switch part {
-        case .whole: path as String
-        case .name: path.lastPathComponent
-        case .stem: (path.lastPathComponent as NSString).deletingPathExtension
-        case .ext: path.pathExtension
-        case .dir: path.deletingLastPathComponent
-        }
-    }
 }

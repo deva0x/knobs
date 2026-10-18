@@ -63,5 +63,5 @@ func loadingError(_ object: [String: Any]) -> ManifestError? {
 
 /// A builder whose disk holds exactly `existingFiles`.
 func builder(existingFiles: Set<String> = []) -> CommandBuilder {
-    CommandBuilder(outputNamer: OutputNamer(fileExists: { existingFiles.contains($0) }))
+    CommandBuilder(outputNamer: OutputNamer(fileExists: { existingFiles.contains($0) }), homeDirectory: "/Users/me")
 }

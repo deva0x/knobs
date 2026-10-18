@@ -55,6 +55,9 @@ public struct ManifestTask: Sendable, Hashable, Identifiable {
     public let output: OutputRule?
     public let arguments: [ArgumentTemplate]
     public let progress: ProgressRule?
+    /// A regular expression with one group that captures the output file's path from the tool's own output,
+    /// for tools that name their files themselves (yt-dlp, whisper.cpp).
+    public let outputPathPattern: String?
 
     public init(
         id: String,
@@ -64,7 +67,8 @@ public struct ManifestTask: Sendable, Hashable, Identifiable {
         fields: [Field],
         output: OutputRule?,
         arguments: [ArgumentTemplate],
-        progress: ProgressRule?
+        progress: ProgressRule?,
+        outputPathPattern: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -74,6 +78,7 @@ public struct ManifestTask: Sendable, Hashable, Identifiable {
         self.output = output
         self.arguments = arguments
         self.progress = progress
+        self.outputPathPattern = outputPathPattern
     }
 
     public func field(withID fieldID: String) -> Field? {

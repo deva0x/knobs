@@ -41,6 +41,7 @@ enum ManifestValidator {
             try validateArguments(task, taskPath: taskPath, fail: fail)
             try validateOutput(task, taskPath: taskPath, fail: fail)
             try validateProgress(task.progress, path: "\(taskPath).progress", fail: fail)
+            try validateOutputPathPattern(task.outputPathPattern, path: "\(taskPath).outputPathPattern", fail: fail)
         }
     }
 
@@ -105,9 +106,15 @@ enum ManifestValidator {
             for (index, item) in items.enumerated() {
                 let itemPath = "\(path)[\(index)]"
                 switch item {
-                case .conditional(let fieldID, let then, let otherwise):
-                    guard task.field(withID: fieldID) != nil else {
-                        throw fail("\(itemPath).if", "refers to \"\(fieldID)\", which isn't a field of this task")
+                case .conditional(let condition, let then, let otherwise):
+                    guard let field = task.field(withID: condition.fieldID) else {
+                        throw fail(
+                            "\(itemPath).if", "refers to \"\(condition.fieldID)\", which isn't a field of this task")
+                    }
+                    if let expected = condition.equals, case .choice(let options) = field.kind,
+                        !options.contains(where: { $0.value == expected })
+                    {
+                        throw fail("\(itemPath).equals", "\"\(expected)\" isn't one of the option values")
                     }
                     try walk(then, path: "\(itemPath).then")
                     try walk(otherwise, path: "\(itemPath).else")
@@ -175,11 +182,9 @@ enum ManifestValidator {
         let path = "\(taskPath).output"
         switch output.location {
         case .nextTo(let fieldID):
-            guard case .inputFile(_, let allowsMultiple)? = task.field(withID: fieldID)?.kind else {
+            // For a field with several files, the output goes next to the first one.
+            guard case .inputFile? = task.field(withID: fieldID)?.kind else {
                 throw fail("\(path).nextTo", "should name an inputFile field of this task")
-            }
-            guard !allowsMultiple else {
-                throw fail("\(path).nextTo", "names a field that holds several files. Use a single-file field")
             }
         case .folder(let fieldID):
             guard case .outputFolder? = task.field(withID: fieldID)?.kind else {
@@ -191,10 +196,25 @@ enum ManifestValidator {
             case .output, .extra:
                 throw fail("\(path).template", "can't use {output} or {extra}")
             case .field(let id, let part):
+                // In a file name, a field with several files stands for its first file.
                 try validateFieldReference(
-                    id: id, part: part, in: task, isWholePlaceholder: false, path: "\(path).template", fail: fail
+                    id: id, part: part, in: task, isWholePlaceholder: true, path: "\(path).template", fail: fail
                 )
             }
+        }
+    }
+
+    private static func validateOutputPathPattern(
+        _ pattern: String?,
+        path: String,
+        fail: (String, String) -> ManifestError
+    ) throws(ManifestError) {
+        guard let pattern else { return }
+        guard let expression = try? NSRegularExpression(pattern: pattern) else {
+            throw fail(path, "isn't a valid regular expression")
+        }
+        guard expression.numberOfCaptureGroups == 1 else {
+            throw fail(path, "should have exactly 1 capture group, holding the path")
         }
     }
 

@@ -38,7 +38,8 @@ enum Integration {
     ) async throws -> (outcome: RunOutcome, outputPath: String?, events: [RunEvent]) {
         let task = try #require(manifest.task(withID: taskID))
         let builder = CommandBuilder(
-            outputNamer: OutputNamer(fileExists: { FileManager.default.fileExists(atPath: $0) }))
+            outputNamer: OutputNamer(fileExists: { FileManager.default.fileExists(atPath: $0) }),
+            homeDirectory: NSHomeDirectory())
         let draft = builder.build(task, of: manifest, values: values, extraArguments: extraArguments)
         #expect(draft.isRunnable, "\(draft.problems)")
         let toolRun = runner.start(

@@ -42,7 +42,7 @@ import Testing
                 )))
         #expect(
             manifest.tasks[0].arguments[0]
-                == .conditional(fieldID: "loud", then: [.text("-v")], otherwise: [.text("-q")]))
+                == .conditional(Condition(fieldID: "loud"), then: [.text("-v")], otherwise: [.text("-q")]))
     }
 
     @Test func catalogSkipsABadFileButKeepsTheGoodOnes() throws {

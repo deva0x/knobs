@@ -170,7 +170,13 @@ import Testing
             }
         }
         let child = try #require(childID)
-        #expect(kill(child, 0) != 0)
+        // A killed process lingers as a zombie until launchd collects it, so allow it a moment to disappear.
+        var isGone = kill(child, 0) != 0
+        for _ in 0..<100 where !isGone {
+            try await Task.sleep(for: .milliseconds(20))
+            isGone = kill(child, 0) != 0
+        }
+        #expect(isGone)
     }
 
     @Test func progressEventsFollowTheLinesThatReportThem() async {

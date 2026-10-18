@@ -92,6 +92,9 @@ scripts/linux.sh run
 
 Then open http://localhost:8085. `scripts/linux.sh package <version>` writes a .deb and an .rpm to `dist/linux/`.
 
+On Fedora, Shrink a video needs the full `ffmpeg` from RPM Fusion: Fedora's own `ffmpeg-free` has no x264
+encoder. The other ffmpeg tasks work with either.
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for how Knobs runs tools safely, its known limits, and how to report a problem.

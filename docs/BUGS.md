@@ -131,3 +131,14 @@ Template:
   sequence above, Back and reopening the same row, and opening a task in a second tool all work through
   Broadway. The same change turns off Pango markup on every row that shows manifest, help or path text, so a
   file name with `&` or help with `<` shows as written.
+
+## BUG-012: On Fedora, Shrink a video fails with Fedora's own ffmpeg (open)
+- Found: 2026-10-18, Claude, install-testing the .rpm in a clean `fedora:44` container through Broadway
+- Steps: install the .rpm and `ffmpeg-free` (what the .rpm recommends), run ffmpeg → Shrink a video.
+- Expected: a smaller H.264 copy, as on macOS and Ubuntu.
+- Actual: "ffmpeg stopped with an error: Error opening output files: Encoder not found". Fedora's
+  `ffmpeg-free` leaves out libx264, which the task names; it has libopenh264 instead. Tasks that don't re-encode
+  work (Remove the sound made a silent copy in 2 s). RPM Fusion's `ffmpeg` has libx264.
+- Options, not chosen yet: tell Fedora users to install RPM Fusion's ffmpeg (README says so now), or let a
+  manifest name a fallback encoder when the first isn't available (libopenh264 has no `-crf` quality control,
+  so the task would need a bitrate setting instead).

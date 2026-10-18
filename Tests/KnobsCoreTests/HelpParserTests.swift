@@ -177,8 +177,13 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
                 HelpOption(flags: ["-p"], valueName: "Password", valueStyle: .attached, summary: ""),
                 HelpOption(flags: ["-u", "--user"], valueName: "user:password", valueStyle: .separate, summary: ""),
                 HelpOption(flags: ["--password-file"], valueName: "FILE", valueStyle: .equals, summary: ""),
+                HelpOption(flags: ["--pass"], valueName: "phrase", valueStyle: .separate, summary: ""),
+                HelpOption(flags: ["--passes"], valueName: "N", valueStyle: .separate, summary: ""),
             ], toolName: "tool")
-        #expect(generated.task.fields.map(\.kind).prefix(3) == [.secret, .secret, .text(placeholder: "FILE")])
+        #expect(
+            generated.task.fields.map(\.kind).prefix(5) == [
+                .secret, .secret, .text(placeholder: "FILE"), .secret, .text(placeholder: "N"),
+            ])
     }
 
     @Test func optionsTakingSeveralValuesAreLeftToExtraArguments() {

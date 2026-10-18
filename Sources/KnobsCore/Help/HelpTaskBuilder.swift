@@ -8,7 +8,9 @@ public enum HelpTaskBuilder {
         "-h", "--help", "-help", "-?", "--usage", "-usage", "--version", "-version",
     ]
     /// Words in a flag that mark its value as a secret, so it is masked and never remembered or saved in presets.
-    static let secretWords = ["password", "passwd", "passphrase", "secret", "token", "apikey", "api-key"]
+    static let secretWords = [
+        "password", "passwd", "passphrase", "phrase", "secret", "token", "apikey", "api-key", "twofactor",
+    ]
 
     /// A generated task plus which field belongs to which option, for the searchable list.
     public struct GeneratedTask: Sendable, Hashable {
@@ -74,14 +76,16 @@ public enum HelpTaskBuilder {
     }
 
     /// A password or token, judged by the flag and by the value's name (7-Zip's `-p{Password}`, curl's
-    /// `-u user:password`). A value that names a file, such as rsync's `--password-file=FILE`, is a path, not a
-    /// secret.
+    /// `-u user:password`, curl's `--pass <phrase>`). A value that names a file, such as rsync's
+    /// `--password-file=FILE`, is a path, not a secret. Deliberately cautious: curl's `--cert
+    /// <certificate[:password]>` is masked too, because its value can carry a password.
     private static func isSecret(_ option: HelpOption) -> Bool {
         let valueName = option.valueName?.lowercased() ?? ""
         guard !valueName.isEmpty, !valueName.contains("file") else { return false }
-        return (option.flags.map { $0.lowercased() } + [valueName]).contains { text in
-            secretWords.contains { text.contains($0) }
-        }
+        let flags = option.flags.map { $0.lowercased() }
+        let isPassFlag = flags.contains { $0.split(separator: "-").contains("pass") }
+        return isPassFlag
+            || (flags + [valueName]).contains { text in secretWords.contains { text.contains($0) } }
     }
 
     private static func escapeBraces(_ text: String) -> String {

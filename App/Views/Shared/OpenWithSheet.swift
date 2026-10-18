@@ -32,7 +32,12 @@ struct OpenWithSheet: View {
                                 GlyphTile(symbol: choice.task.symbol, tint: choice.manifest.tint, size: 30)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(choice.task.title).font(.body.weight(.medium))
-                                    Text(choice.manifest.name).font(.helpText).foregroundStyle(.secondary)
+                                    Text(
+                                        choice.usesOnlyFirstFile
+                                            ? "\(choice.manifest.name) · uses only the first file"
+                                            : choice.manifest.name
+                                    )
+                                    .font(.helpText).foregroundStyle(.secondary)
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right").font(.helpText).foregroundStyle(.tertiary)

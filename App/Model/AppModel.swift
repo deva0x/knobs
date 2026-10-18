@@ -276,6 +276,8 @@ final class AppModel {
         struct Choice: Identifiable {
             let manifest: ToolManifest
             let task: ManifestTask
+            /// The task takes one file, but several were opened.
+            let usesOnlyFirstFile: Bool
             /// Task ids repeat across tools, so the tool is part of the id.
             var id: String { KnobsLibrary.key(toolID: manifest.id, taskID: task.id) }
         }
@@ -304,20 +306,23 @@ final class AppModel {
         let fitting = manifests.flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
             .filter { fits(Self.openableField(of: $0.task)) }
         let installed = fitting.filter { isInstalled($0.manifest) }
-        var pool = installed.isEmpty ? fitting : installed
-        // Several files go to tasks that take several, such as Merge PDFs, when there are any; a single-file task
-        // would quietly use only the first.
-        let takingSeveral = pool.filter { Self.openableField(of: $0.task).map(Self.takesSeveralFiles) ?? false }
-        if urls.count > 1, !takingSeveral.isEmpty { pool = takingSeveral }
+        let pool = installed.isEmpty ? fitting : installed
         let specific = pool.filter { candidate in
             Self.openableField(of: candidate.task).map { FileTypeCheck.namesSpecificTypes($0.kind) } ?? false
         }
-        let choices = specific.isEmpty ? pool : specific
-        if choices.count == 1, let only = choices.first {
+        // With several files, tasks that take several (Merge PDFs) come first. Single-file tasks stay on offer,
+        // marked as using only the first file, rather than being hidden or quietly dropping files.
+        let choices = (specific.isEmpty ? pool : specific).map { candidate in
+            PendingFiles.Choice(
+                manifest: candidate.manifest, task: candidate.task,
+                usesOnlyFirstFile: urls.count > 1
+                    && !(Self.openableField(of: candidate.task).map(Self.takesSeveralFiles) ?? false))
+        }
+        .sorted { !$0.usesOnlyFirstFile && $1.usesOnlyFirstFile }
+        if choices.count == 1, let only = choices.first, !only.usesOnlyFirstFile {
             use(urls, for: only.task, of: only.manifest)
         } else if !choices.isEmpty {
-            pendingFiles = PendingFiles(
-                urls: urls, choices: choices.map { PendingFiles.Choice(manifest: $0.manifest, task: $0.task) })
+            pendingFiles = PendingFiles(urls: urls, choices: choices)
         }
     }
 

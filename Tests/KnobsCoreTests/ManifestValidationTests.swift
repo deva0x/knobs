@@ -57,6 +57,12 @@ import Testing
         #expect(loadingError(manifest)?.path == "executable")
     }
 
+    @Test func alternativeExecutablesMustBeBareNames() {
+        var manifest = minimalManifest()
+        manifest["alternativeExecutables"] = ["sample2", "/usr/bin/sample"]
+        #expect(loadingError(manifest)?.path == "alternativeExecutables[1]")
+    }
+
     @Test func toolIDMustBeLowercaseWithDashes() {
         var manifest = minimalManifest()
         manifest["id"] = "Sample Tool"

@@ -45,9 +45,11 @@ final class LinuxModel {
             }
         }
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
-        manifests = catalog.manifests
+        let locator = ToolLocator(environmentPath: environment["PATH"])
+        // Each tool under the name it is installed as, such as 7-Zip as `7z` on Ubuntu, once at launch.
+        manifests = catalog.manifests.map(locator.resolve)
         manifestFailures = catalog.failures
-        locator = ToolLocator(environmentPath: environment["PATH"])
+        self.locator = locator
         runner = ToolRunner(environment: ToolRunner.environment(base: environment, locator: locator))
         helpReader = HelpReader(runner: runner)
         refreshAvailability()

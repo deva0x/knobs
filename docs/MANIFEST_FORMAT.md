@@ -61,6 +61,7 @@ This document is the specification. `KnobsCore` implements it, and its tests use
 | `name` | string | yes | Shown in the sidebar |
 | `summary` | string | yes | One sentence, plain words |
 | `executable` | string | yes | Binary name looked up by `ToolLocator`. A name only, never a path |
+| `alternativeExecutables` | array of strings | no | Other names the same tool is installed under, tried in order when `executable` isn't found. The app runs and shows the first name found, so the command on screen is the one that runs. 7-Zip lists `7z`, its name on Ubuntu. Names only, never paths |
 | `install.brew` | string | yes | Homebrew formula, shown as `brew install <formula>` |
 | `homepage` | string | no | Link shown in the tool's header |
 | `symbol` | string | yes | SF Symbol name for the tool's glyph tile |
@@ -168,7 +169,7 @@ happen:
 - a duplicate tool, task or field id
 - a placeholder or `if` that refers to a field that doesn't exist
 - a `default` outside `minimum`/`maximum`, or not one of the `options`
-- `executable` containing `/`
+- `executable` or an `alternativeExecutables` entry that is empty or contains `/`
 - `schemaVersion` other than 1
 - a task without exactly one `{extra}`, `{extra}` inside an `if`, or a field whose id is `extra` or `output`
   (both are reserved)

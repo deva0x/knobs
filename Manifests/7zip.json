@@ -4,6 +4,7 @@
   "name": "7-Zip",
   "summary": "Create and open archives, with strong encryption.",
   "executable": "7zz",
+  "alternativeExecutables": ["7z"],
   "install": { "brew": "sevenzip" },
   "homepage": "https://www.7-zip.org",
   "symbol": "archivebox",

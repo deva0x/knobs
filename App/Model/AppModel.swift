@@ -75,9 +75,11 @@ final class AppModel {
             }
         }
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
-        bundledManifests = catalog.manifests
+        let locator = ToolLocator(environmentPath: environment["PATH"])
+        // Each tool under the name it is installed as, such as 7-Zip as `7z` on Ubuntu, once at launch.
+        bundledManifests = catalog.manifests.map(locator.resolve)
         manifestFailures = catalog.failures
-        locator = ToolLocator(environmentPath: environment["PATH"])
+        self.locator = locator
         runner = ToolRunner(environment: ToolRunner.environment(base: environment, locator: locator))
         helpReader = HelpReader(runner: runner)
         // Reopen the tool used most recently, so the app picks up where it left off.

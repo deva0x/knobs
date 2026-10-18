@@ -8,6 +8,11 @@ enum ManifestValidator {
         id.wholeMatch(of: /[a-z0-9]+(-[a-z0-9]+)*/) != nil
     }
 
+    /// Executables are looked up by name in the search folders, never run from a path.
+    private static func isBareName(_ name: String) -> Bool {
+        !name.isEmpty && !name.contains("/")
+    }
+
     /// Field ids appear in `{placeholders}`, so they start with a letter and use only letters and digits.
     private static func isValidFieldID(_ id: String) -> Bool {
         id.wholeMatch(of: /[a-zA-Z][a-zA-Z0-9]*/) != nil
@@ -22,8 +27,11 @@ enum ManifestValidator {
         guard isValidID(manifest.id) else {
             throw fail("id", "\"\(manifest.id)\" should use only lowercase letters, digits and single dashes")
         }
-        guard !manifest.executable.isEmpty, !manifest.executable.contains("/") else {
+        guard isBareName(manifest.executable) else {
             throw fail("executable", "should be a bare name such as \"ffmpeg\", not a path")
+        }
+        for (index, name) in manifest.alternativeExecutables.enumerated() where !isBareName(name) {
+            throw fail("alternativeExecutables[\(index)]", "should be a bare name such as \"7z\", not a path")
         }
         // The app opens the homepage in the browser, so only web addresses are allowed.
         if let homepage = manifest.homepage {

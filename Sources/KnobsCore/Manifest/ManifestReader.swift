@@ -13,8 +13,8 @@ enum ManifestReader {
         let root = try ObjectReader(
             document, path: "", source: source,
             allowedKeys: [
-                "schemaVersion", "id", "name", "summary", "executable", "install", "homepage", "symbol", "tint",
-                "helpArguments",
+                "schemaVersion", "id", "name", "summary", "executable", "alternativeExecutables", "install",
+                "homepage", "symbol", "tint", "helpArguments",
                 "tasks",
             ])
         let version = try root.integer("schemaVersion")
@@ -36,6 +36,7 @@ enum ManifestReader {
             name: try root.string("name"),
             summary: try root.string("summary"),
             executable: try root.string("executable"),
+            alternativeExecutables: try root.optionalStringArray("alternativeExecutables") ?? [],
             brewFormula: try install.string("brew"),
             homepage: try root.optionalString("homepage"),
             symbol: try root.string("symbol"),

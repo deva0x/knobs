@@ -38,6 +38,28 @@ import Testing
         #expect(locator.locate("") == nil)
     }
 
+    @Test func aToolInstalledOnlyUnderAnotherNameRunsUnderThatName() {
+        let locator = ToolLocator(environmentPath: nil, isExecutableFile: { $0 == "/usr/bin/7z" })
+        #expect(locator.resolve(sevenZip()).executable == "7z")
+    }
+
+    @Test func thePreferredNameWinsWhenBothAreInstalled() {
+        let installed: Set = ["/usr/bin/7z", "/usr/bin/7zz"]
+        let locator = ToolLocator(environmentPath: nil, isExecutableFile: { installed.contains($0) })
+        #expect(locator.resolve(sevenZip()).executable == "7zz")
+    }
+
+    @Test func aToolThatIsNotInstalledKeepsItsPreferredName() {
+        let locator = ToolLocator(environmentPath: nil, isExecutableFile: { _ in false })
+        #expect(locator.resolve(sevenZip()).executable == "7zz")
+    }
+
+    private func sevenZip() -> ToolManifest {
+        ToolManifest(
+            id: "7zip", name: "7-Zip", summary: "", executable: "7zz", alternativeExecutables: ["7z"],
+            brewFormula: "sevenzip", homepage: nil, symbol: "archivebox", tint: .brown, tasks: [])
+    }
+
     @Test func environmentForToolsUsesTheLocatorsPath() {
         let locator = ToolLocator(environmentPath: nil, isExecutableFile: { _ in false })
         let environment = ToolRunner.environment(base: ["PATH": "/usr/bin", "HOME": "/Users/me"], locator: locator)

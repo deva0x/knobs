@@ -5,8 +5,12 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
     public let id: String
     public let name: String
     public let summary: String
-    /// A bare executable name such as `ffmpeg`, resolved by `ToolLocator`. Never a path.
-    public let executable: String
+    /// A bare executable name such as `ffmpeg`, resolved by `ToolLocator`. Never a path. After
+    /// `ToolLocator.resolve`, the name the tool is actually installed under.
+    public private(set) var executable: String
+    /// Other names the same tool is installed under, tried in order when `executable` isn't found, such as
+    /// `7z` for 7-Zip on Ubuntu.
+    public let alternativeExecutables: [String]
     public let brewFormula: String
     public let homepage: String?
     public let symbol: String
@@ -22,6 +26,7 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
         name: String,
         summary: String,
         executable: String,
+        alternativeExecutables: [String] = [],
         brewFormula: String,
         homepage: String?,
         symbol: String,
@@ -33,12 +38,20 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
         self.name = name
         self.summary = summary
         self.executable = executable
+        self.alternativeExecutables = alternativeExecutables
         self.brewFormula = brewFormula
         self.homepage = homepage
         self.symbol = symbol
         self.tint = tint
         self.tasks = tasks
         self.helpArguments = helpArguments
+    }
+
+    /// The same tool, run and shown under `name`.
+    func runningAs(_ name: String) -> ToolManifest {
+        var copy = self
+        copy.executable = name
+        return copy
     }
 
     public func task(withID taskID: String) -> ManifestTask? {

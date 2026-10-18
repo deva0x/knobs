@@ -92,3 +92,14 @@ to carry GTK itself. So, until Deva decides:
 - Held: AppImage.
 - The open question for Deva: accept that floor, or un-defer Flatpak (GNOME runtime), the one route with this
   toolkit that reaches Ubuntu 24.04, Debian 13 and older distributions too.
+
+## DEC-016: A tool may be installed under other names; Knobs shows the name it runs (2026-10-18)
+Ubuntu 26.04's `7zip` package installs 7-Zip as `7z` (a wrapper over 7-Zip 26), not `7zz` as Homebrew does, so
+Knobs reported 7-Zip as not installed. Manifests gain an optional ordered `alternativeExecutables` list. At
+launch `ToolLocator.resolve` gives each manifest the first of its names that is installed, preferred name
+first, and everything after that, including the command shown and copied, uses that name. Considered and
+rejected: a per-platform name map (the difference follows the package, not the operating system) and
+showing the preferred name while running another (the screen must show the command that runs).
+Limits: names are resolved once at launch, so a tool installed later under an alternative name is found on
+the next launch. Ubuntu's `7z` is the same 7-Zip as `7zz`; an old p7zip `7z` elsewhere is untested with the
+7-Zip tasks.

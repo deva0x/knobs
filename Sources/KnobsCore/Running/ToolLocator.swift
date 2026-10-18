@@ -34,6 +34,13 @@ public struct ToolLocator: Sendable {
         return nil
     }
 
+    /// The manifest under the first of its names that is installed, so the command shown is the one that runs.
+    /// Unchanged when the tool isn't installed under any of them.
+    public func resolve(_ manifest: ToolManifest) -> ToolManifest {
+        let installedName = ([manifest.executable] + manifest.alternativeExecutables).first { locate($0) != nil }
+        return installedName.map(manifest.runningAs) ?? manifest
+    }
+
     /// `FileManager.isExecutableFile` is also true for folders, which can't be run.
     @Sendable public static func isExecutableRegularFile(_ path: String) -> Bool {
         var isFolder: ObjCBool = false

@@ -227,7 +227,11 @@ struct FileThumbnail: View {
     @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        Group {
+        // The ZStack always has content, so the view exists and its `.task` runs to load the icon and preview.
+        // An empty Group here would render nothing and never load anything.
+        ZStack {
+            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                .fill(.quaternary.opacity(thumbnail == nil && icon == nil ? 1 : 0))
             if let thumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()

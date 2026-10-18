@@ -318,7 +318,15 @@ final class AppModel {
                 usesOnlyFirstFile: urls.count > 1
                     && !(Self.openableField(of: candidate.task).map(Self.takesSeveralFiles) ?? false))
         }
-        .sorted { !$0.usesOnlyFirstFile && $1.usesOnlyFirstFile }
+        .enumerated()
+        .sorted { lhs, rhs in
+            // Closest fit first: tasks for several files when several were opened, then tasks that accept fewer
+            // types (a video-only task before one for any image, video or PDF), then manifest order.
+            let left = (lhs.element.usesOnlyFirstFile, Self.acceptedTypeCount(of: lhs.element.task), lhs.offset)
+            let right = (rhs.element.usesOnlyFirstFile, Self.acceptedTypeCount(of: rhs.element.task), rhs.offset)
+            return (left.0 ? 1 : 0, left.1, left.2) < (right.0 ? 1 : 0, right.1, right.2)
+        }
+        .map(\.element)
         if choices.count == 1, let only = choices.first, !only.usesOnlyFirstFile {
             use(urls, for: only.task, of: only.manifest)
         } else if !choices.isEmpty {
@@ -346,6 +354,12 @@ final class AppModel {
             default: false
             }
         }
+    }
+
+    /// How many types the task's input accepts; a task that takes anything counts as accepting the most.
+    private static func acceptedTypeCount(of task: ManifestTask) -> Int {
+        guard case .inputFile(let types, _)? = openableField(of: task)?.kind, !types.isEmpty else { return .max }
+        return types.count
     }
 
     private static func takesSeveralFiles(_ field: Field) -> Bool {

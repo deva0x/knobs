@@ -1,0 +1,416 @@
+usage: OCRmyPDF [-h] [-l LANGUAGES] [--image-dpi DPI]
+                [--output-type {auto,pdfa,pdf,pdfa-1,pdfa-2,pdfa-3,none}]
+                [--pdfa-backend {auto,ghostscript,internal}]
+                [--sidecar [FILE]] [-n] [--version] [-j N] [-q] [-v [VERBOSE]]
+                [--title TITLE] [--author AUTHOR] [--subject SUBJECT]
+                [--keywords KEYWORDS] [-r] [--remove-background] [-d] [-c]
+                [-i] [--unpaper-args UNPAPER_ARGS] [--oversample DPI]
+                [--remove-vectors]
+                [-m {default,force,force-ocr-no-links,skip,redo,strip}] [-f]
+                [-s] [--redo-ocr] [--skip-big MPixels]
+                [--invalidate-digital-signatures]
+                [--tagged-pdf-mode {default,ignore}] [--pages PAGES]
+                [--max-image-mpixels MPixels]
+                [--max-ocr-image-mpixels MPixels]
+                [--pdf-renderer {auto,hocr,sandwich,hocrdebug,fpdf2}]
+                [--ocr-engine {auto,tesseract,none}]
+                [--rasterizer {auto,ghostscript,pypdfium}]
+                [--rotate-pages-threshold CONFIDENCE]
+                [--fast-web-view MEGABYTES] [--continue-on-soft-render-error]
+                [--plugin PLUGINS] [-k] [--tesseract-config CFG]
+                [--tesseract-pagesegmode PSM] [--tesseract-oem MODE]
+                [--tesseract-thresholding TESSERACT_THRESHOLDING]
+                [--tesseract-timeout SECONDS]
+                [--tesseract-non-ocr-timeout SECONDS]
+                [--tesseract-downsample-large-images | --no-tesseract-downsample-large-images]
+                [--tesseract-downsample-above TESSERACT_DOWNSAMPLE_ABOVE]
+                [--user-words FILE] [--user-patterns FILE] [-O {0,1,2,3}]
+                [--jpeg-quality Q] [--png-quality Q] [--jbig2-threshold T]
+                [--color-conversion-strategy {CMYK,Gray,LeaveColorUnchanged,RGB,UseDeviceIndependentColor}]
+                [--pdfa-image-compression {auto,jpeg,lossless}]
+                [--ghostscript-jpeg-quality Q] [--ghostscript-jpeg-maxdpi DPI]
+                input_pdf_or_image output_pdf
+
+Generates a searchable PDF or PDF/A from a regular PDF.
+
+OCRmyPDF rasterizes each page of the input PDF, optionally corrects page
+rotation and performs image processing, runs the Tesseract OCR engine on the
+image, and then creates a PDF from the OCR information.
+
+positional arguments:
+  input_pdf_or_image    PDF file containing the images to be OCRed (or '-' to
+                        read from standard input)
+  output_pdf            Output searchable PDF file (or '-' to write to
+                        standard output). Existing files will be overwritten
+                        (use --no-overwrite to prevent this). If same as input
+                        file, the input file will be updated only if
+                        processing is successful.
+
+options:
+  -h, --help            show this help message and exit
+  -l, --language LANGUAGES
+                        Language(s) of the file to be OCRed (see tesseract
+                        --list-langs for all language packs installed in your
+                        system). Use -l eng+deu for multiple languages.
+  --image-dpi DPI       When the input file is an image, not a PDF, use this
+                        DPI instead of the DPI claimed by the input file. If
+                        the input does not claim a sensible DPI, this option
+                        will be required.
+  --output-type {auto,pdfa,pdf,pdfa-1,pdfa-2,pdfa-3,none}
+                        Choose output type. 'auto' (default) produces best-
+                        effort PDF/A: OCRmyPDF adds the PDF/A declarations
+                        itself and checks the result with pikepdf's PDF/A
+                        validator; if the file does not pass, it converts with
+                        Ghostscript if installed, or else outputs a regular
+                        PDF. 'pdfa' creates a PDF/A-2b compliant file for long
+                        term archiving the same way, but requires Ghostscript
+                        for files that fail validation. See --pdfa-backend to
+                        choose whether Ghostscript is used. 'pdf' minimizes
+                        changes to the input file. 'pdfa-1' creates a PDF/A-1b
+                        file. 'pdfa-2' is equivalent to 'pdfa'. 'pdfa-3'
+                        creates a PDF/A-3b file. 'none' will produce no
+                        output, which may be helpful if only the --sidecar is
+                        desired.
+  --pdfa-backend {auto,ghostscript,internal}
+                        Choose how PDF/A is produced. 'internal' repairs the
+                        file and adds the PDF/A declarations with pikepdf,
+                        passing JPEG images through unchanged, and checks the
+                        result with pikepdf's PDF/A validator. 'ghostscript'
+                        converts the file with Ghostscript, which re-encodes
+                        images and converts colours as needed. 'auto' (the
+                        default) tries 'internal' first and uses Ghostscript
+                        if the validator does not approve the result, or if a
+                        Ghostscript-only option such as --pdfa-image-
+                        compression or --ghostscript-jpeg-quality is given.
+                        With 'internal', a file the validator does not approve
+                        is an error for the 'pdfa' output types, and becomes a
+                        regular PDF for --output-type auto.
+  --sidecar [FILE]      Generate sidecar text files that contain the same text
+                        recognized by Tesseract. This may be useful for
+                        building a OCR text database. If FILE is omitted, the
+                        sidecar file be named {output_file}.txt; the next
+                        argument must NOT be the name of the input PDF. If
+                        FILE is set to '-', the sidecar is written to stdout
+                        (a convenient way to preview OCR quality). The output
+                        file and sidecar may not both use stdout at the same
+                        time.
+  -n, --no-overwrite    If the output file already exists, exit with an error
+                        instead of overwriting it.
+  --version             Print program version and exit
+
+Job control options:
+  -j, --jobs N          Use up to N CPU cores simultaneously (default: use
+                        all).
+  -q, --quiet           Suppress INFO messages
+  -v, --verbose [VERBOSE]
+                        Print more verbose messages for each additional
+                        verbose level. Use `-v 1` typically for much more
+                        detailed logging. Higher numbers are probably only
+                        useful in debugging.
+
+Metadata options:
+  Set output PDF/A metadata (default: copy input document's metadata)
+
+  --title TITLE         Set document title (place multiple words in quotes)
+  --author AUTHOR       Set document author
+  --subject SUBJECT     Set document subject description
+  --keywords KEYWORDS   Set document keywords
+
+Image preprocessing options:
+  Options to improve the quality of the final PDF and OCR
+
+  -r, --rotate-pages    Automatically rotate pages based on detected text
+                        orientation
+  --remove-background   Attempt to remove background from gray or color pages,
+                        setting it to white
+  -d, --deskew          Deskew each page before performing OCR
+  -c, --clean           Clean pages from scanning artifacts before performing
+                        OCR, and send the cleaned page to OCR, but do not
+                        include the cleaned page in the output
+  -i, --clean-final     Clean page as above, and incorporate the cleaned image
+                        in the final PDF. Might remove desired content.
+  --unpaper-args UNPAPER_ARGS
+                        A quoted string of arguments to pass to unpaper.
+                        Requires --clean. Example: --unpaper-args '--layout
+                        double'.
+  --oversample DPI      Oversample images to at least the specified DPI, to
+                        improve OCR results slightly
+  --remove-vectors      EXPERIMENTAL. Mask out any vector objects in the PDF
+                        so that they will not be included in OCR. This can
+                        eliminate false characters.
+
+OCR options:
+  Control how OCR is applied
+
+  -m, --mode {default,force,force-ocr-no-links,skip,redo,strip}
+                        Processing mode for pages with existing text.
+                        'default' errors if text is found. 'force' rasterizes
+                        all content and runs OCR, keeping hyperlinks (same as
+                        --force-ocr). 'force-ocr-no-links' is like 'force' but
+                        also discards hyperlinks. 'skip' skips pages with
+                        existing text (same as --skip-text). 'redo' re-OCRs
+                        pages, replacing old invisible text (same as --redo-
+                        ocr). 'strip' removes the invisible OCR text layer
+                        without rasterizing or running OCR, producing a
+                        smaller file; only text drawn as invisible (render
+                        mode 3) is removed, so text from some OCR engines
+                        cannot be removed this way.
+  -f, --force-ocr       Rasterize any text or vector objects on each page,
+                        apply OCR, and save the rastered output (this rewrites
+                        the PDF). Hyperlinks are kept. Equivalent to --mode
+                        force.
+  -s, --skip-text       Skip OCR on any pages that already contain text, but
+                        include the page in final output; useful for PDFs that
+                        contain a mix of images, text pages, and/or previously
+                        OCRed pages. Equivalent to --mode skip.
+  --redo-ocr            Attempt to detect and remove the hidden OCR layer from
+                        files that were previously OCRed with OCRmyPDF or
+                        another program. Apply OCR to text found in raster
+                        images. Existing visible text objects will not be
+                        changed. If there is no existing OCR, OCR will be
+                        added. Equivalent to --mode redo.
+  --skip-big MPixels    Skip OCR on pages larger than the specified amount of
+                        megapixels, but include skipped pages in final output
+  --invalidate-digital-signatures
+                        Normally, OCRmyPDF will refuse to OCR a PDF that has a
+                        digital signature. This option allows OCR to proceed,
+                        but the digital signature will be invalidated.
+  --tagged-pdf-mode {default,ignore}
+                        Control behavior when a Tagged PDF is encountered.
+                        'default' errors if --mode is default, otherwise
+                        warns. 'ignore' always warns but continues processing.
+
+Advanced:
+  Advanced options to control OCRmyPDF
+
+  --pages PAGES         Limit OCR to the specified pages (ranges or comma
+                        separated), skipping others. The token 'end' is an
+                        alias for the last page, so e.g. '3-end' OCRs from
+                        page 3 to the last page.
+  --max-image-mpixels MPixels
+                        Set maximum number of megapixels to unpack before
+                        treating an image as a decompression bomb
+  --max-ocr-image-mpixels MPixels
+                        Downsample the image sent to OCR when it exceeds this
+                        many megapixels, to bound the memory each page needs.
+                        The visible page is never downsampled, so this trades
+                        OCR accuracy on very high resolution scans for a
+                        predictable memory ceiling. Peak memory is roughly
+                        (--jobs) x 16 bytes x (megapixels of the largest
+                        page). By default OCR runs at the full resolution of
+                        the page.
+  --pdf-renderer {auto,hocr,sandwich,hocrdebug,fpdf2}
+                        Choose OCR PDF renderer. 'auto' (recommended) uses
+                        fpdf2, which provides full international language
+                        support including RTL scripts, proper text
+                        positioning, and invisible text that becomes visible
+                        when selected. 'sandwich' renders text as a background
+                        layer. Legacy 'hocr' and 'hocrdebug' options are
+                        deprecated and will use fpdf2.
+  --ocr-engine {auto,tesseract,none}
+                        OCR engine to use. 'auto' (default) selects the best
+                        available engine. 'tesseract' uses Tesseract OCR.
+                        'none' skips OCR entirely, useful for PDF/A conversion
+                        or image processing without text recognition.
+  --rasterizer {auto,ghostscript,pypdfium}
+                        Choose PDF page rasterizer. 'auto' (the default)
+                        prefers pypdfium2 when the pypdfium2 package is
+                        installed, falling back to Ghostscript otherwise.
+                        pypdfium2 anti-aliases page content and generally
+                        produces better input for OCR than Ghostscript 10.x,
+                        which can render aliased glyphs that OCR misreads as
+                        extra word breaks. 'pypdfium' forces the pypdfium2
+                        rasterizer (requires the pypdfium2 package);
+                        'ghostscript' forces the traditional Ghostscript
+                        rasterizer.
+  --rotate-pages-threshold CONFIDENCE
+                        Only rotate pages when confidence is above this value
+                        (arbitrary units reported by tesseract)
+  --fast-web-view MEGABYTES
+                        If the size of file is more than this threshold (in
+                        MB), then linearize the PDF for fast web viewing. This
+                        allows the PDF to be displayed before it is fully
+                        downloaded in web browsers, but increases the space
+                        required slightly. By default we skip this for small
+                        files which do not benefit. If the threshold is 0 it
+                        will be apply to all files. Set the threshold very
+                        high to disable.
+  --continue-on-soft-render-error
+                        Continue processing pages after a recoverable PDF
+                        rendering error. A recoverable error is one that does
+                        not prevent the page from being rendered, but may
+                        result in visual differences compared to the input
+                        file. Missing fonts are a typical source of these
+                        errors.
+  --plugin PLUGINS      Name of plugin to import. Argument may be issued
+                        multiple times to import multiple plugins. Plugins may
+                        be specified as module names in Python syntax,
+                        provided they are installed in the same Python
+                        (virtual) environment as ocrmypdf; or you may give the
+                        path to the Python file that contains the plugin.
+                        Plugins must conform to the specification in the
+                        OCRmyPDF documentation.
+
+Debugging:
+  Arguments to help with troubleshooting and debugging
+
+  -k, --keep-temporary-files
+                        Keep temporary files (helpful for debugging)
+
+Tesseract:
+  Advanced control of Tesseract OCR
+
+  --tesseract-config CFG
+                        Additional Tesseract configuration files -- see
+                        documentation.
+  --tesseract-pagesegmode PSM
+                        Set Tesseract page segmentation mode (see tesseract
+                        --help-extra).
+  --tesseract-oem MODE  Set Tesseract 4+ OCR engine mode: 0 - original
+                        Tesseract only; 1 - neural nets LSTM only; 2 -
+                        Tesseract + LSTM; 3 - default.
+  --tesseract-thresholding TESSERACT_THRESHOLDING
+                        Set Tesseract 5.0+ input image thresholding mode. This
+                        may improve OCR results on low quality images or those
+                        that contain high contrast color. Options: auto, otsu,
+                        adaptive-otsu, sauvola. auto/otsu is the Tesseract
+                        default (legacy Otsu); adaptive-otsu is an improved
+                        Otsu algorithm with improved sort for background color
+                        changes; sauvola is based on local standard deviation.
+  --tesseract-timeout SECONDS
+                        Give up on OCR after the timeout, but copy the
+                        preprocessed page into the final output. This timeout
+                        is only used when using Tesseract for OCR. When
+                        Tesseract is used for other operations such as
+                        deskewing and orientation, the timeout is controlled
+                        by --tesseract-non-ocr-timeout.
+  --tesseract-non-ocr-timeout SECONDS
+                        Give up on non-OCR operations such as deskewing and
+                        orientation after timeout. This is a separate timeout
+                        from --tesseract-timeout because these operations are
+                        not as expensive as OCR.
+  --tesseract-downsample-large-images, --no-tesseract-downsample-large-images
+                        Downsample large images before OCR. Tesseract has an
+                        upper limit on the size images it will support. If
+                        this argument is given, OCRmyPDF will downsample large
+                        images to fit Tesseract. This may reduce OCR quality,
+                        on large images the most desirable text is usually
+                        larger. If this parameter is not supplied, Tesseract
+                        will error out and produce no OCR on the page in
+                        question. This argument should be used with a high
+                        value of --tesseract-timeout to ensure Tesseract has
+                        enough to time.
+  --tesseract-downsample-above TESSERACT_DOWNSAMPLE_ABOVE
+                        Downsample images larger than this size pixel size
+                        (either dimension) before OCR. --tesseract-downsample-
+                        large-images downsamples when an image exceeds
+                        Tesseract's internal limits. This argument causes
+                        downsampling to occur when an image exceeds the given
+                        size. This may reduce OCR quality, but on large images
+                        the most desirable text is usually larger.
+  --user-words FILE     Specify the location of the Tesseract user words file.
+                        This is a list of words Tesseract should consider
+                        while performing OCR in addition to its standard
+                        language dictionaries. This can improve OCR quality
+                        especially for specialized and technical documents.
+  --user-patterns FILE  Specify the location of the Tesseract user patterns
+                        file.
+
+Optimization options:
+  Control how the PDF is optimized after OCR
+
+  -O, --optimize {0,1,2,3}
+                        Control how PDF is optimized after processing:0 - do
+                        not optimize; 1 - do safe, lossless optimizations
+                        (default); 2 - do lossy JPEG and JPEG2000
+                        optimizations; 3 - do more aggressive lossy JPEG and
+                        JPEG2000 optimizations. To enable lossy JBIG2, see
+                        --jbig2-lossy.
+  --jpeg-quality Q      Adjust JPEG quality level for JPEG optimization. 100
+                        is best quality and largest output size; 1 is lowest
+                        quality and smallest output; 0 uses the default.
+  --png-quality Q       Adjust PNG quality level to use when quantizing PNGs.
+                        Values have same meaning as with --jpeg-quality
+  --jbig2-threshold T   Adjust JBIG2 symbol code classification threshold
+                        (default 0.85), range 0.4 to 0.9.
+
+Ghostscript:
+  Advanced control of Ghostscript
+
+  --color-conversion-strategy {CMYK,Gray,LeaveColorUnchanged,RGB,UseDeviceIndependentColor}
+                        Set Ghostscript color conversion strategy. OCRmyPDF
+                        does no color conversion of its own:
+                        'LeaveColorUnchanged' and 'RGB' are met by any PDF/A
+                        pikepdf's validator approves, while 'CMYK', 'Gray' and
+                        'UseDeviceIndependentColor' require Ghostscript and
+                        select --pdfa-backend ghostscript (an error with
+                        --pdfa-backend internal).
+  --pdfa-image-compression {auto,jpeg,lossless}
+                        Specify how to compress images in the output PDF/A.
+                        'auto' lets OCRmyPDF decide: at -O0 it uses lossless
+                        image compression so Ghostscript does not transcode
+                        lossless images to JPEG; at -O1 and above it defers to
+                        Ghostscript's heuristic, which may recompress images
+                        lossily. 'jpeg' changes all grayscale and color images
+                        to JPEG compression. 'lossless' uses PNG-style
+                        lossless compression for non-JPEG images and passes
+                        existing JPEGs through unchanged (re-encoding them
+                        losslessly would only inflate them). Monochrome images
+                        are always compressed using a lossless codec.
+                        Compression settings are applied to all pages,
+                        including those for which OCR was skipped. Not
+                        supported for --output-type=pdf ; that setting
+                        preserves the original compression of all images.
+  --ghostscript-jpeg-quality Q
+                        Advanced: Set Ghostscript's -dJPEGQ for images that
+                        Ghostscript transcodes to JPEG during PDF/A
+                        generation. 0 is maximum compression; 100 is best
+                        quality. If omitted, Ghostscript's default is used.
+                        This only affects images Ghostscript chooses to
+                        recompress; for general JPEG quality tuning prefer
+                        --jpeg-quality, which is applied by the OCRmyPDF
+                        optimizer.
+  --ghostscript-jpeg-maxdpi DPI
+                        Advanced: Force Ghostscript to downsample color,
+                        grayscale, and monochrome images in PDF/A output to
+                        the given maximum DPI. Reducing JPEG quality usually
+                        gives better results than downsampling at the same
+                        file size, and can degrade quality of high-resolution
+                        monochrome masks.
+
+OCRmyPDF attempts to keep the output file at about the same size.  If a file
+contains losslessly compressed images, and images in the output file will be
+losslessly compressed as well.
+
+PDF is a page description file that attempts to preserve a layout exactly.
+A PDF can contain vector objects (such as text or lines) and raster objects
+(images).  A page might have multiple images.  OCRmyPDF is prepared to deal
+with the wide variety of PDFs that exist in the wild.
+
+When a PDF page contains text, OCRmyPDF assumes that the page has already
+been OCRed or is a "born digital" page that should not be OCRed.  The default
+behavior is to exit in this case without producing a file.  You can use the
+option --skip-text to ignore pages with text, or --force-ocr to rasterize
+all objects on the page and produce an image-only PDF as output.
+
+    ocrmypdf --skip-text file_with_some_text_pages.pdf output.pdf
+
+    ocrmypdf --force-ocr word_document.pdf output.pdf
+
+If you are concerned about long-term archiving of PDFs, use the default option
+--output-type pdfa which converts the PDF to a standardized PDF/A-2b.  This
+removes some features from the PDF such as Javascript or forms. If you want to
+minimize the number of changes made to your PDF, use --output-type pdf.
+
+If OCRmyPDF is given an image file as input, it will attempt to convert the
+image to a PDF before processing.  For more control over the conversion of
+images to PDF, use the Python package img2pdf or other image to PDF software.
+
+For example, this command uses img2pdf to convert all .png files beginning
+with the 'page' prefix to a PDF, fitting each image on A4-sized paper, and
+sending the result to OCRmyPDF through a pipe.
+
+    img2pdf --pagesize A4 page*.png | ocrmypdf - myfile.pdf
+
+Online documentation is located at:
+    https://ocrmypdf.readthedocs.io/en/latest/introduction.html

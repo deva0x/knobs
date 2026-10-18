@@ -66,6 +66,7 @@ This document is the specification. `KnobsCore` implements it, and its tests use
 | `symbol` | string | yes | SF Symbol name for the tool's glyph tile |
 | `tint` | string | yes | One of `purple`, `red`, `teal`, `indigo`, `orange`, `blue`, `gray`, `green`, `cyan`, `brown`, `pink`, `yellow`, `mint` |
 | `tasks` | array | yes | At least one task |
+| `helpArguments` | array of strings | no | What makes the tool print its options, for the "All options" view. Default `["--help"]`; ffmpeg uses `["-hide_banner", "-h", "long"]` |
 
 ## Task
 

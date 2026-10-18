@@ -14,6 +14,7 @@ enum ManifestReader {
             document, path: "", source: source,
             allowedKeys: [
                 "schemaVersion", "id", "name", "summary", "executable", "install", "homepage", "symbol", "tint",
+                "helpArguments",
                 "tasks",
             ])
         let version = try root.integer("schemaVersion")
@@ -39,7 +40,8 @@ enum ManifestReader {
             homepage: try root.optionalString("homepage"),
             symbol: try root.string("symbol"),
             tint: tint,
-            tasks: tasks
+            tasks: tasks,
+            helpArguments: try root.optionalStringArray("helpArguments") ?? ToolManifest.defaultHelpArguments
         )
     }
 

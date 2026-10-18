@@ -7,6 +7,7 @@
   "install": { "brew": "imagemagick" },
   "homepage": "https://imagemagick.org",
   "symbol": "photo.stack",
+  "helpArguments": ["-help"],
   "tint": "teal",
   "tasks": [
     {

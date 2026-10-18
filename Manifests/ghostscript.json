@@ -7,6 +7,7 @@
   "install": { "brew": "ghostscript" },
   "homepage": "https://www.ghostscript.com",
   "symbol": "doc.on.doc",
+  "helpArguments": ["-h"],
   "tint": "gray",
   "tasks": [
     {

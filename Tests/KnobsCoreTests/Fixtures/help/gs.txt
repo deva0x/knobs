@@ -1,0 +1,49 @@
+GPL Ghostscript 10.08.0 (2026-09-08)
+Copyright (C) 2026 Artifex Software, Inc.  All rights reserved.
+Usage: gs [switches] [file1.ps file2.ps ...]
+Most frequently used switches: (you can use # in place of =)
+ -dNOPAUSE           no pause after page   | -q       `quiet', fewer messages
+ -g<width>x<height>  page size in pixels   | -r<res>  pixels/inch resolution
+ -sDEVICE=<devname>  select device         | -dBATCH  exit after last file
+ -sOutputFile=<file> select output file: - for stdout, |command for pipe,
+                                         embed %d or %ld for page #
+Input formats: PostScript PostScriptLevel1 PostScriptLevel2 PostScriptLevel3 PDF
+Default output device: bbox
+Available devices:
+   ap3250 appledmp atx23 atx24 atx38 bbox bit bitcmyk bitrgb bitrgbtags
+   bjcgray bjcmono bmp16 bmp16m bmp256 bmp32b bmpgray bmpmono bmpsep1
+   bmpsep8 ccr cdeskjet cdj500 cdj550 cdjcolor cdjmono cfax cif cljet5
+   cljet5c cljet5pr coslw2p coslwxl declj250 deskjet devicen dfaxhigh
+   dfaxlow display dj505j djet500 djet500c dnj650c docxwrite eps2write
+   eps9high eps9mid epson epsonc escp faxg3 faxg32d faxg4 fpng fs600 hl7x0
+   hocr ibmpro ijs imagen inferno ink_cov inkcov itk24i itk38 iwhi iwhic
+   iwlo iwlow iwlq iwlqc jetp3852 jpeg jpegcmyk jpeggray laserjet lj250
+   lj3100sw lj4dith lj4dithp lj5gray lj5mono ljet2p ljet3 ljet3d ljet4
+   ljet4d ljet4pjl ljetplus lp2563 lp8000 lq850 m8510 mgr4 mgr8 mgrgray2
+   mgrgray4 mgrgray8 mgrmono miff24 necp6 nullpage oce9050 ocr oki182 okiibm
+   oprp opvp paintjet pam pamcmyk32 pamcmyk4 pbm pbmraw pclm pclm8 pcx16
+   pcx24b pcx256 pcxcmyk pcxgray pcxmono pdfimage24 pdfimage32 pdfimage8
+   pdfocr24 pdfocr32 pdfocr8 pdfwrite pdfwrite pdfwrite pgm pgmraw pgnm
+   pgnmraw photoex picty180 pj pjetxl pjxl pjxl300 pkm pkmraw pksm pksmraw
+   plan plan9bm planc plang plank planm plib plibc plibg plibk plibm png16
+   png16m png16malpha png256 png48 pngalpha pnggray pngmono pngmonod pnm
+   pnmraw ppm ppmraw pppm ps2write psdcmyk psdcmyk16 psdcmykog psdcmyktags
+   psdcmyktags16 psdrgb psdrgb16 psdrgbtags pxlcolor pxlmono r4081 sj48
+   spotcmyk st800 stcolor t4693d2 t4693d4 t4693d8 tek4696 tiff12nc tiff24nc
+   tiff32nc tiff48nc tiff64nc tiffcrle tiffg3 tiffg32d tiffg4 tiffgray
+   tifflzw tiffpack tiffscaled tiffscaled24 tiffscaled32 tiffscaled4
+   tiffscaled8 tiffsep tiffsep1 txtwrite uniprint urfcmyk urfgray urfrgb xcf
+   xpswrite
+Search path:
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/ghostscript/Resource/Init :
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/ghostscript/lib :
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/ghostscript/Resource/Font :
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/ghostscript/fonts :
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/fonts/default/ghostscript :
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/fonts/default/Type1 :
+   /opt/homebrew/Cellar/ghostscript/10.08.0/share/fonts/default/TrueType :
+   /usr/lib/DPS/outline/base : /usr/openwin/lib/X11/fonts/Type1 :
+   /usr/openwin/lib/X11/fonts/TrueType
+Ghostscript is also using fontconfig to search for font files
+For more information, see https://ghostscript.readthedocs.io/en/gs10.08.0/Use.html
+Please report bugs to bugs.ghostscript.com.

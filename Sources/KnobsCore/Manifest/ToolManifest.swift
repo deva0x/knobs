@@ -12,6 +12,10 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
     public let symbol: String
     public let tint: Tint
     public let tasks: [ManifestTask]
+    /// The arguments that make the tool print its options, for "All options". Usually `--help`.
+    public let helpArguments: [String]
+
+    public static let defaultHelpArguments = ["--help"]
 
     public init(
         id: String,
@@ -22,7 +26,8 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
         homepage: String?,
         symbol: String,
         tint: Tint,
-        tasks: [ManifestTask]
+        tasks: [ManifestTask],
+        helpArguments: [String] = ToolManifest.defaultHelpArguments
     ) {
         self.id = id
         self.name = name
@@ -33,6 +38,7 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
         self.symbol = symbol
         self.tint = tint
         self.tasks = tasks
+        self.helpArguments = helpArguments
     }
 
     public func task(withID taskID: String) -> ManifestTask? {

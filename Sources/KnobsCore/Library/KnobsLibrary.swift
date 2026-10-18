@@ -12,8 +12,36 @@ public struct KnobsLibrary: Sendable, Hashable, Codable {
     public private(set) var version = Self.currentVersion
     private var tasks: [String: TaskMemory] = [:]
     public private(set) var recentRuns: [RecentRun] = []
+    /// Tools the user added by name with "Add a tool", in the order added.
+    public private(set) var addedTools: [String] = []
 
     public init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case version, tasks, recentRuns, addedTools
+    }
+
+    /// Missing keys read as empty, so a library saved by an earlier version still loads.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? Self.currentVersion
+        tasks = try container.decodeIfPresent([String: TaskMemory].self, forKey: .tasks) ?? [:]
+        recentRuns = try container.decodeIfPresent([RecentRun].self, forKey: .recentRuns) ?? []
+        addedTools = try container.decodeIfPresent([String].self, forKey: .addedTools) ?? []
+    }
+
+    /// Adds a tool by its executable name. Returns false when it is already there or the name is a path.
+    @discardableResult
+    public mutating func addTool(named executable: String) -> Bool {
+        let name = executable.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !name.contains("/"), !addedTools.contains(name) else { return false }
+        addedTools.append(name)
+        return true
+    }
+
+    public mutating func removeTool(named executable: String) {
+        addedTools.removeAll { $0 == executable }
+    }
 
     /// The key for a task, as stored: `ffmpeg/shrink-video`.
     public static func key(toolID: String, taskID: String) -> String {

@@ -18,6 +18,11 @@ public enum ManifestLoader {
         return manifest
     }
 
+    /// Checks a manifest built in code (such as a generated "All options" task) against the same rules as files.
+    public static func validate(_ manifest: ToolManifest, source: String) throws(ManifestError) {
+        try ManifestValidator.validate(manifest, source: source)
+    }
+
     /// Reads every `.json` file in `directory`, sorted by tool name. Duplicate tool ids count as failures.
     public static func loadCatalog(in directory: URL) -> Catalog {
         let files: [URL]

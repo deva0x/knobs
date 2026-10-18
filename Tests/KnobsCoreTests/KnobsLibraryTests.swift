@@ -96,3 +96,30 @@ import Testing
         #expect(throws: LibraryFile.LibraryFileError.self) { try LibraryFile(url: url).load() }
     }
 }
+
+@Suite struct AddedToolsTests {
+    @Test func toolsAreAddedOnceByBareName() {
+        var library = KnobsLibrary()
+        let first = library.addTool(named: " jq ")
+        let again = library.addTool(named: "jq")
+        let path = library.addTool(named: "/usr/bin/curl")
+        #expect(first && !again && !path)
+        #expect(library.addedTools == ["jq"])
+        library.removeTool(named: "jq")
+        #expect(library.addedTools.isEmpty)
+    }
+
+    @Test func aLibraryWithoutNewerKeysStillLoads() throws {
+        let library = try JSONDecoder().decode(KnobsLibrary.self, from: Data(#"{"version": 1}"#.utf8))
+        #expect(library.addedTools.isEmpty)
+        #expect(library.recentRuns.isEmpty)
+    }
+}
+
+@Suite struct HelpReaderTests {
+    @Test func collectsWhatTheToolPrints() async {
+        let reader = HelpReader(runner: ToolRunner(environment: ProcessInfo.processInfo.environment))
+        let text = await reader.helpText(executable: URL(filePath: "/bin/echo"), arguments: ["  -x   do x"])
+        #expect(HelpParser.options(in: text).map(\.preferredFlag) == ["-x"])
+    }
+}

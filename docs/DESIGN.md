@@ -24,8 +24,10 @@ the checklist at the end of this file.
   on the web.
 - **Concept:** studio hardware. The products of Braun and Teenage Engineering and the dials on a mixing
   desk: warm neutrals, one vivid signal color, precise small type, generous space.
-- **Signal color:** `#FF5B1F` ("signal orange"). It's used only for the primary action, the focus of
-  attention, and the brand mark. In the app it's the app's accent color.
+- **Signal color:** `#FF5B1F` ("signal orange"). The brand mark: the app icon, the website, About, and
+  app-level moments such as Go to Task. Inside a tool, the tool's own tint is the accent, including its Run
+  button, so a screen never carries two competing accents (decided in the 2026-10-18 redesign: orange Run
+  next to a magenta ffmpeg tint read as two primary colors).
 - **Neutrals:** the system's own grays in the app. On the web, warm paper `#F4F1EA` and graphite `#141414`.
 - **Icon concept:** a single machined dial seen from the front, with an orange indicator mark at about
   two o'clock and fine tick marks around it, on a warm graphite rounded-square base. It must still read at
@@ -49,57 +51,64 @@ the checklist at the end of this file.
 | rsync | `arrow.triangle.2.circlepath` | cyan |
 | 7-Zip | `archivebox` | brown |
 
-## App layout
+## App layout (redesign, 2026-10-18)
+
+The window is one `Window` scene: sidebar, a content area, and on a task an inspector on the trailing edge.
 
 ```
-┌──────────────┬──────────────────────────────────────────────────────┐
-│ (glass       │  Toolbar: tool name · task picker · All options · ⌘K │
-│  sidebar)    ├──────────────────────────────────────────────────────┤
-│              │  Task header: glyph tile, title, one-line summary    │
-│ Search ⌘K    │                                                      │
-│              │  ┌──────────────── Drop zone ────────────────────┐  │
-│ Tools        │  │ thumbnail · name · size · Replace              │  │
-│  ▣ ffmpeg    │  └────────────────────────────────────────────────┘  │
-│  ▣ yt-dlp    │                                                      │
-│  ▣ ...       │  Settings (grouped, label left, control right)       │
-│              │   Size        [720p ▾]                               │
-│ Recent       │   Quality     ───●──── Balanced                      │
-│  ...         │   Remove sound [ ]                                   │
-│              │   ▸ Extra arguments                                  │
-│ + Add a tool │                                                      │
-│              │  ┌──── Result card (after a run) ─────────────────┐  │
-│              │  │ thumbnail · name · 86 MB (−93%) · Open Reveal  │  │
-│              │  └────────────────────────────────────────────────┘  │
-│              │ ╭─ Command bar (Liquid Glass, pinned to bottom) ───╮ │
-│              │ │ ffmpeg -i holiday.mov -crf 23 …   ⧉   [ Run ⌘R ] │ │
-│              │ ╰──────────────────────────────────────────────────╯ │
-└──────────────┴──────────────────────────────────────────────────────┘
+┌──────────────┬───────────────────────────────────────┬──────────────────┐
+│ ⌕ Find a task│  Shrink a video · ffmpeg      [Presets]│  Inspector       │
+│              │                                       │  Settings        │
+│ Tools        │        ┌──────────────────────┐       │   Size   [720p ▾]│
+│  ▣ ffmpeg    │        │                      │       │   Quality ──●── 26│
+│  ▣ yt-dlp    │        │   large preview      │       │   Remove sound ◯ │
+│  ▣ ...       │        │   (Quick Look)       │       │  Output          │
+│              │        └──────────────────────┘       │   Holiday small… │
+│ Recent       │      Holiday in Goa.mov               │   next to input  │
+│  ...         │   3:00 · 1920×1080 · 350 MB · Movie   │  Extra arguments │
+│ + Add a tool │ ╭─ Command bar (glass) ────── [Run] ╮ │   [            ] │
+└──────────────┴───────────────────────────────────────┴──────────────────┘
 ```
 
-- **Sidebar:** the system's glass sidebar. Rows show a 22 pt rounded glyph tile in the tool's tint, then the
-  name. A missing tool shows a small "Not installed" caption, and the row stays selectable.
-- **Tool home:** when a tool is selected with no task, show a gallery of task cards: symbol, title and summary,
-  in a 2 or 3 column grid. Hover lifts a card slightly. Clicking a card opens the task.
-- **Task workspace:** content column centered with a maximum readable width of about 720 pt, scrolling
-  under the pinned command bar.
-- **Command bar:** a Liquid Glass capsule floating at the bottom. On the left is the syntax-colored command
-  in SF Mono, truncated in the middle, with the full text in a popover on click. Then Copy, then the
-  primary Run button in signal orange. While running, it morphs into progress (determinate when the tool
-  reports it, otherwise an indeterminate bar), elapsed time, a "Show output" toggle and Cancel.
-- **Output:** a collapsible console panel above the command bar, with monospaced, selectable text that
-  auto-scrolls unless the user scrolls up.
-- **Result card:** appears with a spring after success. It shows a Quick Look thumbnail, the file name, the
-  size and its change from the input ("−93%"), and Open, Reveal in Finder and Drag-out actions. Failure shows
-  a calm card with the last useful error line and "Show output".
-- **Command palette (⌘K):** a centered glass panel with a search field and results from every tool and task
-  ("Shrink a video, ffmpeg"). Arrow keys and Return work as expected.
-- **Not installed:** a centered panel with the tool's glyph, "ffmpeg isn't installed", the
-  `brew install ffmpeg` command in a copyable well, and a "Check again" button.
+- **Sidebar:** the system's glass sidebar. Rows show a 24 pt glyph tile in the tool's tint, then the name. A
+  missing tool shows a "Not installed" caption and stays selectable.
+- **Tool home:** a hero header washed with the tool's tint (a soft mesh gradient that fades into the window),
+  a large glyph tile, the tool's name and summary, and a status line: where it's installed, or the install
+  command. Below it, the task cards, larger than before, each naming what it takes ("Video", "PDF") in words
+  from the system's own type names. Dropping a file anywhere on the tool home highlights the tasks that take
+  it and dims the rest; dropping on a card opens that task with the file.
+- **Task stage:** the content area is a stage for the task's main input, not a form.
+  - Empty: one large drop target with the kind of file it wants ("Drop a video") and Choose.
+  - Filled: a large Quick Look preview with the file's facts underneath as quiet chips, read by file type,
+    never by tool: duration and dimensions for video, dimensions for images, page count for PDFs, size and
+    kind for everything. Several files show as an overlapping stack with a count.
+  - A task whose main input is text, such as a link, shows that field large in the stage.
+  - Running: the preview dims slightly under a dial gauge, a 270° arc of tick marks like the app icon that
+    fills with the tool's tint as progress comes in, the percentage at its center. Without progress, the
+    ticks sweep gently.
+  - Done: before and after. The output's preview takes the stage with the size change as the hero number
+    ("−92%"), the input to output sizes and time beneath, and Open, Show in Finder and drag-out. Report-only
+    tasks show the output text instead.
+  - Failed or cancelled: a calm panel in the stage with the last useful error line and Show Output.
+- **Inspector:** the native trailing inspector (`.inspector`), toggled from the toolbar. Sections: Settings
+  (each field as label, help and a full-width control), Output (where the file will go and its name), and
+  Extra arguments. On narrow windows it can be hidden; the stage stays usable.
+- **Command bar:** a Liquid Glass capsule floating at the bottom of the stage. The syntax-colored command in
+  SF Mono, truncated in the middle with the full text in a popover, Copy, then Run in the tool's tint. While
+  running: elapsed time, percentage, Show Output and Cancel.
+- **Output:** a console panel that slides up over the stage, monospaced and selectable, following new lines
+  unless the user scrolls up.
+- **All options:** a searchable list of the tool's options in the content area, with the same command bar.
+- **Command palette (⌘K):** a centered glass panel with search and results from every tool and task.
+- **Not installed:** the tool home and the stage show the `brew install` command in a copyable well with
+  Check Again.
 
 ## Type
 
 The app uses the system font only. Size roles:
-- Task title: 22 pt semibold
+- Tool name on the tool home: 30 pt bold; task title in the window title
+- Result hero number: 44 pt bold rounded
+- Stage file name: 17 pt semibold
 - Section header: 13 pt semibold, secondary color
 - Body and labels: 13 pt regular
 - Captions and help: 11 pt regular, secondary color
@@ -125,8 +134,8 @@ The app uses the system font only. Size roles:
 ## Motion
 
 - A drop: the zone's border brightens on hover, and the thumbnail springs in when the file lands.
-- Run: the Run button morphs into the progress bar (matched geometry), with no layout jump.
-- Done: the result card springs up from the command bar, and the symbol does one `bounce`.
+- Run: the stage dims and the dial gauge fades in over the preview; the command bar turns into progress.
+- Done: the output preview crossfades in with a small spring, and the size change counts to its value.
 - Respect Reduce Motion: use crossfades instead of movement.
 
 ## Website
@@ -141,7 +150,7 @@ CleanShot, Things, Arc) for craft and restraint. Don't copy any of them.
 
 Judge each screen in light and dark mode at the minimum window size (900 × 620) and at a large size:
 
-- [ ] One obvious primary action; signal orange appears nowhere else on the screen
+- [ ] One obvious primary action, in the tool's tint; no second accent competes with it
 - [ ] Alignment holds on the 4 pt grid; labels and controls share consistent columns
 - [ ] Nothing truncates awkwardly, overlaps, or jumps when the state changes
 - [ ] All states for this screen exist and read in plain words

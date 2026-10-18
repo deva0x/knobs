@@ -73,6 +73,9 @@ struct ToolHomeView: View {
         } isTargeted: { targeted in
             withAnimation(.knobs) { isTargeted = targeted }
         }
+        .task {
+            model.openPendingTask(of: manifest.id)
+        }
         .task(id: rejectedDrop) {
             guard rejectedDrop, (try? await Task.sleep(for: .seconds(2.5))) != nil else { return }
             withAnimation(.knobs) { rejectedDrop = false }

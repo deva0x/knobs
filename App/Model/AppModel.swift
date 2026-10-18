@@ -22,6 +22,8 @@ final class AppModel {
     private(set) var selectedToolID: String?
     /// The navigation stack inside the selected tool: empty shows the task gallery, one entry shows a task.
     var taskPath: [String] = []
+    /// A task to open in a tool that is being switched to (see `open(toolID:taskID:)`).
+    private var pendingTask: PendingTask?
     var isPaletteVisible = false
 
     private(set) var library: KnobsLibrary
@@ -199,12 +201,27 @@ final class AppModel {
         guard toolID != selectedToolID else { return }
         selectedToolID = toolID
         taskPath = []
+        pendingTask = nil
     }
 
     /// Jumps straight to a tool, and to one of its tasks when given.
     func open(toolID: String, taskID: String?) {
+        guard toolID != selectedToolID else {
+            taskPath = taskID.map { [$0] } ?? []
+            return
+        }
+        // Switching tools rebuilds the detail's navigation stack, which ignores a path set in the same moment
+        // (BUG-009). So the task waits here until the new tool's home is on screen and opens it.
         selectedToolID = toolID
-        taskPath = taskID.map { [$0] } ?? []
+        taskPath = []
+        pendingTask = taskID.map { PendingTask(toolID: toolID, taskID: $0) }
+    }
+
+    /// Opens the task waiting for `toolID`'s home, if there is one; the home calls this once it is on screen.
+    func openPendingTask(of toolID: String) {
+        guard let pendingTask, pendingTask.toolID == toolID else { return }
+        self.pendingTask = nil
+        taskPath = [pendingTask.taskID]
     }
 
     /// Whether Run is available: the tool is installed, the command is complete, and the task isn't running.
@@ -389,4 +406,10 @@ final class AppModel {
         guard let tool = selectedTool, let task = selectedTask else { return nil }
         return sessions[KnobsLibrary.key(toolID: tool.id, taskID: task.id)]
     }
+}
+
+/// A task waiting for its tool's home to appear before it opens.
+struct PendingTask: Equatable {
+    let toolID: String
+    let taskID: String
 }

@@ -90,7 +90,7 @@ Template:
   screen doesn't finish animations, so the half-faded frame stayed; on screen it flickers briefly.
 - Fix: the command text never animates; it follows each change at once. Checked in a capture.
 
-## BUG-009: Opening a task in another tool shows that tool's home instead of the task (open, blocked)
+## BUG-009: Opening a task in another tool showed that tool's home instead of the task (fixed)
 - Found: 2026-10-18, Claude (Opus 5.5), on-screen pass with a fresh data folder
 - Steps: open a task in one tool (Compress an image, ImageMagick). Then either open a video with Knobs and
   choose Shrink a video, or click a Recent row that belongs to a different tool.
@@ -104,9 +104,13 @@ Template:
   new stack's `onAppear` (inside the id): worked once for the chooser, then failed for Recent and on a rerun
   of the chooser, so it was timing; (3) one persistent stack without the stack-level id: still the home.
 - Not a redesign regression: the build of 6ebca0b, before the redesign, does the same.
-- Status: reverted to the committed code; not fixed. Next idea, not tried: push after the selection change
-  lands, by having the model hold a pending task that the tool home consumes in its `.task`, rather than
-  setting the path at the moment of the switch. Within the same tool everything works.
+- Status before the fix: reverted to the committed code. Within the same tool everything worked.
+- Fix (2026-10-19, the recorded next idea): switching tools no longer sets the path in the same moment. The
+  model keeps a pending task for the new tool, and that tool's home opens it from its `.task` once it is on
+  screen; choosing a tool in the sidebar drops any pending task. Reproduced first on the current build (Recent
+  "Shrink a video" from ImageMagick showed ffmpeg's home), then checked with the fix: six Recent switches
+  between ImageMagick and ffmpeg with animations off and four with them on all opened the task, and the Open
+  With chooser opened Shrink a video and Convert a video with the file in place, twice.
 
 ## BUG-010: On Linux, Cancel let a tool run until the SIGKILL three seconds later (fixed)
 - Found: 2026-10-18, the Linux spike agent, running KnobsCore's tests in `swift:6.2-noble` on this Mac

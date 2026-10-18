@@ -5,6 +5,9 @@
 #                            names a path dependency after its folder, and the package expects "knobs".
 #   scripts/linux.sh run     start it under GTK's Broadway backend; open http://localhost:8085 to use it
 #   scripts/linux.sh stop    stop the running app
+#   scripts/linux.sh package <version>
+#                            build release binaries and write dist/linux/knobs_<version>_<arch>.deb (Ubuntu 26.04)
+#                            and knobs-<version>-1.fc44.<arch>.rpm (Fedora 44), for this Mac's architecture
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -38,8 +41,25 @@ run)
 stop)
     docker rm -f "$container" >/dev/null
     ;;
+package)
+    version="${2:-}"
+    project_version=$(sed -n 's/^ *CFBundleShortVersionString: "\(.*\)"$/\1/p' project.yml)
+    if [ "$version" != "$project_version" ]; then
+        echo "usage: scripts/linux.sh package <version>; it must match project.yml ($project_version)" >&2
+        exit 64
+    fi
+    docker build -q -t "$image" linux >/dev/null
+    docker build -q -t knobs-linux-fedora -f linux/Dockerfile.fedora linux >/dev/null
+    # Each distribution builds its own binary, with Swift's runtime linked in, against its own GTK.
+    release="swift build -c release --static-swift-stdlib -Xswiftc -warnings-as-errors"
+    docker run --rm -v "$PWD:/knobs" -w /knobs/linux "$image" bash -c \
+        "$release --scratch-path .build/ubuntu && packaging/package-deb.sh .build/ubuntu/release/knobs $version /knobs/dist/linux"
+    docker run --rm -v "$PWD:/knobs" -w /knobs/linux knobs-linux-fedora bash -c \
+        "$release --scratch-path .build/fedora && packaging/package-rpm.sh .build/fedora/release/knobs $version /knobs/dist/linux"
+    ls -l dist/linux
+    ;;
 *)
-    echo "usage: scripts/linux.sh image|build|run|stop" >&2
+    echo "usage: scripts/linux.sh image|build|run|stop|package <version>" >&2
     exit 64
     ;;
 esac

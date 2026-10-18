@@ -3,6 +3,6 @@
 # Broadway to show the window in a browser, and ffmpeg to run a real task.
 FROM swift:6.4-resolute
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      libgtk-4-dev libadwaita-1-dev libgtk-4-bin libsqlite3-dev pkg-config fonts-dejavu-core \
+      libgtk-4-dev libadwaita-1-dev libgtk-4-bin libsqlite3-dev pkg-config fonts-dejavu-core dpkg-dev \
       ffmpeg \
     && rm -rf /var/lib/apt/lists/*

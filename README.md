@@ -78,6 +78,20 @@ scripts/run-app.sh
 
 All checks run locally on your Mac. This project uses no hosted CI.
 
+## Linux (in progress)
+
+A Linux version in GTK 4 and libadwaita lives in [`linux/`](linux/). It shares the manifests and the core with
+the Mac app, so tasks, commands and remembered settings behave the same. It needs GTK 4.20 or later, which
+means Ubuntu 26.04, Fedora 43 or newer, and it isn't released yet. To build and try it in a container on a Mac
+with OrbStack or Docker:
+
+```bash
+scripts/linux.sh build
+scripts/linux.sh run
+```
+
+Then open http://localhost:8085. `scripts/linux.sh package <version>` writes a .deb and an .rpm to `dist/linux/`.
+
 ## Security
 
 See [SECURITY.md](SECURITY.md) for how Knobs runs tools safely, its known limits, and how to report a problem.

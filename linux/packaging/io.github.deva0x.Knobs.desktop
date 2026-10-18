@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Knobs
+GenericName=Command-line tools
+Comment=Use ffmpeg, yt-dlp, ImageMagick and other command-line tools through simple windows
+Exec=knobs
+Icon=io.github.deva0x.Knobs
+Terminal=false
+Categories=Utility;AudioVideo;Graphics;
+Keywords=ffmpeg;yt-dlp;imagemagick;pandoc;exiftool;ocr;pdf;rsync;7zip;convert;shrink;
+StartupNotify=true

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata, so software centers can list Knobs. -->
+<component type="desktop-application">
+  <id>io.github.deva0x.Knobs</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Knobs</name>
+  <summary>Command-line tools, as simple windows</summary>
+  <description>
+    <p>
+      Knobs puts the everyday jobs of ffmpeg, yt-dlp, ImageMagick, pandoc, ExifTool, OCRmyPDF, Ghostscript,
+      whisper.cpp, rsync and 7-Zip behind plain controls. Pick a task, choose a file, set what matters, and press
+      Run. The exact command is always on screen, so you learn the tool while you use it.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.deva0x.Knobs.desktop</launchable>
+  <url type="homepage">https://github.com/deva0x/knobs</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="@VERSION@" date="@DATE@"/>
+  </releases>
+</component>

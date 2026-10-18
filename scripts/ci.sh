@@ -3,8 +3,9 @@
 #   scripts/ci.sh fast     no-hosted-CI check, format lint, core unit tests (pre-commit)
 #   scripts/ci.sh          fast + integration tests + Debug app build (pre-push, milestone checks)
 #   scripts/ci.sh release  full + Release app build; integration tests fail instead of skip when a tool is missing
-#   scripts/ci.sh linux    format lint, then the core unit tests on Linux in a local container (Docker or
-#                          OrbStack on this Mac, never a hosted runner). KNOBS_LINUX_IMAGE picks the image.
+#   scripts/ci.sh linux    format lint, then every library built and the core unit tests run on Linux, in a
+#                          local container (OrbStack or Docker on this Mac, never a hosted runner).
+#                          KNOBS_LINUX_IMAGE picks the image.
 set -euo pipefail
 
 mode="${1:-full}"
@@ -37,7 +38,9 @@ if [ "$mode" = linux ]; then
     # on a desktop, so the tools that cancel kills don't linger as zombies the tests would count as running.
     tar -cf - Package.swift Sources Tests Manifests |
         docker run --rm -i --init "$image" bash -c \
-            'mkdir /src && cd /src && tar -xf - && swift test -Xswiftc -warnings-as-errors --skip IntegrationTests'
+            'mkdir /src && cd /src && tar -xf - &&
+             swift build -Xswiftc -warnings-as-errors &&
+             swift test -Xswiftc -warnings-as-errors --skip IntegrationTests'
     printf '\nci.sh linux: PASS\n'
     exit 0
 fi

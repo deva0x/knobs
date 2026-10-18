@@ -106,7 +106,7 @@ that runs one real task on a tiny fixture, and try it once in the app.
 ### M8. Website
 - [x] Static site in `website/` (no build server needed), following DESIGN.md and studied reference sites
 - [x] Hero, live demo of a command turning into controls, tool gallery, how manifests work, download, open-source section
-- [ ] Real app screenshots, fast, accessible, works at phone width, light and dark
+- [x] Real app screenshots, fast, accessible, works at phone width, light and dark
 - [ ] Reviewed in a browser at desktop and phone sizes, then iterated until it stands out
 - Exit: screenshots of the site in `docs/screenshots/website/`, Lighthouse-style checks noted in WORKLOG.
 

@@ -266,7 +266,8 @@ enum ManifestValidator {
                 case .unclosedBrace: "has a { without a matching }"
                 case .unexpectedClosingBrace: "has a } without a matching {. Write }} for a literal brace"
                 case .emptyPlaceholder: "has an empty {}"
-                case .unknownPathPart(let part): "uses .\(part), but only .stem, .name, .ext, .dir and .base exist"
+                case .unknownPathPart(let part):
+                    "uses .\(part), but only .stem, .name, .ext, .dir, .base and .percentDoubled exist"
                 }
             throw fail(path, problem)
         }

@@ -178,6 +178,18 @@ import Testing
         #expect(draft.command.argv.prefix(2) == ["-of", "/Users/me/Downloads/talk transcript"])
     }
 
+    @Test func ghostscriptGetsPercentSignsDoubledInItsOutputPath() throws {
+        let manifest = try loadRepositoryManifest("ghostscript")
+        for task in manifest.tasks {
+            let fileField = try #require(task.fields.first { if case .inputFile = $0.kind { true } else { false } })
+            let draft = builder().build(
+                task, of: manifest, values: [fileField.id: .paths(["/a/50%d off.pdf"])], extraArguments: "")
+            let outputPath = try #require(draft.command.outputPath)
+            #expect(outputPath.contains("50%d off"))
+            #expect(draft.command.argv.contains("-sOutputFile=" + outputPath.replacing("%", with: "%%")))
+        }
+    }
+
     @Test func outputNameNeverEndsOrStartsWithADot() throws {
         let manifest = try load(
             minimalManifest(

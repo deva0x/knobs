@@ -46,6 +46,9 @@ enum PathPart: String, Sendable, Hashable, CaseIterable {
     case ext
     case dir
     case base
+    /// The whole path with every `%` doubled, for tools such as Ghostscript that read `%d` in an output name as
+    /// a page-number pattern and `%%` as a literal `%`.
+    case percentDoubled
 
     func of(_ path: String) -> String {
         let path = path as NSString
@@ -56,6 +59,7 @@ enum PathPart: String, Sendable, Hashable, CaseIterable {
         case .ext: path.pathExtension
         case .dir: path.deletingLastPathComponent
         case .base: path.deletingPathExtension
+        case .percentDoubled: (path as String).replacing("%", with: "%%")
         }
     }
 }

@@ -128,6 +128,8 @@ Placeholders that can be used:
 - `{fieldId.ext}` is a file's extension without the dot (`mov`).
 - `{fieldId.dir}` is a file's folder.
 - `{fieldId.base}` is the whole path without its extension (`/a/clip`).
+- `{fieldId.percentDoubled}` is the whole path with every `%` written as `%%`, for tools such as Ghostscript
+  that read `%d` in a file name as a page-number pattern.
 - `{output}` takes the same parts: `{output.base}`, `{output.dir}` and so on, for tools that want an output
   name without its extension.
 

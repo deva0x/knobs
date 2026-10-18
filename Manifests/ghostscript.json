@@ -29,7 +29,7 @@
       "arguments": [
         "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.6", "-dPDFSETTINGS=/{quality}",
         "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
-        "{extra}", "-sOutputFile={output}", "{input}"
+        "{extra}", "-sOutputFile={output.percentDoubled}", "{input}"
       ]
     },
     {
@@ -43,7 +43,7 @@
       "output": { "template": "{pages.stem} merged.pdf", "nextTo": "pages" },
       "arguments": [
         "-sDEVICE=pdfwrite", "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
-        "{extra}", "-sOutputFile={output}", "{pages}"
+        "{extra}", "-sOutputFile={output.percentDoubled}", "{pages}"
       ]
     },
     {
@@ -58,7 +58,7 @@
       "arguments": [
         "-sDEVICE=pdfwrite", "-sColorConversionStrategy=Gray", "-dProcessColorModel=/DeviceGray",
         "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
-        "{extra}", "-sOutputFile={output}", "{input}"
+        "{extra}", "-sOutputFile={output.percentDoubled}", "{input}"
       ]
     },
     {
@@ -75,7 +75,7 @@
       "arguments": [
         "-sDEVICE=pdfwrite", "-dFirstPage={first}", "-dLastPage={last}",
         "-dNOPAUSE", "-dBATCH", "-dQUIET", "-dSAFER",
-        "{extra}", "-sOutputFile={output}", "{input}"
+        "{extra}", "-sOutputFile={output.percentDoubled}", "{input}"
       ]
     }
   ]

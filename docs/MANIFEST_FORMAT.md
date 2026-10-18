@@ -94,8 +94,8 @@ Every field has `id`, `label` and `kind`. A field `id` starts with a letter and 
 | `inputFolder` | Folder picker | absolute path | `default`: a path; `~/` means the home folder |
 | `outputFolder` | Folder picker | absolute path | `default`: a path such as `~/Downloads` |
 | `choice` | Pop-up menu | one option's `value` | `options` (required), `default` |
-| `integer` | Stepper and slider | whole number | `minimum`, `maximum` (both required), `default` |
-| `number` | Text field | decimal number | `minimum`, `maximum`, `default` |
+| `integer` | Stepper and slider | whole number | `minimum`, `maximum` and `default` (all required) |
+| `number` | Text field | decimal number | `default` (required), `minimum`, `maximum` |
 | `toggle` | Checkbox | true or false | `default` |
 | `text` | Text field | string | `placeholder`, `default` |
 | `secret` | Secure text field | string, never saved in presets or shown in the preview | none |
@@ -139,8 +139,7 @@ file.
 
 A string that consists only of a placeholder for an empty, optional value produces no argument. A longer
 string around a placeholder, such as `"--title={title}"`, would still be passed on with the value missing, so a
-field used that way must either always have a value (a required field, an `integer` or `number` with a
-`default`, or a `choice` whose `default` and options are all non-empty) or the string must sit inside an `if` on
+field used that way must either always have a value (a required field, an `integer` or `number`, or a `choice` whose `default` and options are all non-empty) or the string must sit inside an `if` on
 that same field: `{ "if": "title", "then": ["--title={title}"] }`.
 Validation rejects a reference to a field that doesn't exist.
 
@@ -173,6 +172,7 @@ happen:
 - a duplicate tool, task or field id
 - a placeholder or `if` that refers to a field that doesn't exist
 - a `default` outside `minimum`/`maximum`, or not one of the `options`
+- an `integer` or `number` field without a `default`
 - `executable` or an `alternativeExecutables` entry that is empty or contains `/`
 - `schemaVersion` other than 1
 - a task without exactly one `{extra}`, `{extra}` inside an `if`, or a field whose id is `extra` or `output`

@@ -44,7 +44,8 @@ struct FieldRow: View {
                 } set: {
                     set(.number($0))
                 },
-                min: range?.lowerBound ?? 0, max: range?.upperBound ?? Self.unboundedNumberMaximum
+                min: range?.lowerBound ?? -Self.unboundedNumberMaximum,
+                max: range?.upperBound ?? Self.unboundedNumberMaximum
             )
             .step(Self.numberStep)
             .subtitle(field.help ?? "")
@@ -86,7 +87,7 @@ struct FieldRow: View {
         }
     }
 
-    /// A number field without a range still needs a maximum for its spin button.
+    /// A number field without a range still needs limits for its spin button; it goes this far either way.
     private static let unboundedNumberMaximum = 1_000_000.0
     private static let numberStep = 0.1
 

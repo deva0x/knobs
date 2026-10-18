@@ -86,6 +86,9 @@ enum ManifestValidator {
         fail: (String, String) -> ManifestError
     ) throws(ManifestError) {
         switch (field.kind, field.defaultValue) {
+        // Both apps always show a number, so one without a default would show a value the command leaves out.
+        case (.integer, nil), (.number, nil):
+            throw fail("\(path).default", "is needed: a number field always shows a value, so it must start with one")
         case (.choice(let options), let value):
             guard !options.isEmpty else { throw fail("\(path).options", "needs at least one option") }
             let values = options.map(\.value)
@@ -189,13 +192,14 @@ enum ManifestValidator {
         }
     }
 
-    /// Whether a field can never be empty: a required one, a number with a default, or a choice whose default is
-    /// set and whose options are all non-empty. Text can always be cleared, and toggles and files can be off.
+    /// Whether a field can never be empty: a required one, a number (which always has a default), or a choice whose
+    /// default is set and whose options are all non-empty. Text can always be cleared, and toggles and files can be
+    /// off.
     private static func isAlwaysSet(_ field: Field) -> Bool {
         if field.isRequired { return true }
         switch field.kind {
         case .integer, .number:
-            return field.defaultValue != nil
+            return true
         case .choice(let options):
             return field.defaultValue?.isSet == true && options.allSatisfy { !$0.value.isEmpty }
         default:

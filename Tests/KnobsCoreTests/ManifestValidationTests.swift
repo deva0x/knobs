@@ -200,6 +200,15 @@ import Testing
         #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[1]")
     }
 
+    @Test(arguments: ["integer", "number"])
+    func numberFieldsNeedADefault(kind: String) {
+        // An integer also needs its range, so only the default is missing in both cases.
+        var size: [String: Any] = ["id": "size", "label": "Size", "kind": kind]
+        if kind == "integer" { size.merge(["minimum": 1, "maximum": 9]) { $1 } }
+        let task = minimalTask(fields: [["id": "input", "label": "File", "kind": "inputFile"], size])
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].fields[1].default")
+    }
+
     @Test func anOptionalFieldInsideALongerStringNeedsAnIf() {
         let task = minimalTask(
             fields: [

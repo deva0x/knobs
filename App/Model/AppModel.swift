@@ -230,6 +230,11 @@ final class AppModel {
         saveLibrary()
     }
 
+    func renamePreset(_ preset: Preset, to name: String, of session: TaskSession) {
+        guard library.renamePreset(preset.id, to: name, forTask: session.id) else { return }
+        saveLibrary()
+    }
+
     func deletePreset(_ preset: Preset, of session: TaskSession) {
         library.deletePreset(preset.id, forTask: session.id)
         saveLibrary()

@@ -44,6 +44,29 @@ import Testing
         #expect(library.presets(forTask: key).map(\.name) == ["B"])
     }
 
+    @Test func renamingAPresetKeepsItsSettingsAndOrder() {
+        var library = KnobsLibrary()
+        library.savePreset(named: "A", values: ["crf": .integer(20)], forTask: key, id: firstID)
+        library.savePreset(named: "B", values: [:], forTask: key, id: secondID)
+        let renamed = library.renamePreset(firstID, to: " Z ", forTask: key)
+        #expect(renamed)
+        #expect(library.presets(forTask: key).map(\.name) == ["B", "Z"])
+        #expect(library.presets(forTask: key).last?.values == ["crf": .integer(20)])
+    }
+
+    @Test func renamingToAnotherPresetsNameOrBlankIsRefused() {
+        var library = KnobsLibrary()
+        library.savePreset(named: "A", values: [:], forTask: key, id: firstID)
+        library.savePreset(named: "B", values: [:], forTask: key, id: secondID)
+        let takenName = library.renamePreset(firstID, to: "b", forTask: key)
+        let blankName = library.renamePreset(firstID, to: "  ", forTask: key)
+        let caseOnly = library.renamePreset(firstID, to: "a", forTask: key)
+        #expect(!takenName)
+        #expect(!blankName)
+        #expect(caseOnly)
+        #expect(library.presets(forTask: key).map(\.name) == ["a", "B"])
+    }
+
     @Test func recentRunsKeepTheNewestFirstAndAreCapped() {
         var library = KnobsLibrary()
         for index in 0..<(KnobsLibrary.maximumRecentRuns + 5) {

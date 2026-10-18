@@ -72,7 +72,7 @@ Every milestone ends with `scripts/ci.sh` passing, plus the milestone's own chec
 - Exit: build and launch the app, shrink a real video with ffmpeg, confirm the output exists and plays. Screenshot saved in `docs/screenshots/`, and the DESIGN.md checklist passes.
 
 ### M5. App: presets, history, palette, polish
-- [ ] Save, apply, rename and delete presets per task (JSON in Application Support). Save, apply and delete work; rename is not built yet
+- [x] Save, apply, rename and delete presets per task (JSON in Application Support). Rename is unit tested; not yet seen on screen
 - [x] Remember the last values per task, and a recent-runs list
 - [x] Command palette (⌘K) across every tool and task
 - [x] Keyboard: ⌘R runs, ⌘. cancels, ⌘K opens the palette

@@ -81,6 +81,21 @@ public struct KnobsLibrary: Sendable, Hashable, Codable {
         return preset
     }
 
+    /// Renames a preset. Refused (returning false) when the name is blank or another preset of the task already
+    /// has it, ignoring case, so a rename never silently replaces a preset. Changing only the case is allowed.
+    @discardableResult
+    public mutating func renamePreset(_ id: UUID, to name: String, forTask key: String) -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, var memory = tasks[key],
+            let index = memory.presets.firstIndex(where: { $0.id == id }),
+            !memory.presets.contains(where: { $0.id != id && $0.name.caseInsensitiveCompare(trimmed) == .orderedSame })
+        else { return false }
+        memory.presets[index].name = trimmed
+        memory.presets.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        tasks[key] = memory
+        return true
+    }
+
     public mutating func deletePreset(_ id: UUID, forTask key: String) {
         tasks[key]?.presets.removeAll { $0.id == id }
     }

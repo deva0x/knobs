@@ -18,7 +18,7 @@ Updated: 2026-10-18 IST
   change from the round-1 review.
 - Open milestone exits:
   - M4/M5: the light-and-dark UI review loop across every screen, and final screenshots in `docs/screenshots/`.
-  - M5: renaming presets (save, apply and delete work).
+  - M5: renaming presets is built and unit tested; check it on screen.
   - M6: run each of the other seven tools once in the app (their integration tests pass).
   - M8: real app screenshots on the website.
   - M9: accessibility pass with VoiceOver; `scripts/ci.sh release`; a signed DMG needs Deva's certificate.

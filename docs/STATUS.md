@@ -35,6 +35,10 @@ Updated: 2026-10-18 IST
    website use the working repo address `github.com/deva0x/knobs`.
 4. Create the GitHub repo, turn off GitHub Actions for it before the first push, and push (M10).
 5. Choose where the website is hosted (M10).
+6. Linux packaging (DEC-015). The GTK library Knobs uses on Linux needs GTK 4.20+, so .deb and .rpm work on
+   Ubuntu 26.04, Fedora 43 and newer only, and AppImage doesn't fit. Accept that floor, or un-defer Flatpak to
+   also reach Ubuntu 24.04 LTS and Debian 13? I recommended AppImage before the spike showed this; that advice
+   was wrong.
 
 ## Blocked
 - BUG-009 (open, older than the redesign): opening a task in a different tool, from a Recent row or the file

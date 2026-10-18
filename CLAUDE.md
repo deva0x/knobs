@@ -17,8 +17,8 @@ Run these exact commands. Do not invent substitutes or add flags.
 - Test all: `scripts/ci.sh`
 - Test fast (lint and core unit tests): `scripts/ci.sh fast`
 - Test one suite: `swift test --filter <SuiteName>`
-- Format: `xcrun swift-format format --in-place --recursive Sources Tests App`
-- Lint: `xcrun swift-format lint --strict --recursive Sources Tests App`
+- Format: `xcrun swift-format format --in-place --recursive Sources Tests App linux/Package.swift linux/Sources`
+- Lint: `xcrun swift-format lint --strict --recursive Sources Tests App linux/Package.swift linux/Sources`
 - Log work: `scripts/log.sh "<agent>"` with the entry body on stdin
 - Never run: anything under `.github/workflows` (must not exist), `git push`, `gh repo create`, `gh release create`, `sudo`, `brew upgrade` (it changes the tools that the tests pin against).
 

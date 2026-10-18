@@ -22,7 +22,7 @@ fi
 echo "ok"
 
 step "Format lint"
-xcrun swift-format lint --strict --recursive Package.swift Sources Tests App
+xcrun swift-format lint --strict --recursive Package.swift Sources Tests App linux/Package.swift linux/Sources
 echo "ok"
 
 if [ "$mode" = linux ]; then

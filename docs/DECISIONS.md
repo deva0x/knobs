@@ -69,3 +69,26 @@ obviously risky things such as `rm`, and touch nothing outside this project fold
 - Not allowed: deleting anything outside the repo, `sudo`, pushing, creating remote repos, publishing
   releases or websites, changing GitHub or system settings, or entering credentials.
 - Questions go under "Waiting on Deva" in STATUS, and work continues on everything else.
+
+## DEC-014: Linux version in Swift with GTK 4 and libadwaita (2026-10-18, chosen by Deva)
+Deva asked for the same app on popular Linux distributions and chose Swift with GTK 4 and libadwaita over
+other toolkits, so the Linux app reuses `KnobsCore` and `KnobsSession` unchanged and only its windows differ.
+- UI library: Adwaita for Swift, from its current home `codeberg.org/aparoksha/adwaita-swift` (the GitHub
+  repository was archived in 2024-10). It has no tags after 0.1.0, so `linux/Package.swift` pins a commit, and
+  `linux/Package.resolved` is committed because three of its dependencies follow a branch. It is a
+  single-maintainer project; if it stalls, the C-interop route to GTK is the fallback (untested).
+- It needs Swift 6.3+ and GTK 4.20+ with a matching libadwaita, so the Linux app lives in its own package,
+  `linux/`, at tools version 6.3, while the shared packages stay at 6.2.
+- Builds and tries run only in a local container on this Mac (`scripts/linux.sh`, image from
+  `linux/Dockerfile`, Swift 6.4 on Ubuntu 26.04), never on a hosted runner (DEC-002).
+- Linux-only fix found on the way: BUG-010 (Cancel and the signal mask).
+
+## DEC-015: Linux packages are .deb and .rpm for Ubuntu 26.04+ and Fedora 43+; AppImage is held (2026-10-18, pending Deva)
+Deva picked "AppImage + .deb + .rpm", which was my recommendation before the Linux spike. The spike then
+showed that the UI library needs GTK 4.20+, which only Ubuntu 26.04, Fedora 43 and newer ship. That rules out
+Ubuntu 24.04 LTS and Debian 13, and it clashes with AppImage, which is built on an old system and would have
+to carry GTK itself. So, until Deva decides:
+- Built: .deb (Ubuntu 26.04 and later) and .rpm (Fedora 43 and later), relying on the system's GTK.
+- Held: AppImage.
+- The open question for Deva: accept that floor, or un-defer Flatpak (GNOME runtime), the one route with this
+  toolkit that reaches Ubuntu 24.04, Debian 13 and older distributions too.

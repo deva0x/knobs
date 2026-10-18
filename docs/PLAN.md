@@ -126,8 +126,21 @@ that runs one real task on a tiny fixture, and try it once in the app.
 - [ ] Deva approves uploading the DMG with `gh release create` (a release upload, not GitHub Actions)
 - [ ] Deva chooses where the website is hosted. GitHub Pages builds run on Actions, so a direct upload (for example Cloudflare Pages through `wrangler pages deploy` from this Mac) fits DEC-002 better.
 
+### M11. Linux (DEC-014, DEC-015)
+- [x] Spike: KnobsCore builds and its tests pass on Ubuntu, Fedora and RHEL in local containers
+- [x] `scripts/ci.sh linux`: KnobsCore and KnobsSession built and the core tests run on Linux, locally
+- [x] `KnobsSession` shared by both apps (TaskSession moved out of the Mac app)
+- [x] Thin slice in `linux/`: tools, a tool's tasks, every field kind as an Adwaita row, the live command, Run
+  with progress, output and Cancel, the result with Open, and settings remembered between launches
+- [ ] .deb and .rpm packages with the manifests, a desktop entry and an icon (`scripts/linux.sh package`)
+- [ ] All options and Add a Tool on Linux
+- [ ] Deva decides between the GTK 4.20 floor and Flatpak (DEC-015)
+- Exit: the .deb installs and runs Shrink a video in a clean Ubuntu 26.04 container, the .rpm in a clean
+  Fedora container, both checked through Broadway.
+
 ## Order and dependencies
 
 M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M9 → M10. M8 (website) can run alongside M4 to M7 because it only
 touches `website/`; its screenshots come from the app once M5 is done. Tools in M6 are independent of each
-other, so a blocked tool is logged and skipped. M7 never blocks M9.
+other, so a blocked tool is logged and skipped. M7 never blocks M9. M11 (Linux) touches only `linux/` and
+the shared packages, and never blocks the Mac release.

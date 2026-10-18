@@ -218,6 +218,13 @@ private struct PathPicker: View {
 
 /// Decides whether a dropped file fits a field, using the field's content types.
 enum FileTypeCheck {
+    /// Whether a field names the types it takes, rather than taking anything. Type names that macOS doesn't know
+    /// don't count, matching `accepts`.
+    static func namesSpecificTypes(_ kind: FieldKind) -> Bool {
+        guard case .inputFile(let identifiers, _) = kind else { return true }
+        return identifiers.contains { UTType($0) != nil }
+    }
+
     static func accepts(_ url: URL, for kind: FieldKind) -> Bool {
         let isFolder = (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
         switch kind {

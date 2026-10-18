@@ -109,19 +109,26 @@ final class AppModel {
     // MARK: Added tools
 
     func locate(_ executable: String) -> URL? {
-        locator.locate(executable.trimmingCharacters(in: .whitespaces))
+        locator.locate(executable.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     func addTool(named executable: String) {
-        let name = executable.trimmingCharacters(in: .whitespaces)
+        let name = executable.trimmingCharacters(in: .whitespacesAndNewlines)
         guard library.addTool(named: name) else { return }
         saveLibrary()
         refreshAvailability()
         open(toolID: Self.addedToolIDPrefix + name, taskID: HelpTaskBuilder.taskID)
     }
 
+    /// Removing a tool while it runs would leave a run nothing can reach or cancel, so it waits until it stops.
+    func canRemoveTool(_ manifest: ToolManifest) -> Bool {
+        isAdded(manifest) && !isRunningAnything(of: manifest)
+    }
+
     func removeTool(_ manifest: ToolManifest) {
-        guard isAdded(manifest) else { return }
+        guard canRemoveTool(manifest) else { return }
+        sessions = sessions.filter { $0.value.manifest.id != manifest.id }
+        allOptions[manifest.id] = nil
         library.removeTool(named: manifest.executable)
         saveLibrary()
         if selectedToolID == manifest.id { selectTool(bundledManifests.first?.id) }
@@ -152,6 +159,24 @@ final class AppModel {
         sessions[key] = session
         return session
     }
+
+    var hasRunningTasks: Bool {
+        sessions.values.contains(where: \.isRunning)
+    }
+
+    /// Cancels every run and waits for them to stop, up to the runner's own SIGKILL grace period plus a margin,
+    /// so quitting never leaves a tool running on its own.
+    func stopAllRuns() async {
+        let running = sessions.values.filter(\.isRunning)
+        for session in running { session.cancel() }
+        for _ in 0..<Self.stopPollLimit where running.contains(where: \.isRunning) {
+            try? await Task.sleep(for: Self.stopPollInterval)
+        }
+    }
+
+    private static let stopPollInterval = Duration.milliseconds(100)
+    /// 6 seconds: SIGTERM, 3 seconds' grace, SIGKILL, then up to 2 seconds to drain output.
+    private static let stopPollLimit = 60
 
     /// True while any task of this tool is running, for the sidebar's activity dot.
     func isRunningAnything(of manifest: ToolManifest) -> Bool {
@@ -234,28 +259,27 @@ final class AppModel {
     var pendingFiles: PendingFiles?
 
     /// Files opened with Knobs (dropped on the Dock icon, or `open -a Knobs`). They fill the visible task when it
-    /// takes them. Otherwise, one fitting task opens directly, and several are offered as a choice. Tasks that name
-    /// the file's type are preferred over tasks that take any file (such as making an archive).
+    /// takes them all. Otherwise, one fitting task opens directly, and several are offered as a choice. Installed
+    /// tools come first, and tasks that name the files' type are preferred over tasks that take anything (such as
+    /// making an archive).
     func openFiles(_ urls: [URL]) {
-        guard let first = urls.first else { return }
-        if let session = visibleSession, !session.isRunning, let field = session.primaryInputField,
-            FileTypeCheck.accepts(first, for: field.kind)
-        {
-            session.setValue(.paths(Self.paths(urls, for: field)), for: field)
+        guard !urls.isEmpty else { return }
+        func fits(_ field: Field?) -> Bool {
+            guard let field else { return false }
+            return urls.allSatisfy { FileTypeCheck.accepts($0, for: field.kind) }
+        }
+        if let session = visibleSession, !session.isRunning, fits(Self.openableField(of: session.task)) {
+            use(urls, in: session)
             return
         }
-        let candidates = manifests.flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
-        let fitting = candidates.filter { candidate in
-            guard let field = Self.primaryInputField(of: candidate.task) else { return false }
-            return FileTypeCheck.accepts(first, for: field.kind)
+        let fitting = manifests.flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
+            .filter { fits(Self.openableField(of: $0.task)) }
+        let installed = fitting.filter { isInstalled($0.manifest) }
+        let pool = installed.isEmpty ? fitting : installed
+        let specific = pool.filter { candidate in
+            Self.openableField(of: candidate.task).map { FileTypeCheck.namesSpecificTypes($0.kind) } ?? false
         }
-        let specific = fitting.filter { candidate in
-            guard case .inputFile(let contentTypes, _)? = Self.primaryInputField(of: candidate.task)?.kind else {
-                return false
-            }
-            return !contentTypes.isEmpty
-        }
-        let choices = specific.isEmpty ? fitting : specific
+        let choices = specific.isEmpty ? pool : specific
         if choices.count == 1, let only = choices.first {
             use(urls, for: only.task, of: only.manifest)
         } else if !choices.isEmpty {
@@ -266,14 +290,23 @@ final class AppModel {
     /// Opens a task with the given files in its main input.
     func use(_ urls: [URL], for task: ManifestTask, of manifest: ToolManifest) {
         pendingFiles = nil
-        let session = session(for: task, of: manifest)
         open(toolID: manifest.id, taskID: task.id)
-        guard !session.isRunning, let field = session.primaryInputField else { return }
+        use(urls, in: session(for: task, of: manifest))
+    }
+
+    private func use(_ urls: [URL], in session: TaskSession) {
+        guard !session.isRunning, let field = Self.openableField(of: session.task) else { return }
         session.setValue(.paths(Self.paths(urls, for: field)), for: field)
     }
 
-    private static func primaryInputField(of task: ManifestTask) -> Field? {
-        task.fields.first { if case .inputFile = $0.kind { true } else { false } }
+    /// The field that opened files go into: the first file or folder input.
+    private static func openableField(of task: ManifestTask) -> Field? {
+        task.fields.first { field in
+            switch field.kind {
+            case .inputFile, .inputFolder: true
+            default: false
+            }
+        }
     }
 
     private static func paths(_ urls: [URL], for field: Field) -> [String] {
@@ -281,9 +314,11 @@ final class AppModel {
         return [urls[0].path]
     }
 
-    /// The session behind the visible task, for menu commands such as Run and Cancel.
+    /// The session behind the visible task, for menu commands such as Run and Cancel. It only looks sessions up:
+    /// menus read this while SwiftUI is drawing, when creating state isn't allowed. The task's view has already
+    /// created its session.
     var visibleSession: TaskSession? {
         guard let tool = selectedTool, let task = selectedTask else { return nil }
-        return session(for: task, of: tool)
+        return sessions[KnobsLibrary.key(toolID: tool.id, taskID: task.id)]
     }
 }

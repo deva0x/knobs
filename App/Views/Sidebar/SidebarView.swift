@@ -29,6 +29,7 @@ struct SidebarView: View {
                         .tag(manifest.id)
                         .contextMenu {
                             Button("Remove \(manifest.name)", role: .destructive) { model.removeTool(manifest) }
+                                .disabled(!model.canRemoveTool(manifest))
                         }
                     }
                 }

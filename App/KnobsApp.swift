@@ -25,7 +25,7 @@ struct KnobsApp: App {
         WindowGroup("Knobs") {
             RootView()
                 .environment(model)
-                .onAppear { appDelegate.connect(model.openFiles) }
+                .onAppear { appDelegate.connect(model) }
                 .modifier(DebugLaunchOptions())
                 .frame(minWidth: 900, minHeight: 620)
         }
@@ -71,22 +71,24 @@ struct KnobsCommands: Commands {
     }
 }
 
-/// Receives files opened with Knobs from Finder or the Dock before or after the window exists.
+/// Receives files opened with Knobs from Finder or the Dock before or after the window exists, and makes sure
+/// quitting never leaves a tool running on its own.
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var openHandler: (([URL]) -> Void)?
+    private weak var model: AppModel?
     private var pendingURLs: [URL] = []
 
-    func connect(_ handler: @escaping ([URL]) -> Void) {
-        openHandler = handler
+    func connect(_ model: AppModel) {
+        self.model = model
         if !pendingURLs.isEmpty {
-            handler(pendingURLs)
+            model.openFiles(pendingURLs)
             pendingURLs = []
         }
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        if let openHandler {
-            openHandler(urls)
+        if let model {
+            model.openFiles(urls)
         } else {
             pendingURLs.append(contentsOf: urls)
         }
@@ -94,6 +96,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
+    }
+
+    /// A child process outlives its parent, so a run must be stopped before Knobs quits. Ask first, because
+    /// stopping can leave an incomplete output file.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let model, model.hasRunningTasks else { return .terminateNow }
+        let alert = NSAlert()
+        alert.messageText = "A task is still running"
+        alert.informativeText = "Quitting stops it, and the file it was making may be left incomplete."
+        alert.addButton(withTitle: "Stop and Quit")
+        alert.addButton(withTitle: "Keep Running")
+        guard alert.runModal() == .alertFirstButtonReturn else { return .terminateCancel }
+        Task {
+            await model.stopAllRuns()
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 }
 

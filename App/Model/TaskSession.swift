@@ -18,8 +18,9 @@ final class TaskSession: Identifiable {
         let outputURL: URL?
         /// Where results went when the task has no single output file, such as yt-dlp's download folder.
         let folderURL: URL?
-        let inputBytes: Int64?
-        let outputBytes: Int64?
+        /// Sizes are measured off the main thread after the run ends, so they arrive a moment later.
+        var inputBytes: Int64?
+        var outputBytes: Int64?
         let duration: TimeInterval
     }
 
@@ -43,7 +44,8 @@ final class TaskSession: Identifiable {
 
     private let builder: CommandBuilder
     private var toolRun: ToolRun?
-    private var inputBytesAtStart: Int64?
+    /// Counts runs, so sizes measured in the background land only on the run they belong to.
+    private var runNumber = 0
     private var reportedOutputPath: String?
     private let outputPathExpression: NSRegularExpression?
     private let clock: () -> Date
@@ -129,18 +131,24 @@ final class TaskSession: Identifiable {
         reportedOutputPath = nil
         let startedAt = clock()
         phase = .running(startedAt: startedAt)
-        let inputPaths = primaryInputField.flatMap { value(of: $0)?.pathList } ?? []
-        inputBytesAtStart = inputPaths.count == 1 ? Self.fileSize(atPath: inputPaths[0]) : nil
+        runNumber += 1
 
         let workingDirectory = command.outputPath.map { URL(filePath: $0).deletingLastPathComponent() }
         let run = runner.start(
             executable: executable, arguments: command.argv, workingDirectory: workingDirectory, progress: task.progress
         )
         toolRun = run
+        // The input is measured in the background as the tool starts, for the result card.
+        let inputPaths = primaryInputField.flatMap { value(of: $0)?.pathList } ?? []
+        let inputSize = Task.detached(priority: .utility) {
+            inputPaths.count == 1 ? Self.fileSize(atPath: inputPaths[0]) : nil
+        }
+        let thisRun = runNumber
         Task { [weak self] in
             for await event in run.events {
                 self?.handle(event, command: command, startedAt: startedAt)
             }
+            await self?.measureResult(of: thisRun, inputSize: inputSize)
         }
     }
 
@@ -171,8 +179,8 @@ final class TaskSession: Identifiable {
                 result = RunResult(
                     outputURL: outputPath.map { URL(filePath: $0) },
                     folderURL: folderPath.map { URL(filePath: $0) },
-                    inputBytes: inputBytesAtStart,
-                    outputBytes: outputPath.flatMap(Self.fileSize(atPath:)),
+                    inputBytes: nil,
+                    outputBytes: nil,
                     duration: clock().timeIntervalSince(startedAt)
                 )
                 progress = 1
@@ -184,11 +192,21 @@ final class TaskSession: Identifiable {
         }
     }
 
+    /// Fills in the result's sizes once they're measured, unless another run has started since.
+    private func measureResult(of run: Int, inputSize: Task<Int64?, Never>) async {
+        guard let outputPath = result?.outputURL?.path else { return }
+        let inputBytes = await inputSize.value
+        let outputBytes = await Task.detached(priority: .utility) { Self.fileSize(atPath: outputPath) }.value
+        guard run == runNumber, result != nil else { return }
+        result?.inputBytes = inputBytes
+        result?.outputBytes = outputBytes
+    }
+
     private func rebuildDraft() {
         draft = builder.build(task, of: manifest, values: values, extraArguments: extraArguments)
     }
 
-    private static let maximumItemsToMeasure = 5_000
+    nonisolated private static let maximumItemsToMeasure = 5_000
 
     private static func firstCapture(of expression: NSRegularExpression?, in line: String) -> String? {
         guard let expression,
@@ -198,8 +216,9 @@ final class TaskSession: Identifiable {
         return String(line[range])
     }
 
-    /// The size of a file, or of everything inside a folder.
-    private static func fileSize(atPath path: String) -> Int64? {
+    /// The size of a file, or of everything inside a folder. Runs off the main thread: a big folder on a network
+    /// drive can take seconds.
+    nonisolated private static func fileSize(atPath path: String) -> Int64? {
         var isFolder: ObjCBool = false
         guard FileManager.default.fileExists(atPath: path, isDirectory: &isFolder) else { return nil }
         guard isFolder.boolValue else {

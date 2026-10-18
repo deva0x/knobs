@@ -47,7 +47,7 @@ struct KnobsCommands: Commands {
                 .keyboardShortcut("k")
         }
         // The canonical home of the task shortcuts; buttons in the window don't repeat them. While Go to Task is
-        // open, the task underneath can't be run from the keyboard by accident.
+        // open, Run and Open Result are off, so the task underneath can't start by accident. Cancel stays on.
         CommandMenu("Task") {
             Button("Run") {
                 if let session = model.visibleSession { model.run(session) }

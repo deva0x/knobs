@@ -61,9 +61,10 @@ private struct AllOptionsContent: View {
         fieldsByID = Dictionary(session.task.fields.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
-    /// Options default to off and empty, so the switched-on ones are exactly the values the user set.
+    /// Options default to off and empty, so the switched-on ones are exactly the option values the user set
+    /// (the Files field isn't an option).
     private var activeFieldIDs: Set<String> {
-        Set(session.values.filter { $0.value.isSet }.keys)
+        Set(session.values.filter { $0.value.isSet && $0.key != HelpTaskBuilder.filesFieldID }.keys)
     }
 
     private func visibleOptions(active: Set<String>) -> [(fieldID: String, option: HelpOption)] {
@@ -194,6 +195,7 @@ private struct OptionRow: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityHidden(true)
             if option.valueName != nil {
                 TextField(option.preferredFlag, text: textBinding, prompt: Text(option.valueName ?? ""))
                     .labelsHidden()

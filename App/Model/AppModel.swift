@@ -60,17 +60,17 @@ final class AppModel {
         libraryFile = LibraryFile(url: dataDirectory.appending(path: "library.json"))
         do {
             library = try libraryFile.load()
-        } catch {
+        } catch let readError {
             // Start fresh, but never by overwriting the old file: keep it beside the new one, or don't save at all.
             library = KnobsLibrary()
             do {
                 let kept = try libraryFile.setAside(at: Date())
                 libraryProblem =
-                    "Your saved settings couldn't be read (\(error)), so Knobs started fresh. The old file was kept as \(kept.lastPathComponent)."
-            } catch {
+                    "Your saved settings couldn't be read (\(readError)), so Knobs started fresh. The old file was kept as \(kept.lastPathComponent)."
+            } catch let moveError {
                 isSavingLibraryAllowed = false
                 libraryProblem =
-                    "Your saved settings couldn't be read, so Knobs started fresh and won't save over them this time. (\(error))"
+                    "Your saved settings couldn't be read (\(readError)), and couldn't be moved aside (\(moveError)), so Knobs started fresh and won't save over them this session."
             }
         }
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
@@ -299,7 +299,11 @@ final class AppModel {
         let fitting = manifests.flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
             .filter { fits(Self.openableField(of: $0.task)) }
         let installed = fitting.filter { isInstalled($0.manifest) }
-        let pool = installed.isEmpty ? fitting : installed
+        var pool = installed.isEmpty ? fitting : installed
+        // Several files go to tasks that take several, such as Merge PDFs, when there are any; a single-file task
+        // would quietly use only the first.
+        let takingSeveral = pool.filter { Self.openableField(of: $0.task).map(Self.takesSeveralFiles) ?? false }
+        if urls.count > 1, !takingSeveral.isEmpty { pool = takingSeveral }
         let specific = pool.filter { candidate in
             Self.openableField(of: candidate.task).map { FileTypeCheck.namesSpecificTypes($0.kind) } ?? false
         }
@@ -332,6 +336,11 @@ final class AppModel {
             default: false
             }
         }
+    }
+
+    private static func takesSeveralFiles(_ field: Field) -> Bool {
+        if case .inputFile(_, true) = field.kind { return true }
+        return false
     }
 
     private static func paths(_ urls: [URL], for field: Field) -> [String] {

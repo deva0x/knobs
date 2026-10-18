@@ -229,10 +229,11 @@ private struct PathPicker: View {
 
 /// Decides whether a dropped file fits a field, using the field's content types.
 enum FileTypeCheck {
-    /// Whether a field names the types it takes, rather than taking anything. Type names that macOS doesn't know
-    /// don't count, matching `accepts`.
+    /// Whether a field names the file types it takes, rather than taking anything. Type names that macOS doesn't
+    /// know don't count, matching `accepts`. Folder fields don't count either, so an opened folder is offered to
+    /// both folder tasks (rsync) and any-file tasks (making an archive).
     static func namesSpecificTypes(_ kind: FieldKind) -> Bool {
-        guard case .inputFile(let identifiers, _) = kind else { return true }
+        guard case .inputFile(let identifiers, _) = kind else { return false }
         return identifiers.contains { UTType($0) != nil }
     }
 

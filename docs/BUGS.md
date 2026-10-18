@@ -148,3 +148,22 @@ Template:
   Fedora's ffmpeg-free. The x264-only `-preset` and `-crf` are then ignored with a warning, so Quality has no
   effect there. Checked in the installed Fedora app: Shrink a video "Done in 3 s", 5.0 MB to 2.6 MB, 1280x720
   H.264 by libopenh264. The manifest golden test and the ffmpeg integration test pass on macOS.
+
+## BUG-013: On Linux, a file chosen in the file dialog could arrive as a garbled or wrong path (fixed)
+- Found: 2026-10-19, Claude, choosing a video in the Broadway container while taking the website's Linux
+  screenshots.
+- Steps: ffmpeg → Shrink a video → Choose…, type `/home/alex/Videos/Sunset over Goa.mov`, press Enter.
+- Expected: the Video row and the command show that path.
+- Actual: the row showed `/` followed by unreadable bytes, and the command used them as the input file.
+- Cause: Adwaita for Swift's file importer. Its C callback (`gtui_filedialog_open_finish` and the folder one in
+  `Sources/CAdw/adwshim.c`) takes the path with `g_file_peek_path`, which borrows it from the GFile, then
+  releases the GFile and only afterwards hands the path to Swift. The path is read from freed memory: usually
+  still intact, which is why earlier checks passed, sometimes garbage, and it could be another file's path. The
+  latest upstream commit (`af5598f`, the one Knobs pins) still has it.
+- Fix: Knobs opens GTK's file dialog itself (`linux/Sources/Knobs/FileChooser.swift`) and copies the path with
+  `g_file_get_path` before releasing anything; the library's importer is no longer used. Dismissing the dialog
+  stays silent, and any other dialog error goes to standard error. Checked through Broadway: the same file
+  chosen five times in a row came back as the exact path each time, Escape changed nothing and logged nothing,
+  and Shrink a video then ran ("Done in 11 s") and wrote `Sunset over Goa small.mp4` beside the input. The
+  packages in `dist/linux/` were rebuilt afterwards.
+- Upstream: worth reporting to Adwaita for Swift (Codeberg) once the repository is public; not reported yet.

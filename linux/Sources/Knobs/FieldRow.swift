@@ -129,11 +129,10 @@ private struct PathRow: View {
     let field: Field
     let session: TaskSession
     let changed: () -> Void
-    @State private var choose = Signal()
 
     var view: Body {
         let chosen = session.value(of: field)?.pathList ?? []
-        let row = ActionRow(field.label)
+        ActionRow(field.label)
             .subtitle(chosen.isEmpty ? (field.help ?? emptyText) : chosen.map(Self.displayPath).joined(separator: ", "))
             .useMarkup(false)
             .suffix {
@@ -144,22 +143,16 @@ private struct PathRow: View {
                             .valign(.center)
                             .tooltip("Remove all")
                     }
-                    Button(allowsMultiple && !chosen.isEmpty ? "Add…" : "Choose…") { choose.signal() }
+                    Button(allowsMultiple && !chosen.isEmpty ? "Add…" : "Choose…") { choose() }
                         .valign(.center)
                 }
             }
-        if isFolder {
-            row.folderImporter(open: $choose, title: "Choose \(field.label.lowercased())") { url in
-                pick(url)
-            }
-        } else {
-            row.fileImporter(
-                open: $choose, filters: FileTypeFilter.filters(for: field.kind),
-                title: "Choose \(field.label.lowercased())"
-            ) { url in
-                pick(url)
-            }
-        }
+    }
+
+    private func choose() {
+        FileChooser.choose(
+            isFolder ? .folder : .file, title: "Choose \(field.label.lowercased())",
+            filters: FileTypeFilter.filters(for: field.kind), chosen: pick)
     }
 
     private var isFolder: Bool {

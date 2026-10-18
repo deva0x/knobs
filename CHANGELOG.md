@@ -22,3 +22,8 @@ The first release.
 - A "Not installed" screen with the `brew install` command to copy.
 - Manifests: a documented JSON format, so adding a tool or a task needs no Swift.
 - Local-only CI (`scripts/ci.sh`) and a local release script (`scripts/release.sh`).
+- Knobs for Linux, in GTK 4 and libadwaita, sharing the manifests and the core with the Mac app: every task,
+  All options with a settings search, and Add a Tool. Packages for Ubuntu 26.04+ (.deb), Fedora 43+ (.rpm) and
+  Arch Linux (`knobs-bin`), for arm64 and x86_64, built locally with `scripts/linux.sh package`.
+- A tool installed under another name is found under it, and the command shows that name (7-Zip as `7z`).
+- Drop files on a tool's page to see the tasks that take them.

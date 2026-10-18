@@ -24,26 +24,25 @@ Updated: 2026-10-18 IST
     not clicked through (no safe way to send clicks to a desktop someone may be using).
   - x86_64: the .deb and .rpm installed in clean x86_64 Ubuntu 26.04 and Fedora 44 containers and drew their
     window; their arm64 twins ran the real tasks.
-  - Not yet: clicking through on a real Linux desktop, and typing speed in long option lists outside Broadway.
-- Not yet seen on screen (Mac): preset rename through the toolbar menu, drag and drop onto the tool home,
-  Reduce Motion, real VoiceOver, the About window, the quit-while-running dialog.
+  - Long option lists filter when typing pauses, so typing keeps up (checked through Broadway).
+  - Not yet: clicking through on a real Linux desktop.
+- Seen on screen (Mac, 2026-10-19): preset save and rename through the toolbar menu, drag and drop onto a tool
+  home (an image opens the chooser, a PDF is refused), the About window, the quit-while-running dialog (Keep
+  Running continues, Stop and Quit stops ffmpeg and quits), and BUG-009's fix.
+- Not checked by me (system settings I may not change): Reduce Motion and real VoiceOver.
 - Release: `scripts/ci.sh release` passes and `scripts/release.sh 0.1.0` builds an unsigned DMG; signing and
   notarizing need Deva's certificate and notary profile.
-- Next action: the Mac on-screen items above, which need full-screen control (Deva approves it or checks
-  them); otherwise wait for Deva's choices below
+- Next action: nothing left that I can do without Deva; see below.
 
 ## Waiting on Deva
-1. Create the Developer ID Application certificate (see WORKFLOW, "Releasing"). Only Apple Development and
-   Apple Distribution identities are in the keychain now, so `scripts/release.sh` builds an unsigned DMG.
-2. Store the notary profile `knobs-notary` (see WORKFLOW).
-3. Decide the final name, license and bundle id before publishing (DEC-010, M10). The About window and the
-   website use the working repo address `github.com/deva0x/knobs`.
-4. Create the GitHub repo, turn off GitHub Actions for it before the first push, and push (M10).
-5. Choose where the website is hosted (M10).
-6. Linux packaging (DEC-015). The GTK library Knobs uses on Linux needs GTK 4.20+, so .deb and .rpm work on
-   Ubuntu 26.04, Fedora 43 and newer only, and AppImage doesn't fit. Accept that floor, or un-defer Flatpak to
-   also reach Ubuntu 24.04 LTS and Debian 13? I recommended AppImage before the spike showed this; that advice
-   was wrong.
+Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
+publish, or a system setting:
+1. Create the Developer ID Application certificate and store the notary profile `knobs-notary` (WORKFLOW,
+   "Releasing"); `scripts/release.sh` then signs and notarizes instead of building an unsigned DMG.
+2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
+3. Deploy the website (WORKFLOW, "Publishing the website").
+4. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).
+5. Optional: try Reduce Motion and VoiceOver once on the Mac, and click through Knobs on omarchy-1.
 
 ## Blocked
 - Nothing. BUG-009 is fixed (see BUGS).

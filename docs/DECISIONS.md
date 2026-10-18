@@ -111,3 +111,21 @@ Ubuntu container (Swift's runtime linked in) and depends on Arch's own gtk4 and 
 images only, so the package comes with `scripts/linux.sh package <version> amd64`. Publishing to the AUR is
 Deva's call (it needs an AUR account and a public download for the tarball).
 
+## DEC-018: Release decisions taken on Deva's go-ahead (2026-10-19)
+Deva asked for everything to be finished and said I could make the decisions. Taken, with the reason:
+- Name, license, bundle id: Knobs, MIT, `io.github.deva0x.Knobs` on both platforms, as already used in the app,
+  the packages, the About window and the website. If the public repository ends up under another owner, the
+  id and the `github.com/deva0x/knobs` links change together before the first public release.
+- Linux floor (closes DEC-015): accept GTK 4.20, so Ubuntu 26.04+, Fedora 43+ and Arch. AppImage is dropped: it
+  would have to carry GTK and libadwaita itself. Flatpak stays deferred until someone needs an older LTS.
+- Fedora's ffmpeg (closes BUG-012): Shrink a video asks for the H.264 codec rather than libx264, so it works with
+  Fedora's own ffmpeg-free; Quality only takes effect where libx264 exists.
+- Website hosting: Cloudflare Pages by direct upload from this Mac (`npx wrangler pages deploy website
+  --project-name knobs`, see WORKFLOW). It needs no hosted CI; GitHub Pages publishing from a branch runs on
+  GitHub Actions, which this project never uses. Deploying is publishing, so Deva runs it with their own login.
+- Package maintainer contact: the name plus the project's homepage, no personal email address in published
+  packages; bug reports go to the repository's issues.
+Still Deva's, because they need Deva's accounts or publish something: the Developer ID certificate and notary
+profile, creating and pushing the GitHub repository, deploying the website, and publishing `knobs-bin` to
+the AUR.
+

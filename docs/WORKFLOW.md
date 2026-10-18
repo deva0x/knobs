@@ -67,6 +67,17 @@ Things an unattended agent never does: push, create or change remote repos, publ
 GitHub settings, use `sudo`, delete files outside the repo, download anything other than Homebrew formulas
 and the files listed in DECISIONS, or enter credentials.
 
+## Publishing the website (Deva runs this; DEC-018)
+The site is static files in `website/`. It goes to Cloudflare Pages by direct upload from this Mac, with no
+hosted CI:
+
+```bash
+npx wrangler pages deploy website --project-name knobs
+```
+
+The first run asks Wrangler to sign in to Cloudflare in the browser and creates the `knobs` project. Check the
+printed URL in a browser at desktop and phone widths before pointing a domain at it.
+
 ## Releasing (from M9 on)
 
 `scripts/release.sh 0.1.0` does the following on this Mac. It checks first that `project.yml` and

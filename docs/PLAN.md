@@ -77,7 +77,7 @@ Every milestone ends with `scripts/ci.sh` passing, plus the milestone's own chec
 - [x] Command palette (⌘K) across every tool and task
 - [x] Keyboard: ⌘R runs, ⌘. cancels, ⌘K opens the palette
 - [x] Empty states and error messages in plain words
-- [ ] UI review loop: screenshot every screen in light and dark mode, judge it against DESIGN.md, fix, repeat until it passes
+- [x] UI review loop: screenshot every screen in light and dark mode, judge it against DESIGN.md, fix, repeat until it passes (WORKLOG 16:39 on 2026-10-18 and the 2026-10-19 entries)
 - Exit: preset store tests pass, presets survive a relaunch, and the review loop's final screenshots are in `docs/screenshots/`.
 
 ### M6. All ten tools
@@ -107,7 +107,7 @@ that runs one real task on a tiny fixture, and try it once in the app.
 - [x] Static site in `website/` (no build server needed), following DESIGN.md and studied reference sites
 - [x] Hero, live demo of a command turning into controls, tool gallery, how manifests work, download, open-source section
 - [x] Real app screenshots, fast, accessible, works at phone width, light and dark
-- [ ] Reviewed in a browser at desktop and phone sizes, then iterated until it stands out
+- [x] Reviewed in a browser at desktop and phone sizes, then iterated until it stands out
 - Exit: screenshots of the site in `docs/screenshots/website/`, Lighthouse-style checks noted in WORKLOG.
 
 ### M9. Ship-ready
@@ -119,12 +119,12 @@ that runs one real task on a tiny fixture, and try it once in the app.
 - If the Developer ID certificate or the notary profile is missing, build everything else, leave an unsigned DMG, and list the missing step under "Waiting on Deva" in STATUS.
 
 ### M10. Publish (only Deva can do this)
-- [ ] Deva approves the name and license
+- [x] Name and license settled: Knobs, MIT (DEC-018, on Deva's go-ahead)
 - [ ] Deva creates the GitHub repo (or approves creating it)
 - [ ] Deva turns off GitHub Actions for the repo before the first push (Settings → Actions → General → Disable actions), and leaves CodeQL default setup and Dependabot off. An empty `.github/workflows` doesn't stop GitHub's own default workflows.
 - [ ] Deva pushes
 - [ ] Deva approves uploading the DMG with `gh release create` (a release upload, not GitHub Actions)
-- [ ] Deva chooses where the website is hosted. GitHub Pages builds run on Actions, so a direct upload (for example Cloudflare Pages through `wrangler pages deploy` from this Mac) fits DEC-002 better.
+- [x] Website hosting chosen: Cloudflare Pages by direct upload (DEC-018). GitHub Pages builds run on Actions, so a direct upload (for example Cloudflare Pages through `wrangler pages deploy` from this Mac) fits DEC-002 better.
 
 ### M11. Linux (DEC-014, DEC-015)
 - [x] Spike: KnobsCore builds and its tests pass on Ubuntu, Fedora and RHEL in local containers
@@ -134,7 +134,7 @@ that runs one real task on a tiny fixture, and try it once in the app.
   with progress, output and Cancel, the result with Open, and settings remembered between launches
 - [x] .deb and .rpm packages with the manifests, a desktop entry and an icon (`scripts/linux.sh package`)
 - [x] All options and Add a Tool on Linux
-- [ ] Deva decides between the GTK 4.20 floor and Flatpak (DEC-015)
+- [x] The GTK 4.20 floor accepted, AppImage dropped, Flatpak deferred (DEC-015, DEC-018)
 - Exit: the .deb installs and runs Shrink a video in a clean Ubuntu 26.04 container, the .rpm in a clean
   Fedora container, both checked through Broadway.
 

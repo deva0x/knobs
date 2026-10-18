@@ -211,57 +211,11 @@ h2 {
 
 /* App window recreation. Everything inside is in em; 1em = 1/55 of the window width,
    so the window scales as one picture. */
-.mac {
-  position: relative;
-  font-family: var(--font-system);
-  font-size: calc(100cqw / 55);
-  color: var(--win-text);
-  width: 100%;
-  aspect-ratio: 55 / 35;
-  display: grid;
-  grid-template-columns: 13.5em minmax(0, 1fr);
-  background: var(--win-bg);
-  border-radius: 1em;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px var(--win-edge),
-    0 0.1em 0.2em rgba(var(--shadow-tint), .08),
-    0 1.6em 3.4em -1.2em rgba(var(--shadow-tint), .32),
-    0 3.6em 7em -3em rgba(var(--shadow-tint), .28);
-  line-height: 1.3;
-  user-select: none;
-}
-.mac .g { width: 1em; height: 1em; stroke-width: 1.9; }
-.mac-side {
-  margin: 0.5em 0 0.5em 0.5em;
-  border-radius: 0.9em;
-  background: var(--win-side);
-  box-shadow: inset 0 0 0 1px var(--win-line), inset 0 1px 0 rgba(255,255,255,.35);
-  padding: 0.85em 0.6em;
-  display: flex; flex-direction: column;
-  font-size: 1em;
-  min-width: 0;
-}
+
 .mac-lights { display: inline-flex; gap: 0.5em; padding: 0 0.35em 0.95em; }
 .mac-lights i { width: 0.75em; height: 0.75em; border-radius: 50%; background: #FF5F57; box-shadow: inset 0 0 0 0.5px rgba(0,0,0,.15); }
 .mac-lights i:nth-child(2) { background: #FEBC2E; }
 .mac-lights i:nth-child(3) { background: #28C840; }
-.mac-search {
-  display: flex; align-items: center; gap: 0.4em;
-  font-size: 0.8125em; color: var(--win-text-2);
-  background: var(--win-sel); border-radius: 0.6em; padding: 0.42em 0.6em; margin-bottom: 0.9em;
-}
-.mac-search kbd { margin-left: auto; font-family: var(--font-system); font-size: 0.92em; }
-.mac-section { font-size: 0.6875em; font-weight: 600; color: var(--win-text-2); padding: 0.4em 0.75em 0.35em; }
-.mac-tools, .mac-recent { display: grid; gap: 0.06em; margin-bottom: 0.7em; }
-.mac-tools li, .mac-recent li {
-  display: flex; align-items: center; gap: 0.55em;
-  font-size: 0.8125em; height: 1.95em; padding: 0 0.5em; border-radius: 0.55em;
-  white-space: nowrap; overflow: hidden;
-}
-.mac-tools li.is-selected { background: var(--win-sel); font-weight: 600; }
-.mac-recent li { color: var(--win-text-2); padding-left: 0.65em; }
-.mac-add { margin-top: auto; display: flex; align-items: center; gap: 0.5em; font-size: 0.8125em; color: var(--win-text-2); padding: 0.4em 0.6em; }
 
 .tile {
   --t: var(--purple);
@@ -276,40 +230,8 @@ h2 {
 .t-indigo { --t: var(--indigo); } .t-orange { --t: var(--orange); } .t-blue { --t: var(--blue); }
 .t-gray { --t: var(--gray); } .t-green { --t: var(--green); } .t-cyan { --t: var(--cyan); } .t-brown { --t: var(--brown); }
 
-.mac-main { position: relative; display: flex; flex-direction: column; min-width: 0; }
-.mac-toolbar {
-  display: flex; align-items: center; gap: 0.75em;
-  height: 3.4em; padding: 0 1.1em 0 1em; font-size: 1em;
-}
-.mac-toolbar strong { font-size: 0.875em; font-weight: 650; }
-.mac-tb-icon { color: var(--win-text-2); }
-.mac-picker, .mac-tb-btn {
-  display: inline-flex; align-items: center; gap: 0.3em;
-  font-size: 0.78em; padding: 0.42em 0.85em; border-radius: 99em;
-  background: var(--glass); box-shadow: inset 0 0 0 1px var(--win-line), 0 1px 2px rgba(0,0,0,.05);
-  white-space: nowrap;
-}
-.mac-picker .g { width: 0.95em; height: 0.95em; color: var(--win-text-2); }
-.mac-spacer { flex: 1; }
-.mac-kbd { color: var(--win-text-2); }
-
-.mac-body { padding: 0.9em 2.2em 6em; display: grid; gap: 1.15em; align-content: start; max-width: 45em; width: 100%; margin-inline: auto; }
-.mac-task-head { display: flex; align-items: center; gap: 0.85em; }
 .tile-lg { width: 2.75em; height: 2.75em; border-radius: 0.625em; }
-.mac-task-title { font-size: 1.375em; font-weight: 650; letter-spacing: -0.01em; }
-.mac-task-sub { font-size: 0.8125em; color: var(--win-text-2); margin-top: 0.15em; }
 
-.mac-drop {
-  position: relative; border-radius: 0.75em; background: var(--win-well);
-  box-shadow: inset 0 0 0 1px var(--win-line); padding: 0.7em; min-height: 4.4em;
-}
-.mac-drop-empty {
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 0.8125em; color: var(--win-text-2);
-  border-radius: inherit; outline: 1.5px dashed var(--win-line); outline-offset: -0.5em;
-  opacity: 0;
-}
-.mac-file { display: flex; align-items: center; gap: 0.75em; }
 .mac-thumb {
   width: 4.4em; height: 3em; border-radius: 0.4em; flex: none;
   background:
@@ -317,27 +239,7 @@ h2 {
     linear-gradient(180deg, #F3B784 0%, #E58A63 46%, #2E5D78 47%, #23465E 100%);
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.1);
 }
-.mac-file-text { display: grid; gap: 0.1em; flex: 1; min-width: 0; }
-.mac-file-text b { font-size: 0.8125em; font-weight: 600; }
-.mac-file-text small { font-size: 0.6875em; color: var(--win-text-2); }
-.mac-ctrl, .mac-popup {
-  display: inline-flex; align-items: center; gap: 0.35em;
-  font-size: 0.75em; padding: 0.36em 0.8em; border-radius: 99em;
-  background: var(--win-ctrl); box-shadow: 0 0 0 0.5px rgba(0,0,0,.14), 0 0.5px 1.5px rgba(0,0,0,.12);
-}
-.mac-popup .g { width: 1em; height: 1em; color: var(--win-text-2); }
 
-.mac-form { border-radius: 0.75em; background: var(--win-group); box-shadow: inset 0 0 0 1px var(--win-line); }
-.mac-row {
-  display: flex; align-items: center; gap: 0.8em;
-  min-height: 2.6em; padding: 0.35em 0.95em; font-size: 1em;
-  border-top: 1px solid var(--win-line);
-}
-.mac-row:first-child { border-top: 0; }
-.mac-row > span:first-child { font-size: 0.8125em; flex: 1; }
-.mac-row-disclosure { color: var(--win-text-2); gap: 0.35em; }
-.mac-row-disclosure span { font-size: 0.8125em; }
-.mac-row-disclosure .g { width: 0.85em; height: 0.85em; }
 .mac-slider { position: relative; width: 11em; height: 0.25em; border-radius: 99em; background: var(--win-line); }
 .mac-slider i {
   position: absolute; inset: 0 auto 0 0; width: calc(var(--p) * 100%); border-radius: inherit; background: var(--win-text-2);
@@ -346,7 +248,7 @@ h2 {
   content: ""; position: absolute; right: -0.6em; top: 50%; width: 1.2em; height: 1.2em; margin-top: -0.6em;
   border-radius: 50%; background: #fff; box-shadow: 0 0 0 0.5px rgba(0,0,0,.18), 0 1px 3px rgba(0,0,0,.25);
 }
-.mac-val { font-size: 0.75em; color: var(--win-text-2); width: 4.6em; text-align: right; }
+
 .mac-check { width: 1.05em; height: 1.05em; border-radius: 0.28em; background: var(--win-ctrl); box-shadow: 0 0 0 0.5px rgba(0,0,0,.25), 0 0.5px 1px rgba(0,0,0,.1); }
 .mac-check.is-on { background: var(--win-text); position: relative; }
 .mac-check.is-on::after {
@@ -354,17 +256,6 @@ h2 {
   border: solid var(--win-bg); border-width: 0 0.12em 0.12em 0; transform: rotate(45deg);
 }
 
-.mac-bar {
-  position: absolute; left: 1.4em; right: 1.4em; bottom: 1em;
-  display: flex; align-items: center; gap: 0.9em;
-  height: 3.2em; padding: 0 0.4em 0 1.3em; border-radius: 99em;
-  background: var(--glass);
-  -webkit-backdrop-filter: blur(1.2em) saturate(170%);
-  backdrop-filter: blur(1.2em) saturate(170%);
-  box-shadow: inset 0 0 0 1px var(--glass-edge), inset 0 1px 0 rgba(255,255,255,.5), 0 0.6em 1.6em -0.5em rgba(0,0,0,.22), 0 0 0 0.5px rgba(0,0,0,.08);
-}
-.mac-cmd { flex: 1; min-width: 0; font-size: 0.75em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mac-copy { color: var(--win-text-2); flex: none; }
 .mac-run {
   flex: none; display: inline-flex; align-items: baseline; gap: 0.45em;
   background: var(--signal); color: #141414; font-weight: 650; font-size: 0.8125em;
@@ -385,12 +276,12 @@ h2 {
 
 /* Command preview colors, shared by the mock, the demo and the mini windows */
 .cmd { font-family: var(--font-mono); --flag: var(--purple-text); color: var(--ink); }
-.mac .cmd, .mini-window .cmd { color: var(--win-text); }
+.mini-window .cmd { color: var(--win-text); }
 .cmd .t-exe { font-weight: 600; }
 .cmd .t-gap { color: var(--win-text-2); }
 .cmd .t-flag { color: var(--flag); }
 .cmd .t-path { color: var(--ink-2); }
-.mac .cmd .t-path, .mini-window .cmd .t-path { color: var(--win-text-2); }
+.mini-window .cmd .t-path { color: var(--win-text-2); }
 .cmd .t-extra { text-decoration: underline dotted; text-underline-offset: 0.28em; text-decoration-thickness: 1.5px; }
 .cmd .tok { border-radius: 4px; }
 .cmd .t-exe, .cmd .t-flag, .cmd .t-val, .cmd .t-extra { white-space: nowrap; }
@@ -841,20 +732,9 @@ h2 {
   .segmented label { padding: 9px 11px; font-size: 14px; }
 }
 
-/* The one orchestrated moment: on load, a file lands in the window and the command assembles. */
 @media (prefers-reduced-motion: no-preference) {
-  .mac { animation: mac-rise 0.9s var(--ease-out) 0.1s both; }
-  .mac-drop-empty { animation: drop-wait 0.35s ease 1s both; }
-  .mac-file { animation: file-land 0.55s var(--ease-spring) 1.15s both; }
-  .mac-cmd > span { animation: tok-in 0.35s var(--ease-out) calc(1.45s + var(--i) * 70ms) both; }
-  .mac-run { animation: run-ready 0.4s var(--ease-spring) 2.2s both; }
   .btn-primary, .btn-quiet, .btn-copy, .segmented label { transition-duration: .2s; }
 }
-@keyframes mac-rise { from { transform: translateY(28px) scale(0.98); } to { transform: none; } }
-@keyframes drop-wait { from { opacity: 1; } to { opacity: 0; } }
-@keyframes file-land { from { opacity: 0; transform: translateY(-0.8em) scale(0.94); } to { opacity: 1; transform: none; } }
-@keyframes tok-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes run-ready { from { transform: scale(0.92); } to { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -865,7 +745,7 @@ h2 {
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .site-header, .cmdbar, .mac-bar { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .site-header, .cmdbar { -webkit-backdrop-filter: none; backdrop-filter: none; }
   .site-header { background: var(--paper); }
   .cmdbar { background: var(--raised); }
 }

@@ -86,89 +86,12 @@
           </div>
         </div>
 
-        <!--
-          SCREENSHOT SLOT: hero
-          This figure holds an HTML/CSS recreation of the app window until real screenshots exist.
-          To use real ones, save them to assets/screenshots/ (for example hero-light.png and hero-dark.png,
-          2x resolution, under ~300 KB each) and replace the <div class="mac"> below with:
-
-            <picture>
-              <source srcset="assets/screenshots/hero-dark.png" media="(prefers-color-scheme: dark)">
-              <img src="assets/screenshots/hero-light.png" width="1760" height="1160"
-                   alt="Knobs showing the ffmpeg task Shrink a video, with the command bar and Run button.">
-            </picture>
-
-          Or keep the recreation and place the <picture> beside it. Styles for .shot img already exist.
-        -->
         <figure class="shot" data-screenshot-slot="hero">
-          <div class="mac" role="img" aria-label="The Knobs window: a sidebar of ten tools with ffmpeg selected, the task Shrink a video with holiday.mov dropped in, settings for size, quality and sound, and a glass command bar at the bottom showing the ffmpeg command and an orange Run button.">
-            <div class="mac-side">
-              <div class="mac-lights" aria-hidden="true"><i></i><i></i><i></i></div>
-              <div class="mac-search"><svg class="g"><use href="#g-search"/></svg><span>Search</span><kbd>⌘K</kbd></div>
-              <p class="mac-section">Tools</p>
-              <ul class="mac-tools">
-                <li class="is-selected"><span class="tile t-purple"><svg class="g"><use href="#g-ffmpeg"/></svg></span>ffmpeg</li>
-                <li><span class="tile t-red"><svg class="g"><use href="#g-ytdlp"/></svg></span>yt-dlp</li>
-                <li><span class="tile t-teal"><svg class="g"><use href="#g-imagemagick"/></svg></span>ImageMagick</li>
-                <li><span class="tile t-indigo"><svg class="g"><use href="#g-pandoc"/></svg></span>pandoc</li>
-                <li><span class="tile t-orange"><svg class="g"><use href="#g-exiftool"/></svg></span>exiftool</li>
-                <li><span class="tile t-blue"><svg class="g"><use href="#g-ocrmypdf"/></svg></span>ocrmypdf</li>
-                <li><span class="tile t-gray"><svg class="g"><use href="#g-ghostscript"/></svg></span>Ghostscript</li>
-                <li><span class="tile t-green"><svg class="g"><use href="#g-whisper"/></svg></span>whisper.cpp</li>
-                <li><span class="tile t-cyan"><svg class="g"><use href="#g-rsync"/></svg></span>rsync</li>
-                <li><span class="tile t-brown"><svg class="g"><use href="#g-sevenzip"/></svg></span>7-Zip</li>
-              </ul>
-              <p class="mac-section">Recent</p>
-              <ul class="mac-recent">
-                <li>Shrink a video</li>
-                <li>Download just the audio</li>
-              </ul>
-              <p class="mac-add"><svg class="g"><use href="#g-plus"/></svg>Add a tool</p>
-            </div>
-
-            <div class="mac-main">
-              <div class="mac-toolbar">
-                <svg class="g mac-tb-icon"><use href="#g-sidebar"/></svg>
-                <strong>ffmpeg</strong>
-                <span class="mac-picker">Shrink a video<svg class="g"><use href="#g-chevron"/></svg></span>
-                <span class="mac-spacer"></span>
-                <span class="mac-tb-btn">All options</span>
-                <span class="mac-tb-btn mac-kbd">⌘K</span>
-              </div>
-
-              <div class="mac-body">
-                <div class="mac-task-head">
-                  <span class="tile tile-lg t-purple"><svg class="g"><use href="#g-shrink"/></svg></span>
-                  <div>
-                    <p class="mac-task-title">Shrink a video</p>
-                    <p class="mac-task-sub">Make a video file smaller, for sharing or email.</p>
-                  </div>
-                </div>
-
-                <div class="mac-drop">
-                  <span class="mac-drop-empty">Drop a video here</span>
-                  <div class="mac-file">
-                    <span class="mac-thumb"></span>
-                    <span class="mac-file-text"><b>holiday.mov</b><small>1.2 GB, 4K video</small></span>
-                    <span class="mac-ctrl">Replace</span>
-                  </div>
-                </div>
-
-                <div class="mac-form">
-                  <div class="mac-row"><span>Size</span><span class="mac-popup">720p<svg class="g"><use href="#g-chevron"/></svg></span></div>
-                  <div class="mac-row"><span>Quality</span><span class="mac-slider"><i style="--p:.36"></i></span><span class="mac-val">Balanced</span></div>
-                  <div class="mac-row"><span>Remove sound</span><span class="mac-check"></span></div>
-                  <div class="mac-row mac-row-disclosure"><svg class="g"><use href="#g-disclosure"/></svg><span>Extra arguments</span></div>
-                </div>
-              </div>
-
-              <div class="mac-bar">
-                <code class="mac-cmd cmd tint-purple"><span class="t-exe" style="--i:0">ffmpeg</span> <span class="t-flag" style="--i:1">-hide_banner</span> <span class="t-flag" style="--i:2">-i</span> <span class="t-path" style="--i:3">holiday.mov</span> <span class="t-gap" style="--i:4">…</span> <span class="t-flag" style="--i:5">-crf</span> <span class="t-val" style="--i:6">23</span> <span class="t-path" style="--i:7">'holiday small.mp4'</span></code>
-                <svg class="g mac-copy"><use href="#g-copy"/></svg>
-                <span class="mac-run">Run <small>⌘R</small></span>
-              </div>
-            </div>
-          </div>
+          <picture>
+            <source srcset="assets/screenshots/hero-dark.jpg" media="(prefers-color-scheme: dark)">
+            <img src="assets/screenshots/hero-light.jpg" width="1760" height="1163" fetchpriority="high"
+                 alt="The Knobs window: a sidebar of ten tools with ffmpeg selected, the task Shrink a video with a sunset clip's large preview and its facts (24 seconds, 1920 by 1080, 30 fps, 7.5 MB), size, quality and sound in the inspector on the right, and the ffmpeg command with a pink Run button in the glass bar at the bottom.">
+          </picture>
         </figure>
       </div>
     </section>

@@ -23,7 +23,7 @@ website/
   main.js           links, the demo's command builder, the dial, the extra-arguments splitter, copy buttons
   assets/
     favicon.svg     the dial mark
-    screenshots/    real app screenshots go here (empty for now)
+    screenshots/    the hero's real app screenshots, light and dark
 ```
 
 ## Where things live
@@ -38,10 +38,10 @@ website/
 
 ## Real screenshots
 
-The hero currently shows an HTML/CSS recreation of the app window inside
-`<figure class="shot" data-screenshot-slot="hero">`. The comment above that figure in `index.html` has the
-exact `<picture>` markup to use instead (light and dark versions). Save images in `assets/screenshots/`,
-at 2x, and keep each one under about 300 KB.
+The hero shows real app screenshots, `assets/screenshots/hero-light.jpg` and `hero-dark.jpg`, picked by the
+reader's light or dark setting. They are window captures of Shrink a video (`screencapture -o -l <window id>`)
+from the Debug app with a fresh data folder, saved at 1760 px wide as JPEG and kept under about 300 KB. Retake
+both when the task screen changes.
 
 ## Hosting
 

@@ -10,7 +10,15 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/m4-shrink-video-done-dark.jpg" width="880" alt="Knobs shrinking a video with ffmpeg: the task window with a dropped file, plain settings, the command bar and a result card.">
+  <picture>
+    <source srcset="docs/screenshots/result-dark.jpg" media="(prefers-color-scheme: dark)">
+    <img src="docs/screenshots/result-light.jpg" width="880" alt="Knobs after shrinking a video with ffmpeg: the result's preview with −86% as the headline, 7.5 MB to 1.1 MB, Open and Show in Finder, the settings in the inspector on the right and the command bar at the bottom.">
+  </picture>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/home-dark.jpg" width="430" alt="The ffmpeg page: a hero in the tool's pink, where ffmpeg is installed, and cards for Shrink a video, Convert a video, Trim a clip and more, each saying what it takes.">
+  <img src="docs/screenshots/running-light.jpg" width="430" alt="Shrink a video running: a dial over the video's preview at 50% and two seconds, with Cancel in the command bar.">
 </p>
 
 ffmpeg, yt-dlp, ImageMagick and their friends can do almost anything, if you remember the flags. Knobs puts
@@ -22,7 +30,7 @@ Status: working toward v0.1.0. See [docs/PLAN.md](docs/PLAN.md) and [CHANGELOG.m
 ## What it does
 
 - **Tasks in plain words.** "Shrink a video", "Make a PDF searchable", "Remove the location". Drop a file,
-  set what matters, press Run. Progress, Cancel, and a result card with Open, Show in Finder and drag-out.
+  set what matters, press Run. A large preview with the file's facts, a progress dial, Cancel, and the result with its size change, Open, Show in Finder and drag-out.
 - **The real command, live.** Every change updates the command bar, colored by part, ready to copy into
   Terminal.
 - **Three layers per tool.** The tasks; an Extra arguments box on every task for anything else; and

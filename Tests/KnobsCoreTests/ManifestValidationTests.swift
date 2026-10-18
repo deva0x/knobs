@@ -160,6 +160,35 @@ import Testing
         #expect(loadingError(minimalManifest(task: twice))?.path == "tasks[0].arguments")
     }
 
+    @Test func extraCannotDependOnACondition() {
+        let fields: [[String: Any]] = [
+            ["id": "input", "label": "File", "kind": "inputFile"],
+            ["id": "on", "label": "On", "kind": "toggle"],
+        ]
+        let task = minimalTask(fields: fields, arguments: ["{input}", ["if": "on", "then": ["{extra}"]], "{output}"])
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[1].then[0]")
+    }
+
+    @Test func secretsCannotAppearInTheOutputName() {
+        let fields: [[String: Any]] = [
+            ["id": "input", "label": "File", "kind": "inputFile"],
+            ["id": "password", "label": "Password", "kind": "secret"],
+        ]
+        let task = minimalTask(fields: fields, output: ["template": "{input.stem} {password}.zip", "nextTo": "input"])
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].output.template")
+    }
+
+    @Test func emptyPathPartIsRejected() {
+        let task = minimalTask(arguments: ["{input.}", "{extra}", "{output}"])
+        #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[0]")
+    }
+
+    @Test func homepageMustBeAWebAddress() {
+        var manifest = minimalManifest()
+        manifest["homepage"] = "file:///etc/passwd"
+        #expect(loadingError(manifest)?.path == "homepage")
+    }
+
     @Test func extraMustBeAListItemOfItsOwn() {
         let task = minimalTask(arguments: ["{input}", "--opts={extra}", "{output}"])
         #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].arguments[1]")

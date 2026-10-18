@@ -109,7 +109,7 @@ enum TemplateParser {
     private static func placeholder(from body: String) throws(TemplateParseError) -> Placeholder {
         guard !body.isEmpty else { throw .emptyPlaceholder }
         if body == Placeholder.extraName { return .extra }
-        let pieces = body.split(separator: ".", maxSplits: 1).map(String.init)
+        let pieces = body.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
         var part = PathPart.whole
         if pieces.count == 2 {
             guard let named = PathPart(rawValue: pieces[1]), named != .whole else { throw .unknownPathPart(pieces[1]) }

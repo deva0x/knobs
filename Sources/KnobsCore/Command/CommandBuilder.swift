@@ -51,14 +51,28 @@ public struct CommandBuilder: Sendable {
             folder = context.firstPath(of: fieldID)
         }
         guard let folder, let name = context.interpolate(rule.template) else { return nil }
-        let safeName = name.replacing("/", with: "-")
+        let safeName = Self.fileName(from: name)
         let desired = (folder as NSString).appendingPathComponent(safeName)
+        // An empty name would point at the folder itself, and the namer would then pick a sibling folder.
+        guard !safeName.isEmpty else {
+            context.problems.append(.outputUnavailable(desired))
+            return nil
+        }
         do {
             return try outputNamer.availablePath(for: desired)
         } catch {
             context.problems.append(.outputUnavailable(desired))
             return desired
         }
+    }
+}
+
+extension CommandBuilder {
+    /// Makes a rendered output name safe to use as one file name: no slashes, and no dots or spaces at either end.
+    /// An input with no extension would otherwise give `notes clean.`, and a hidden input `.profile` would give a
+    /// hidden output.
+    static func fileName(from name: String) -> String {
+        name.replacing("/", with: "-").trimmingCharacters(in: CharacterSet(charactersIn: ". "))
     }
 }
 

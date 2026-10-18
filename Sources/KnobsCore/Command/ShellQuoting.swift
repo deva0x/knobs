@@ -5,7 +5,8 @@ public enum ShellQuoting {
 
     public static func quote(_ argument: String) -> String {
         if argument.isEmpty { return "''" }
-        if argument.allSatisfy(safeCharacters.contains) { return argument }
+        // zsh expands a word that starts with `=` to a command's path, so a leading `=` needs quotes.
+        if argument.allSatisfy(safeCharacters.contains), !argument.hasPrefix("=") { return argument }
         return "'" + argument.replacing("'", with: #"'\''"#) + "'"
     }
 }

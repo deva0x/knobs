@@ -62,11 +62,17 @@ public enum ManifestLoader {
 
     private static func readData(_ file: URL, source: String) throws(ManifestError) -> Data {
         do {
-            let size = try file.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
-            guard size <= maximumFileSize else {
+            // Measure what will actually be read: a symlink's own size says nothing about its target, and a
+            // FIFO or device would block the read forever.
+            let target = file.resolvingSymlinksInPath()
+            let values = try target.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+            guard values.isRegularFile == true else {
+                throw ManifestError(source: source, path: "", problem: "isn't a regular file")
+            }
+            guard (values.fileSize ?? 0) <= maximumFileSize else {
                 throw ManifestError(source: source, path: "", problem: "is larger than \(maximumFileSize) bytes")
             }
-            return try Data(contentsOf: file)
+            return try Data(contentsOf: target)
         } catch let error as ManifestError {
             throw error
         } catch {

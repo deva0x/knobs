@@ -14,6 +14,9 @@ import Testing
         (#"one\ word"#, ["one word"]),
         ("''", [""]),
         ("a\tb\nc", ["a", "b", "c"]),
+        ("-a \\\n-b", ["-a", "-b"]),
+        (#""\$HOME \`x\`""#, ["$HOME `x`"]),
+        ("my\u{00A0}file", ["my\u{00A0}file"]),
     ])
     func splitsLikeAShellWithoutRunningOne(input: String, expected: [String]) throws {
         #expect(try ArgumentSplitter.split(input) == expected)
@@ -40,6 +43,8 @@ import Testing
         ("my clip.mov", "'my clip.mov'"),
         ("it's", #"'it'\''s'"#),
         ("$(whoami)", "'$(whoami)'"),
+        ("=ls", "'=ls'"),
+        ("a=b", "a=b"),
     ])
     func quotesOnlyWhatNeedsQuoting(argument: String, expected: String) {
         #expect(ShellQuoting.quote(argument) == expected)

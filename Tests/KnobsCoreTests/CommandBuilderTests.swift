@@ -178,6 +178,34 @@ import Testing
         #expect(draft.command.argv.prefix(2) == ["-of", "/Users/me/Downloads/talk transcript"])
     }
 
+    @Test func outputNameNeverEndsOrStartsWithADot() throws {
+        let manifest = try load(
+            minimalManifest(
+                task: minimalTask(output: ["template": "{input.stem} clean.{input.ext}", "nextTo": "input"]))
+        )
+
+        let draft = builder().build(
+            manifest.tasks[0], of: manifest, values: ["input": .paths(["/a/.profile"])], extraArguments: "")
+
+        #expect(draft.command.outputPath == "/a/profile clean")
+    }
+
+    @Test func emptyOutputNameBlocksRunning() throws {
+        let fields: [[String: Any]] = [
+            ["id": "input", "label": "File", "kind": "inputFile"],
+            ["id": "name", "label": "Name", "kind": "text", "required": false],
+        ]
+        let manifest = try load(
+            minimalManifest(
+                task: minimalTask(fields: fields, output: ["template": "{name}", "nextTo": "input"])))
+
+        let draft = builder(existingFiles: ["/a"]).build(
+            manifest.tasks[0], of: manifest, values: ["input": .paths(["/a/x.txt"])], extraArguments: "")
+
+        #expect(draft.problems.contains(.outputUnavailable("/a")))
+        #expect(!draft.isRunnable)
+    }
+
     @Test func outputNextToSeveralFilesGoesNextToTheFirst() throws {
         let fields: [[String: Any]] = [["id": "pages", "label": "PDFs", "kind": "inputFile", "multiple": true]]
         let manifest = try load(

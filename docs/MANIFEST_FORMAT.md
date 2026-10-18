@@ -115,8 +115,10 @@ An `inputFile` field with `multiple: true` expands to one argument per file, in 
   options. `"else": [ ... ]` is optional. Conditionals can nest.
 - **`{output}`** is the derived output path from `output`.
 - **`{extra}`** marks where the task's "Extra arguments" box goes. Every task must contain it exactly once,
-  as a whole string. Knobs splits the box's text into words itself, following shell quote rules
-  (`"two words"` and `'two words'` stay one argument, and a backslash escapes the next character), and inserts
+  as a whole string, and never inside an `if`, so the user's words always reach the tool. Knobs splits the box's
+  text into words itself, following POSIX shell quote rules: spaces, tabs and newlines separate words,
+  `"two words"` and `'two words'` stay one argument, a backslash escapes the next character (inside double
+  quotes only `"`, `\`, `$` and `` ` ``), and a backslash at the end of a line joins it to the next. It inserts
   those words at this position. Nothing is ever passed to a shell. When the box is empty, it adds nothing.
 
 Placeholders that can be used:
@@ -137,10 +139,14 @@ Validation rejects a reference to a field that doesn't exist.
 
 ## Output
 
-`output.template` uses the same placeholders. `output.nextTo` names the file field whose folder receives the
+`output.template` uses the same placeholders, except `{output}`, `{extra}` and secret fields (a password must
+never become part of a file name). `output.nextTo` names the file field whose folder receives the
 output (the first file's folder, for a field with several files), or `output.folder` names an `outputFolder`
-field. If the file already exists, Knobs adds " 2",
-" 3" and so on before the extension. It never overwrites a file.
+field. Slashes in the rendered name become dashes, and dots and spaces at either end are removed, so an input
+with no extension never gives a name ending in a dot and a hidden input never gives a hidden output. A name that
+comes out empty blocks running. If the file already exists, Knobs adds " 2",
+" 3" and so on before the extension. It never overwrites a file it can see: the name is chosen when Run is
+pressed, so two runs started at the same moment on the same input could still pick the same name.
 
 ## Progress
 
@@ -162,9 +168,20 @@ happen:
 - a `default` outside `minimum`/`maximum`, or not one of the `options`
 - `executable` containing `/`
 - `schemaVersion` other than 1
-- a task without exactly one `{extra}`, or a field whose id is `extra` or `output` (both are reserved)
+- a task without exactly one `{extra}`, `{extra}` inside an `if`, or a field whose id is `extra` or `output`
+  (both are reserved)
+- `{extra}` or a field with several files used inside a longer string instead of as a list item of its own
+- a path part (`.stem`, `.name`, `.ext`, `.dir`, `.base`) on a field that isn't a file or folder, an unknown
+  or empty path part (`{input.}`), or an unbalanced `{` or `}`
+- `{output}` in a task without an `output` rule, or an `output` rule the arguments never use
+- an `output` without exactly one of `nextTo` (naming an `inputFile` field) and `folder` (naming an
+  `outputFolder` field), or an output template that uses `{output}`, `{extra}` or a secret field
 - an `equals` that isn't one of a choice's option values
-- an `outputPathPattern` that doesn't compile or doesn't have exactly one capture group
+- a `choice` with no options or duplicate option values, or a `number` with only one of `minimum` and
+  `maximum`, or with `minimum` above `maximum`
+- a `homepage` that isn't an `http` or `https` address
+- an `outputPathPattern` or progress pattern that doesn't compile or doesn't have exactly one capture group
+- a manifest file larger than 1 MB, or one that isn't a regular file
 
 ## Versioning
 

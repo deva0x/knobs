@@ -25,6 +25,12 @@ enum ManifestValidator {
         guard !manifest.executable.isEmpty, !manifest.executable.contains("/") else {
             throw fail("executable", "should be a bare name such as \"ffmpeg\", not a path")
         }
+        // The app opens the homepage in the browser, so only web addresses are allowed.
+        if let homepage = manifest.homepage {
+            guard let scheme = URL(string: homepage)?.scheme?.lowercased(), ["https", "http"].contains(scheme) else {
+                throw fail("homepage", "should be a web address starting with https://")
+            }
+        }
         guard !manifest.tasks.isEmpty else { throw fail("tasks", "needs at least one task") }
 
         var taskIDs: Set<String> = []
@@ -102,7 +108,7 @@ enum ManifestValidator {
         var extraCount = 0
         var usesOutput = false
 
-        func walk(_ items: [ArgumentTemplate], path: String) throws(ManifestError) {
+        func walk(_ items: [ArgumentTemplate], path: String, isConditional: Bool) throws(ManifestError) {
             for (index, item) in items.enumerated() {
                 let itemPath = "\(path)[\(index)]"
                 switch item {
@@ -116,8 +122,8 @@ enum ManifestValidator {
                     {
                         throw fail("\(itemPath).equals", "\"\(expected)\" isn't one of the option values")
                     }
-                    try walk(then, path: "\(itemPath).then")
-                    try walk(otherwise, path: "\(itemPath).else")
+                    try walk(then, path: "\(itemPath).then", isConditional: true)
+                    try walk(otherwise, path: "\(itemPath).else", isConditional: true)
                 case .text(let template):
                     let segments = try parse(template, path: itemPath, fail: fail)
                     let isWholePlaceholder = segments.count == 1
@@ -127,6 +133,10 @@ enum ManifestValidator {
                             guard isWholePlaceholder else {
                                 throw fail(
                                     itemPath, "{extra} must be a list item of its own, not part of a longer string")
+                            }
+                            // Extra arguments must always reach the tool, whatever the user switched off.
+                            guard !isConditional else {
+                                throw fail(itemPath, "{extra} can't be inside an if, because it must always be used")
                             }
                             extraCount += 1
                         case .output:
@@ -145,7 +155,7 @@ enum ManifestValidator {
             }
         }
 
-        try walk(task.arguments, path: "\(taskPath).arguments")
+        try walk(task.arguments, path: "\(taskPath).arguments", isConditional: false)
         guard extraCount == 1 else {
             throw fail("\(taskPath).arguments", "must contain \"{extra}\" exactly once, but has it \(extraCount) times")
         }
@@ -195,6 +205,8 @@ enum ManifestValidator {
             switch placeholder {
             case .output, .extra:
                 throw fail("\(path).template", "can't use {output} or {extra}")
+            case .field(let id, _) where task.field(withID: id)?.kind == .secret:
+                throw fail("\(path).template", "can't use the secret field \"\(id)\" in a file name")
             case .field(let id, let part):
                 // In a file name, a field with several files stands for its first file.
                 try validateFieldReference(
@@ -254,7 +266,7 @@ enum ManifestValidator {
                 case .unclosedBrace: "has a { without a matching }"
                 case .unexpectedClosingBrace: "has a } without a matching {. Write }} for a literal brace"
                 case .emptyPlaceholder: "has an empty {}"
-                case .unknownPathPart(let part): "uses .\(part), but only .stem, .name, .ext and .dir exist"
+                case .unknownPathPart(let part): "uses .\(part), but only .stem, .name, .ext, .dir and .base exist"
                 }
             throw fail(path, problem)
         }

@@ -1,14 +1,19 @@
 /// Splits the "Extra arguments" box into words using shell quoting rules, without ever invoking a shell.
 ///
-/// - Whitespace separates words.
+/// - Spaces, tabs and newlines separate words; other Unicode spaces, such as a no-break space, are kept.
 /// - `'single quotes'` keep everything literally.
-/// - `"double quotes"` keep spaces; inside them a backslash escapes only `"` and `\`.
+/// - `"double quotes"` keep spaces; inside them a backslash escapes only `"`, `\`, `$` and `` ` ``, as in a POSIX
+///   shell.
 /// - Outside quotes, a backslash escapes the next character.
+/// - A backslash before a newline joins the lines, so a multi-line command pasted from documentation works.
 public enum ArgumentSplitter {
     public enum SplitError: Error, Sendable, Hashable {
         case unclosedQuote(Character)
         case trailingBackslash
     }
+
+    private static let wordSeparators: Set<Character> = [" ", "\t", "\n", "\r\n", "\r"]
+    private static let escapableInDoubleQuotes: Set<Character> = ["\"", "\\", "$", "`"]
 
     public static func split(_ text: String) throws(SplitError) -> [String] {
         var words: [String] = []
@@ -39,7 +44,8 @@ public enum ArgumentSplitter {
                     }
                     if quoted == "\\" {
                         guard let escaped = characters.next() else { throw .unclosedQuote("\"") }
-                        if escaped != "\"" && escaped != "\\" { current.append("\\") }
+                        if escaped == "\n" { continue }
+                        if !escapableInDoubleQuotes.contains(escaped) { current.append("\\") }
                         current.append(escaped)
                     } else {
                         current.append(quoted)
@@ -48,9 +54,10 @@ public enum ArgumentSplitter {
                 guard closed else { throw .unclosedQuote("\"") }
             case "\\":
                 guard let escaped = characters.next() else { throw .trailingBackslash }
+                if escaped == "\n" { continue }
                 hasWord = true
                 current.append(escaped)
-            case _ where character.isWhitespace:
+            case _ where wordSeparators.contains(character):
                 if hasWord {
                     words.append(current)
                     current = ""

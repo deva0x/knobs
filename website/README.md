@@ -47,7 +47,8 @@ website/
   manifest excerpt and the small window in the manifests section show the same task by hand.
 - **Tool tasks:** the gallery's tool names, tasks and brew formulas come from `Manifests/`.
 - **Kept in step by tests:** `WebsiteTests` (run by `scripts/ci.sh fast`) fails when `#demo-task` differs from the
-  manifest or the gallery names a tool, task or formula the manifests don't have. Update the page when a manifest
+  manifest or the gallery names a tool, task or formula the manifests don't have, and when the demo's
+  `displayQuote` quotes any character differently from the app's `ShellQuoting`. Update the page when a manifest
   changes.
 
 ## Real screenshots

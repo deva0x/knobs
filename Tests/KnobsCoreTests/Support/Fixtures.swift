@@ -68,3 +68,6 @@ func builder(existingFiles: Set<String> = []) -> CommandBuilder {
 
 /// The website's single page, beside `Manifests/` in the repository.
 let websitePage = manifestsDirectory.deletingLastPathComponent().appending(path: "website/index.html")
+
+/// The website's script, beside its page.
+let websiteScript = websitePage.deletingLastPathComponent().appending(path: "main.js")

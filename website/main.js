@@ -89,9 +89,14 @@ function buildArguments(task, values, extraWords) {
   return out;
 }
 
-/** Shell-style quoting, for reading and copying only. Nothing here is ever executed. */
+/**
+ * Shell-style quoting, for reading and copying only. Nothing here is ever executed. The same rules as the app's
+ * ShellQuoting (WebsiteTests compares them): these characters are safe, and a leading `=` is quoted because zsh
+ * expands it to a command's path.
+ */
+const SHELL_SAFE = /^[A-Za-z0-9_@%+=:,.\/-]+$/;
 function displayQuote(text) {
-  if (text !== "" && /^[A-Za-z0-9_\-+=.,:/@%^]+$/.test(text)) return text;
+  if (text !== "" && SHELL_SAFE.test(text) && !text.startsWith("=")) return text;
   return "'" + text.replace(/'/g, "'\\''") + "'";
 }
 

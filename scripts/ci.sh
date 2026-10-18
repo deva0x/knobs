@@ -36,7 +36,7 @@ if [ "$mode" = linux ]; then
     # The sources go in on stdin rather than a bind mount, which OrbStack doesn't share for every folder.
     # Manifests and the website page are included because the tests read the real ones. --init puts a reaper at PID 1, as systemd is
     # on a desktop, so the tools that cancel kills don't linger as zombies the tests would count as running.
-    tar -cf - Package.swift Sources Tests Manifests website/index.html |
+    tar -cf - Package.swift Sources Tests Manifests website/index.html website/main.js |
         docker run --rm -i --init "$image" bash -c \
             'mkdir /src && cd /src && tar -xf - &&
              swift build -Xswiftc -warnings-as-errors &&

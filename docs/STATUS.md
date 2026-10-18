@@ -29,8 +29,8 @@ Updated: 2026-10-18 IST
   Reduce Motion, real VoiceOver, the About window, the quit-while-running dialog.
 - Release: `scripts/ci.sh release` passes and `scripts/release.sh 0.1.0` builds an unsigned DMG; signing and
   notarizing need Deva's certificate and notary profile.
-- Next action: remove ~/knobs-test from omarchy-1 once Deva has looked at Knobs there; then the Mac on-screen
-  items, which need full-screen control
+- Next action: the Mac on-screen items above, which need full-screen control (Deva approves it or checks
+  them); otherwise wait for Deva's choices below
 
 ## Waiting on Deva
 1. Create the Developer ID Application certificate (see WORKFLOW, "Releasing"). Only Apple Development and

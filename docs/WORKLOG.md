@@ -115,3 +115,8 @@ Evidence: x86_64 build on omarchy-1: all libraries resolved (ldd), the window op
 Found and fixed: under OrbStack's x86 emulation GNU tar 1.35 fails "Cannot stat: Function not implemented" for files read from a list (-T -), which dpkg-deb uses; a 740-byte broken .deb came out before the split. Arch 7zip installs 7z, not 7zz (covered by DEC-016). Arch's repos have no Swift and no ocrmypdf or whisper.cpp (AUR only).
 Not done: clicking through Knobs on omarchy-1 (only wtype is there, and keystrokes would go to whatever window has focus on a desktop that may be in use); removing ~/knobs-test there waits until Deva has looked; AUR publishing is Deva's call.
 Next: remove ~/knobs-test on omarchy-1 when Deva says; Mac on-screen items need full-screen control.
+
+## 2026-10-18 21:01 IST · Claude (Opus 5.5) · HEAD 789b5ec
+
+Cleanup on omarchy-1, as Deva asked: closed the one Knobs process (PID 299381, running from ~/knobs-test) and removed ~/knobs-test (85 MB: the x86_64 tarball, the unpacked app, its log and two screenshots; no settings folder had been created). Checked afterwards: no knobs process, folder gone. Nothing else on omarchy-1 was changed.
+Next: Mac on-screen items need full-screen control; otherwise Deva's open choices in STATUS.

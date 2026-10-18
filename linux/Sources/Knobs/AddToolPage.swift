@@ -1,10 +1,11 @@
 import Adwaita
 import Foundation
 import KnobsCore
+import KnobsSession
 
 /// Adds any installed command-line tool by name. Its "All options" page comes from its own help.
 struct AddToolPage: View {
-    let model: LinuxModel
+    let model: Toolbox
     /// Called with the new tool's id once it is added.
     let added: (String) -> Void
     let cancel: () -> Void

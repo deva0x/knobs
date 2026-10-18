@@ -4,7 +4,7 @@ import SwiftUI
 
 /// The toolbar menu for a task's saved settings: apply, save, rename, delete, reset.
 struct PresetsMenu: View {
-    @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @Bindable var session: TaskSession
     @State private var isNaming = false
     @State private var newName = ""
@@ -19,7 +19,7 @@ struct PresetsMenu: View {
     }
 
     var body: some View {
-        let presets = model.presets(for: session)
+        let presets = toolbox.presets(for: session)
         Menu {
             if presets.isEmpty {
                 Text("No presets yet")
@@ -46,7 +46,7 @@ struct PresetsMenu: View {
                 }
                 Menu("Delete") {
                     ForEach(presets) { preset in
-                        Button(preset.name, role: .destructive) { model.deletePreset(preset, of: session) }
+                        Button(preset.name, role: .destructive) { toolbox.deletePreset(preset, of: session) }
                     }
                 }
             }
@@ -59,7 +59,7 @@ struct PresetsMenu: View {
         .help("Presets")
         .alert("Save as a preset", isPresented: $isNaming) {
             TextField("Name", text: $newName, prompt: Text("For WhatsApp"))
-            Button("Save") { model.savePreset(named: newName, from: session) }
+            Button("Save") { toolbox.savePreset(named: newName, from: session) }
                 .disabled(newName.trimmingCharacters(in: .whitespaces).isEmpty)
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -72,7 +72,7 @@ struct PresetsMenu: View {
             presenting: presetBeingRenamed
         ) { preset in
             TextField("Name", text: $renamedName)
-            Button("Rename") { model.renamePreset(preset, to: renamedName, of: session) }
+            Button("Rename") { toolbox.renamePreset(preset, to: renamedName, of: session) }
                 .disabled(!isAvailable(renamedName, besides: preset, in: presets))
             Button("Cancel", role: .cancel) {}
         } message: { preset in

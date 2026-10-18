@@ -4,12 +4,12 @@ import SwiftUI
 
 /// Every option a tool lists in its help, searchable, built into the same live command as any task.
 struct AllOptionsView: View {
-    @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     let manifest: ToolManifest
 
     var body: some View {
         Group {
-            if !model.isInstalled(manifest) {
+            if !toolbox.isInstalled(manifest) {
                 ScrollView {
                     NotInstalledPanel(manifest: manifest)
                         .padding(32)
@@ -17,11 +17,11 @@ struct AllOptionsView: View {
                         .frame(maxWidth: .infinity)
                 }
             } else {
-                switch model.allOptions[manifest.id] {
+                switch toolbox.allOptions[manifest.id] {
                 case .ready(let generated):
                     AllOptionsContent(
                         manifest: manifest, generated: generated,
-                        session: model.session(for: generated.task, of: manifest))
+                        session: toolbox.session(for: generated.task, of: manifest))
                 case .unavailable:
                     ContentUnavailableView {
                         Label("No options found", systemImage: "questionmark.text.page")
@@ -30,7 +30,7 @@ struct AllOptionsView: View {
                             "\(manifest.name) didn't print a list of options Knobs could read. You can still type options into Extra arguments on any task."
                         )
                     } actions: {
-                        Button("Try Again") { Task { await model.loadAllOptions(for: manifest) } }
+                        Button("Try Again") { Task { await toolbox.loadAllOptions(for: manifest) } }
                     }
                 case .loading, nil:
                     ProgressView("Reading \(manifest.name)'s options…")
@@ -40,7 +40,7 @@ struct AllOptionsView: View {
         }
         .navigationTitle("All options")
         .navigationSubtitle(manifest.name)
-        .task(id: model.isInstalled(manifest)) { await model.loadAllOptions(for: manifest) }
+        .task(id: toolbox.isInstalled(manifest)) { await toolbox.loadAllOptions(for: manifest) }
     }
 }
 

@@ -130,6 +130,7 @@ that runs one real task on a tiny fixture, and try it once in the app.
 - [x] Spike: KnobsCore builds and its tests pass on Ubuntu, Fedora and RHEL in local containers
 - [x] `scripts/ci.sh linux`: KnobsCore and KnobsSession built and the core tests run on Linux, locally
 - [x] `KnobsSession` shared by both apps (TaskSession moved out of the Mac app)
+- [x] One `Toolbox` in `KnobsSession` for both apps' tools, sessions, runs and saved settings (review finding 9)
 - [x] Thin slice in `linux/`: tools, a tool's tasks, every field kind as an Adwaita row, the live command, Run
   with progress, output and Cancel, the result with Open, and settings remembered between launches
 - [x] .deb and .rpm packages with the manifests, a desktop entry and an icon (`scripts/linux.sh package`)

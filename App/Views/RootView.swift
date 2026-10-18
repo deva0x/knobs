@@ -1,8 +1,10 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
 
     var body: some View {
         @Bindable var model = model
@@ -17,7 +19,7 @@ struct RootView: View {
                             if taskID == HelpTaskBuilder.taskID {
                                 AllOptionsView(manifest: tool)
                             } else if let task = tool.task(withID: taskID) {
-                                TaskWorkspaceView(session: model.session(for: task, of: tool))
+                                TaskWorkspaceView(session: toolbox.session(for: task, of: tool))
                             }
                         }
                 }
@@ -39,11 +41,12 @@ struct RootView: View {
         }
         .alert(
             "Settings problem",
-            isPresented: Binding(get: { model.libraryProblem != nil }, set: { if !$0 { model.libraryProblem = nil } })
+            isPresented: Binding(
+                get: { toolbox.libraryProblem != nil }, set: { if !$0 { toolbox.libraryProblem = nil } })
         ) {
-            Button("OK") { model.libraryProblem = nil }
+            Button("OK") { toolbox.libraryProblem = nil }
         } message: {
-            Text(model.libraryProblem ?? "")
+            Text(toolbox.libraryProblem ?? "")
         }
     }
 }

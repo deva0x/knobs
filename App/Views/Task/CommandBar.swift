@@ -4,7 +4,7 @@ import SwiftUI
 
 /// The floating Liquid Glass bar: the live command and Run, which turns into progress and Cancel while running.
 struct CommandBar: View {
-    @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @Bindable var session: TaskSession
     @Binding var showsOutput: Bool
     @State private var showsFullCommand = false
@@ -67,7 +67,7 @@ struct CommandBar: View {
             }
 
             Button {
-                model.run(session)
+                toolbox.run(session)
             } label: {
                 Label("Run", systemImage: "play.fill")
                     .labelStyle(.titleAndIcon)
@@ -77,13 +77,13 @@ struct CommandBar: View {
             .buttonStyle(.glassProminent)
             // The tool's tint, inherited from the screen: one accent per screen (docs/DESIGN.md, Brand).
             .controlSize(.large)
-            .disabled(!model.canRun(session))
+            .disabled(!toolbox.canRun(session))
             .help(runHelp)
         }
     }
 
     private var runHelp: String {
-        if !model.isInstalled(session.manifest) { return "\(session.manifest.name) isn't installed" }
+        if !toolbox.isInstalled(session.manifest) { return "\(session.manifest.name) isn't installed" }
         for problem in session.draft.problems {
             switch problem {
             case .missingValue(_, let label): return "Add \(label.lowercased()) first"

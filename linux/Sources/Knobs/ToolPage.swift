@@ -1,10 +1,11 @@
 import Adwaita
 import CAdw
 import KnobsCore
+import KnobsSession
 
 /// A tool's page: its name, summary and where it's installed, then the everyday tasks it can do.
 struct ToolPage: View {
-    let model: LinuxModel
+    let model: Toolbox
     let manifest: ToolManifest
     let open: (String) -> Void
     let remove: () -> Void

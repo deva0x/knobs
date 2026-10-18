@@ -1,9 +1,10 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// Shown when a tool's executable can't be found. Knobs never installs tools itself; it shows the command.
 struct NotInstalledPanel: View {
-    @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     let manifest: ToolManifest
     @State private var didCopy = false
 
@@ -34,7 +35,7 @@ struct NotInstalledPanel: View {
                     guard didCopy, (try? await Task.sleep(for: .seconds(1.5))) != nil else { return }
                     withAnimation(.knobs) { didCopy = false }
                 }
-                Button("Check Again") { model.refreshAvailability() }
+                Button("Check Again") { toolbox.refreshAvailability() }
             }
         }
         .padding(18)

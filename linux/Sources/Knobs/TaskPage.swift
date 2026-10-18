@@ -5,7 +5,7 @@ import KnobsSession
 
 /// One task: its inputs and settings as Adwaita rows, the live command, and Run with progress and output.
 struct TaskPage: View {
-    let model: LinuxModel
+    let model: Toolbox
     let session: TaskSession
     let back: () -> Void
     /// The session is shared with KnobsSession and doesn't tell Adwaita when it changes, so every edit and every
@@ -159,7 +159,7 @@ private struct CommandCard: View {
 }
 
 private struct RunControls: View {
-    let model: LinuxModel
+    let model: Toolbox
     let session: TaskSession
     let run: () -> Void
     let cancel: () -> Void

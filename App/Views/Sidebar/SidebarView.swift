@@ -1,8 +1,10 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 struct SidebarView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @State private var isAddingTool = false
     private static let visibleRecentRuns = 6
 
@@ -31,46 +33,46 @@ struct SidebarView: View {
     private var toolList: some View {
         List(selection: Binding(get: { model.selectedToolID }, set: { model.selectTool($0) })) {
             Section("Tools") {
-                ForEach(model.bundledManifests) { manifest in
+                ForEach(toolbox.bundledManifests) { manifest in
                     ToolRow(
                         manifest: manifest,
-                        isInstalled: model.isInstalled(manifest),
-                        isRunning: model.isRunningAnything(of: manifest)
+                        isInstalled: toolbox.isInstalled(manifest),
+                        isRunning: toolbox.isRunningAnything(of: manifest)
                     )
                     .tag(manifest.id)
                 }
             }
-            if !model.addedManifests.isEmpty {
+            if !toolbox.addedManifests.isEmpty {
                 Section("Added") {
-                    ForEach(model.addedManifests) { manifest in
+                    ForEach(toolbox.addedManifests) { manifest in
                         ToolRow(
                             manifest: manifest,
-                            isInstalled: model.isInstalled(manifest),
-                            isRunning: model.isRunningAnything(of: manifest)
+                            isInstalled: toolbox.isInstalled(manifest),
+                            isRunning: toolbox.isRunningAnything(of: manifest)
                         )
                         .tag(manifest.id)
                         .contextMenu {
                             Button("Remove \(manifest.name)", role: .destructive) { model.removeTool(manifest) }
-                                .disabled(!model.canRemoveTool(manifest))
+                                .disabled(!toolbox.canRemoveTool(manifest))
                         }
                     }
                 }
             }
-            if !model.library.recentRuns.isEmpty {
+            if !toolbox.library.recentRuns.isEmpty {
                 Section("Recent") {
-                    ForEach(model.library.recentRuns.prefix(Self.visibleRecentRuns)) { run in
-                        if let (manifest, task) = model.resolve(run) {
+                    ForEach(toolbox.library.recentRuns.prefix(Self.visibleRecentRuns)) { run in
+                        if let (manifest, task) = toolbox.resolve(run) {
                             RecentRunRow(
                                 run: run, manifest: manifest, task: task,
                                 open: { model.open(toolID: manifest.id, taskID: task.id) },
-                                clearAll: { model.clearRecentRuns() })
+                                clearAll: { toolbox.clearRecentRuns() })
                         }
                     }
                 }
             }
-            if !model.manifestFailures.isEmpty {
+            if !toolbox.manifestFailures.isEmpty {
                 Section("Couldn't load") {
-                    ForEach(model.manifestFailures, id: \.self) { failure in
+                    ForEach(toolbox.manifestFailures, id: \.self) { failure in
                         Label(failure.source, systemImage: "exclamationmark.triangle")
                             .foregroundStyle(.secondary)
                             .help(failure.localizedDescription)

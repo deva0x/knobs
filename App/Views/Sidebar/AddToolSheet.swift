@@ -1,17 +1,19 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// Adds any installed command-line tool by name. Its "All options" view comes from its own help.
 struct AddToolSheet: View {
     @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @FocusState private var isFocused: Bool
 
     private var trimmed: String { name.trimmingCharacters(in: .whitespaces) }
-    private var location: URL? { trimmed.contains("/") ? nil : model.locate(trimmed) }
+    private var location: URL? { trimmed.contains("/") ? nil : toolbox.locate(trimmed) }
     private var isAlreadyAdded: Bool {
-        model.manifests.contains { $0.executable == trimmed }
+        toolbox.manifests.contains { $0.executable == trimmed }
     }
 
     var body: some View {

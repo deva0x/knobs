@@ -1,9 +1,11 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// ⌘K: find any task in any tool by typing, then press Return.
 struct CommandPaletteView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @State private var query = ""
     @State private var highlighted = 0
     @FocusState private var isSearchFocused: Bool
@@ -22,7 +24,7 @@ struct CommandPaletteView: View {
     private static let maximumResults = 9
 
     private var entries: [Entry] {
-        let all = model.manifests.flatMap { manifest in
+        let all = toolbox.manifests.flatMap { manifest in
             [Entry(manifest: manifest, task: nil)] + manifest.tasks.map { Entry(manifest: manifest, task: $0) }
         }
         let words = query.lowercased().split(separator: " ").map(String.init)

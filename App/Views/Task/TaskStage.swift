@@ -7,7 +7,7 @@ import UniformTypeIdentifiers
 /// The task's stage: its main input, large, in every state of a run (docs/DESIGN.md, "Task stage"). Settings live in
 /// the inspector; the command bar floats over the bottom edge.
 struct TaskStage: View {
-    @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @Bindable var session: TaskSession
     @Binding var showsOutput: Bool
 
@@ -60,7 +60,7 @@ struct TaskStage: View {
 
     private var input: some View {
         VStack(spacing: 18) {
-            if !model.isInstalled(session.manifest) {
+            if !toolbox.isInstalled(session.manifest) {
                 NotInstalledPanel(manifest: session.manifest)
                     .frame(maxWidth: Metrics.contentMaxWidth)
             }

@@ -1,14 +1,15 @@
 import Adwaita
 import Foundation
 import KnobsCore
+import KnobsSession
 
 @main
 struct KnobsApp: App {
     var app = AdwaitaApp(id: "io.github.deva0x.Knobs")
-    let model = LinuxModel(
-        manifestsDirectory: LinuxModel.manifestsDirectory(
+    let model = Toolbox(
+        manifestsDirectory: LinuxPaths.manifestsDirectory(
             environment: ProcessInfo.processInfo.environment, executable: Bundle.main.executableURL),
-        dataDirectory: LinuxModel.dataDirectory(environment: ProcessInfo.processInfo.environment),
+        dataDirectory: LinuxPaths.dataDirectory(environment: ProcessInfo.processInfo.environment),
         environment: ProcessInfo.processInfo.environment)
 
     var scene: Scene {
@@ -22,7 +23,7 @@ struct KnobsApp: App {
 
 /// The window: tools in the sidebar, and the selected tool's page or one of its tasks beside them.
 struct RootView: View {
-    let model: LinuxModel
+    let model: Toolbox
     @State private var selectedToolID = ""
     /// The open task of the selected tool, or empty for the tool's page.
     @State private var openTaskID = ""
@@ -72,7 +73,7 @@ struct RootView: View {
                     isAddingTool = false
                 }
             } else if let tool {
-                if let task = model.task(withID: openTaskID, of: tool) {
+                if let task = model.task(withID: openTaskID, in: tool) {
                     TaskPage(model: model, session: model.session(for: task, of: tool)) {
                         openTaskID = ""
                     }

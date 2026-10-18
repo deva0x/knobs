@@ -1,10 +1,12 @@
 import KnobsCore
+import KnobsSession
 import SwiftUI
 
 /// A tool's front page: a hero washed in the tool's tint, then the everyday tasks it can do. Dropping files
 /// anywhere on it offers the tasks that take them (docs/DESIGN.md, "Tool home").
 struct ToolHomeView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Toolbox.self) private var toolbox
     @Environment(\.openURL) private var openURL
     let manifest: ToolManifest
     @State private var isTargeted = false
@@ -16,9 +18,10 @@ struct ToolHomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 30) {
                 ToolHero(
-                    manifest: manifest, isInstalled: model.isInstalled(manifest), location: model.location(of: manifest)
+                    manifest: manifest, isInstalled: toolbox.isInstalled(manifest),
+                    location: toolbox.location(of: manifest)
                 )
-                if !model.isInstalled(manifest) {
+                if !toolbox.isInstalled(manifest) {
                     NotInstalledPanel(manifest: manifest)
                 }
                 if !manifest.tasks.isEmpty {

@@ -27,6 +27,7 @@ struct KnobsApp: App {
         Window("Knobs", id: "main") {
             RootView()
                 .environment(model)
+                .environment(model.toolbox)
                 .onAppear { appDelegate.connect(model) }
                 .modifier(DebugLaunchOptions())
                 .frame(minWidth: 900, minHeight: 620)
@@ -52,10 +53,10 @@ struct KnobsCommands: Commands {
         // open, Run and Open Result are off, so the task underneath can't start by accident. Cancel stays on.
         CommandMenu("Task") {
             Button("Run") {
-                if let session = model.visibleSession { model.run(session) }
+                if let session = model.visibleSession { model.toolbox.run(session) }
             }
             .keyboardShortcut("r")
-            .disabled(model.isPaletteVisible || !(model.visibleSession.map(model.canRun) ?? false))
+            .disabled(model.isPaletteVisible || !(model.visibleSession.map(model.toolbox.canRun) ?? false))
 
             Button("Cancel Run") { model.visibleSession?.cancel() }
                 .keyboardShortcut(".")
@@ -111,7 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// A child process outlives its parent, so a run must be stopped before Knobs quits. Ask first, because
     /// stopping can leave an incomplete output file.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard let model, model.hasRunningTasks else { return .terminateNow }
+        guard let model, model.toolbox.hasRunningTasks else { return .terminateNow }
         let alert = NSAlert()
         alert.messageText = "A task is still running"
         alert.informativeText = "Quitting stops it, and the file it was making may be left incomplete."
@@ -119,7 +120,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         alert.addButton(withTitle: "Keep Running")
         guard alert.runModal() == .alertFirstButtonReturn else { return .terminateCancel }
         Task {
-            await model.stopAllRuns()
+            await model.toolbox.stopAllRuns()
             sender.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater

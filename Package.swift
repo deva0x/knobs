@@ -6,7 +6,8 @@ let package = Package(
     platforms: [.macOS(.v26)],
     products: [
         .library(name: "KnobsCore", targets: ["KnobsCore"]),
-        // A task's live state, shared by the Mac and Linux apps: values, the command, and the current run.
+        // What both apps share above the core: each task's live state, and the Toolbox of tools, sessions and
+        // saved settings.
         .library(name: "KnobsSession", targets: ["KnobsSession"]),
     ],
     targets: [

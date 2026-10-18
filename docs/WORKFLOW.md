@@ -71,7 +71,7 @@ and the files listed in DECISIONS, or enter credentials.
 1. Runs `scripts/ci.sh release`, which also builds the Release app.
 2. Signs the app with the Developer ID Application certificate and the hardened runtime.
 3. Submits it with `xcrun notarytool submit --keychain-profile knobs-notary --wait`, then staples it.
-4. Builds the DMG with `hdiutil`, then signs, notarizes and staples the DMG too.
+4. Builds the DMG with `diskutil image create`, then signs, notarizes and staples the DMG too.
 5. Writes `dist/Knobs-0.1.0.dmg` and its SHA-256.
 6. Prints the `gh release create` command for Deva to run. It doesn't run it.
 

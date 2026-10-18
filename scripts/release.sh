@@ -5,7 +5,7 @@
 # 2. Copies that app into a staging folder.
 # 3. With a "Developer ID Application" certificate: signs the app with the hardened runtime, notarizes it with
 #    the `knobs-notary` keychain profile and staples the ticket. Without one, it builds an unsigned DMG and says so.
-# 4. Builds the DMG (the app plus an Applications link), and signs, notarizes and staples it too when it can.
+# 4. Builds the DMG with diskutil (the app plus an Applications link), and signs, notarizes and staples it too when it can.
 # 5. Writes dist/Knobs-<version>.dmg and its SHA-256, and prints the `gh release create` command for Deva.
 #    It never runs that command and never pushes.
 set -euo pipefail
@@ -66,7 +66,8 @@ if [ -n "$identity" ]; then
 fi
 
 step "Build the DMG"
-hdiutil create -volname "Knobs $version" -srcfolder "$staging" -ov -format UDZO "$dmg" >/dev/null
+# diskutil replaces the deprecated `hdiutil create`; it overwrites an existing image at the same path.
+diskutil image create from --format UDZO --volumeName "Knobs $version" "$staging" "$dmg" >/dev/null
 
 if [ -n "$identity" ]; then
     codesign --force --timestamp --sign "$identity" "$dmg"

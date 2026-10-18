@@ -21,7 +21,9 @@ Updated: 2026-10-18 IST
   - M5: renaming presets is built and unit tested; check it on screen.
   - M6: run each of the other seven tools once in the app (their integration tests pass).
   - M8: real app screenshots on the website.
-  - M9: accessibility pass with VoiceOver; `scripts/ci.sh release`; a signed DMG needs Deva's certificate.
+  - M9: accessibility pass with VoiceOver. `scripts/ci.sh release` passes, and `scripts/release.sh 0.1.0` builds
+    an unsigned `dist/Knobs-0.1.0.dmg` (verified with `hdiutil verify`); signing and notarizing need Deva's
+    certificate and notary profile.
 - Next action: finish code review round 2; then, when the screen is available, the UI pass (everything listed
   above as not yet seen), final screenshots, and the website screenshots.
 

@@ -75,3 +75,13 @@ Bugs: BUG-006 (failure screen crashed the app through a split-view layout loop f
 Not verified: presets rename through the toolbar menu (needs full-screen control; covered by core tests), drag and drop onto the tool home (no drag source available to the background tools), Reduce Motion (system setting off-limits), real VoiceOver (AX tree checked instead; text values not readable there).
 Noticed: NotInstalledPanel on the task stage also uses a vertical fixedSize, untestable here since every tool is installed. The failure line picks ffmpeg's last error line ("Option not found") over the more specific one; Show Output has both.
 Next: screenshots for README and website, then the Linux version from the spike's findings.
+
+## 2026-10-18 17:28 IST · Claude (Opus 5.5) · HEAD d4c79a9
+
+Milestone: Linux version started (M11) and Mac follow-ups committed.
+Commits since the last entry: BUG-009 logged as open (0834f6f); Linux Cancel signal fix BUG-010 (d0a504e); scripts/ci.sh linux (3985268, e4865d5); dial clock matches the bar (b7… see git log); README and website now use real screenshots (8a22cb2); TaskSession moved to a shared KnobsSession library (180cd09, structural); Linux app slice in linux/ (d4c79a9).
+Evidence: ci.sh fast PASS on every commit; ci.sh linux PASS on swift:6.2-noble and swift:6.4-resolute (134 tests, all libraries built); scripts/linux.sh build PASS with warnings as errors; Linux app checked through Broadway in the browser pane: ffmpeg Shrink a video ran for real (output 1.07 MB, "Done in 6 s"), Cancel stopped ffmpeg within 0.5 s, quality 28 remembered across a container restart. Mac: BUG-009 reproduced on the pre-redesign build 6ebca0b too.
+Found and handled: BUG-009 (open; three fixes tried and reverted, evidence in BUGS); main-actor jobs never ran under GLib on Linux, now pumped while a run is active (MainQueuePump).
+Decisions: DEC-014 (Swift + GTK4/libadwaita via Adwaita for Swift, pinned commit) recorded; DEC-015 pending Deva: the GTK 4.20 floor limits .deb/.rpm to Ubuntu 26.04 and Fedora 43+, AppImage held, Flatpak is the alternative. My earlier AppImage recommendation was wrong and STATUS says so.
+Not verified: file dialog text entry through Broadway (harness limit; picked files with the mouse), scrolling through Broadway, multi-file fields on Linux (code adds each pick; no installed tool to try), live progress on a long clip in the container (encoding ran at about 1x, so under 1% in 4 s).
+Next: .deb and .rpm packaging with a desktop entry and icon, install-tested in clean Ubuntu 26.04 and Fedora containers.

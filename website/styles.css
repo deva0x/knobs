@@ -670,21 +670,35 @@ h2 {
 }
 .well code { font-size: 15.5px; overflow-wrap: anywhere; }
 .linux-get {
-  display: grid; gap: 20px; padding: clamp(22px, 3vw, 32px); border-radius: 28px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: clamp(22px, 3vw, 32px); border-radius: 28px;
   background: var(--plate); box-shadow: inset 0 0 0 1px var(--line);
+}
+.linux-shot { margin: 0 0 4px; }
+.linux-shot img {
+  display: block; width: 100%; height: auto; border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--line), 0 18px 40px -24px rgba(var(--shadow-tint), .55);
 }
 .linux-get h3 { font-size: clamp(1.35rem, 1.1rem + 0.8vw, 1.75rem); }
 .linux-needs { margin-top: -10px; color: var(--ink-2); max-width: 44em; }
 .linux-pick { display: flex; flex-wrap: wrap; gap: 20px 32px; }
 .linux-pick[hidden] { display: none; }
 .linux-pick .silk { margin-bottom: 10px; }
-.linux-result { display: grid; gap: 12px; justify-items: start; }
+.linux-result { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; justify-items: start; }
 .linux-result [hidden] { display: none; }
 .linux-result .btn { min-height: 46px; padding: 0 20px; font-size: 15px; white-space: normal; text-align: left; line-height: 1.25; }
 .linux-result .well { width: 100%; background: var(--paper); }
+/* File names are long words; on a narrow phone they break rather than push the card wider. */
+.linux-result .btn { max-width: 100%; overflow-wrap: anywhere; }
+.linux-result .well code { min-width: 0; overflow-wrap: anywhere; }
 .linux-note { font-size: 14.5px; color: var(--ink-2); max-width: 46em; }
 .linux-all { font-size: 14.5px; }
 .linux-all a { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
+/* Wide screens: the chooser on the left, the screenshot beside it. */
+@media (min-width: 1200px) {
+  .linux-get { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); column-gap: 36px; align-content: start; }
+  .linux-get > * { grid-column: 1; }
+  .linux-get > .linux-shot { grid-column: 2; grid-row: 1 / span 5; align-self: center; margin: 0; }
+}
 @media (min-width: 960px) {
   .get-grid { grid-template-columns: auto minmax(0, 1fr) minmax(280px, 26rem); align-items: start; }
   .get-icon { grid-column: 1; grid-row: 1; }
@@ -752,6 +766,14 @@ h2 {
 @media (max-width: 400px) {
   .segmented label { padding: 9px 10px; font-size: 14px; }
 }
+@media (max-width: 400px) {
+  .linux-result .well { flex-wrap: wrap; }
+  .linux-result .well code { flex-basis: 100%; }
+}
+/* The narrowest phones: four choices no longer fit on one row, so they take two. */
+@media (max-width: 360px) {
+  .segmented { grid-auto-flow: row; grid-template-columns: repeat(2, auto); border-radius: 22px; }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .btn-primary, .btn-quiet, .btn-copy, .segmented label { transition-duration: .2s; }
@@ -779,3 +801,4 @@ h2 {
 /* In the Extra arguments cell the result sits under the box; the examples rest at the bottom. */
 .cell-extra .cmd-mini { order: 2; margin-top: 0; }
 .cell-extra .extra-try { order: 3; margin-top: auto; }
+

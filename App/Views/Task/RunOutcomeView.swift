@@ -220,6 +220,8 @@ struct OutputConsole: View {
                     .padding(12)
                 }
                 .frame(height: 220)
+                // Opened mid-run, the console starts at the newest line rather than the first.
+                .defaultScrollAnchor(.bottom, for: .initialOffset)
                 .onScrollGeometryChange(for: Bool.self) { geometry in
                     geometry.contentOffset.y + geometry.containerSize.height
                         >= geometry.contentSize.height - Self.bottomTolerance

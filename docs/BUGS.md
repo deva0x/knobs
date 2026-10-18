@@ -46,3 +46,17 @@ Template:
 - Actual: choices followed tool order, so "Show hidden details" and "Rename photos by date taken" led.
 - Fix: choices are ranked by fit, from the manifests alone: tasks that accept fewer types come first (ffmpeg's
   `public.movie` before ExifTool's image, video and PDF), then manifest order. Checked on screen.
+
+## BUG-004: Every file opened with Knobs opened another window (fixed)
+- Found: 2026-10-18, Claude (Opus 5.5), on-screen pass
+- Steps: open two files with Knobs from Finder (or `open -a Knobs file`) while it runs.
+- Expected: the one Knobs window takes the files.
+- Actual: a `WindowGroup` scene answers each open event with a new window, so three identical windows appeared.
+- Fix: the app uses a single `Window` scene. Checked on screen: two opens, one window.
+
+## BUG-005: The output console opened mid-run showed the first lines, not the newest (fixed)
+- Found: 2026-10-18, Claude (Opus 5.5), on-screen pass (also suspected by the round-2 review)
+- Steps: start Shrink a video on a long clip, then press Show output.
+- Expected: the newest lines, following as more arrive.
+- Actual: the top of the log, which then never followed, because the console counted itself as scrolled up.
+- Fix: the console starts anchored at the bottom (`defaultScrollAnchor(.bottom, for: .initialOffset)`).

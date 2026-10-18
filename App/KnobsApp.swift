@@ -22,7 +22,9 @@ struct KnobsApp: App {
     }
 
     var body: some Scene {
-        WindowGroup("Knobs") {
+        // One window: every task lives in the one app model, so a second window would only mirror the first.
+        // A WindowGroup also opened a new window for every file opened with Knobs.
+        Window("Knobs", id: "main") {
             RootView()
                 .environment(model)
                 .onAppear { appDelegate.connect(model) }

@@ -152,7 +152,8 @@ import Testing
             run.cancel()
         }
         #expect(await events(of: run).last == .finished(.cancelled))
-        #expect(ContinuousClock.now - started < .seconds(5))
+        // Well under the grace period, so SIGTERM stopped it rather than the SIGKILL that follows.
+        #expect(ContinuousClock.now - started < ToolRunner.defaultCancelGracePeriod)
     }
 
     @Test func cancelAlsoStopsChildrenThatIgnoreTheFirstSignal() async throws {
@@ -188,7 +189,7 @@ import Testing
 
     @Test func standardErrorIsCapturedSeparately() async {
         let run = runner.start(
-            executable: URL(filePath: "/bin/ls"), arguments: ["/definitely/not/here"], workingDirectory: nil,
+            executable: URL(filePath: "/bin/sh"), arguments: ["-c", "echo oops >&2; exit 1"], workingDirectory: nil,
             progress: nil)
         let events = await events(of: run)
         #expect(events.contains { if case .line(_, .standardError) = $0 { true } else { false } })

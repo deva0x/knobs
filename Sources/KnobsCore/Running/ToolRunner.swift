@@ -143,12 +143,26 @@ public final class ToolRun: Sendable {
 
         state.withLock { $0.process = process }
         do {
-            try process.run()
+            try Self.withSignalsUnblocked { try process.run() }
         } catch {
             standardOutput.fileHandleForReading.readabilityHandler = nil
             standardError.fileHandleForReading.readabilityHandler = nil
             finish(with: .couldNotStart(error.localizedDescription))
         }
+    }
+
+    /// On Linux, `Process` spawns the tool with the calling thread's signal mask, and Dispatch and Swift
+    /// concurrency threads block SIGTERM, so a tool started from one would ignore `cancel()` until SIGKILL.
+    /// Spawning with an empty mask gives every tool the default mask it gets on macOS.
+    private static func withSignalsUnblocked<T>(_ body: () throws -> T) rethrows -> T {
+        #if os(Linux)
+            var empty = sigset_t()
+            var previous = sigset_t()
+            sigemptyset(&empty)
+            pthread_sigmask(SIG_SETMASK, &empty, &previous)
+            defer { pthread_sigmask(SIG_SETMASK, &previous, nil) }
+        #endif
+        return try body()
     }
 
     private func listen(to pipe: Pipe, as stream: OutputLog.Stream) {

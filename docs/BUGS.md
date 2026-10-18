@@ -107,3 +107,13 @@ Template:
 - Status: reverted to the committed code; not fixed. Next idea, not tried: push after the selection change
   lands, by having the model hold a pending task that the tool home consumes in its `.task`, rather than
   setting the path at the moment of the switch. Within the same tool everything works.
+
+## BUG-010: On Linux, Cancel let a tool run until the SIGKILL three seconds later (fixed)
+- Found: 2026-10-18, the Linux spike agent, running KnobsCore's tests in `swift:6.2-noble` on this Mac
+- Steps: on Linux, start a long tool from a Swift concurrency or Dispatch thread, then cancel it.
+- Expected: the tool gets SIGTERM and stops at once, as on macOS.
+- Actual: it ran until the SIGKILL after the grace period. swift-corelibs `Process` spawns the child with the
+  calling thread's signal mask, and those threads block SIGTERM (`SigBlk: fffffffe3bfbea27` in
+  `/proc/<pid>/status`). The test still passed because its limit, 5 s, was above the grace period.
+- Fix: on Linux the runner spawns with an empty signal mask. The test now requires stopping within the grace
+  period; without the fix it fails on Linux (3.2 s against 3.0 s), with it `scripts/ci.sh linux` passes.

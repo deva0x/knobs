@@ -18,11 +18,14 @@ This document is the specification. `KnobsCore` implements it, and its tests use
   "executable": "ffmpeg",
   "install": { "brew": "ffmpeg" },
   "homepage": "https://ffmpeg.org",
+  "symbol": "film.stack",
+  "tint": "purple",
   "tasks": [
     {
       "id": "shrink-video",
       "title": "Shrink a video",
       "summary": "Make a video file smaller, for sharing or email.",
+      "symbol": "arrow.down.right.and.arrow.up.left",
       "fields": [
         { "id": "input", "label": "Video", "kind": "inputFile", "contentTypes": ["public.movie"] },
         { "id": "size", "label": "Size", "kind": "choice", "default": "1280",
@@ -54,12 +57,14 @@ This document is the specification. `KnobsCore` implements it, and its tests use
 | Key | Type | Required | Meaning |
 |---|---|---|---|
 | `schemaVersion` | integer | yes | Always `1` for this version |
-| `id` | string | yes | Unique, lowercase, `a-z0-9-` |
+| `id` | string | yes | Unique, lowercase letters, digits and single dashes |
 | `name` | string | yes | Shown in the sidebar |
 | `summary` | string | yes | One sentence, plain words |
 | `executable` | string | yes | Binary name looked up by `ToolLocator`. A name only, never a path |
 | `install.brew` | string | yes | Homebrew formula, shown as `brew install <formula>` |
 | `homepage` | string | no | Link shown in the tool's header |
+| `symbol` | string | yes | SF Symbol name for the tool's glyph tile |
+| `tint` | string | yes | One of `purple`, `red`, `teal`, `indigo`, `orange`, `blue`, `gray`, `green`, `cyan`, `brown`, `pink`, `yellow`, `mint` |
 | `tasks` | array | yes | At least one task |
 
 ## Task
@@ -69,13 +74,15 @@ This document is the specification. `KnobsCore` implements it, and its tests use
 | `id` | string | yes | Unique within the manifest |
 | `title` | string | yes | Verb first, sentence case: "Shrink a video" |
 | `summary` | string | yes | One sentence |
+| `symbol` | string | yes | SF Symbol name for the task card |
 | `fields` | array | yes | The controls, in display order |
 | `output` | object | no | How to name the output file, see below |
 | `arguments` | array | yes | The argv template, see below |
+| `progress` | object | no | How to read progress from the tool's output, see below |
 
 ## Fields
 
-Every field has `id`, `label` and `kind`. `help` (one sentence under the control) is optional, and so is
+Every field has `id`, `label` and `kind`. A field `id` starts with a letter and uses only letters and digits (`input`, `startTime`); `extra` and `output` are reserved. `help` (one sentence under the control) is optional, and so is
 `required` (default `true` for files and folders, `false` otherwise).
 
 | `kind` | Control | Value | Extra keys |
@@ -112,6 +119,7 @@ Placeholders that can be used:
 - `{fieldId}` is the field's value.
 - `{fieldId.stem}` is a file name without its folder or extension.
 - `{fieldId.name}` is a file name without its folder.
+- `{fieldId.ext}` is a file's extension without the dot (`mov`).
 - `{fieldId.dir}` is a file's folder.
 
 A string that consists only of a placeholder for an empty, optional value produces no argument.
@@ -122,6 +130,16 @@ Validation rejects a reference to a field that doesn't exist.
 `output.template` uses the same placeholders. `output.nextTo` names the file field whose folder receives the
 output, or `output.folder` names an `outputFolder` field. If the file already exists, Knobs adds " 2",
 " 3" and so on before the extension. It never overwrites a file.
+
+## Progress
+
+Optional. Knobs reads the tool's output line by line (stdout and stderr) and applies these patterns. The
+patterns are regular expressions, and each capture group must hold a number.
+- `{ "percent": "(\\d+(?:\\.\\d+)?)%" }` reads a percentage directly (yt-dlp, 7-Zip).
+- `{ "total": "Duration: (\\d+):(\\d+):(\\d+(?:\\.\\d+)?)", "current": "time=(\\d+):(\\d+):(\\d+(?:\\.\\d+)?)" }`
+  reads a current and a total time as hours, minutes and seconds, and progress is current ÷ total (ffmpeg).
+  Either pattern may also have a single group holding plain seconds.
+Without `progress`, the app shows an indeterminate progress bar.
 
 ## Validation errors
 

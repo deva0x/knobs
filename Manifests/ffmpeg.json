@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "id": "ffmpeg",
+  "name": "ffmpeg",
+  "summary": "Convert, shrink and trim video and audio.",
+  "executable": "ffmpeg",
+  "install": { "brew": "ffmpeg" },
+  "homepage": "https://ffmpeg.org",
+  "symbol": "film.stack",
+  "tint": "purple",
+  "tasks": [
+    {
+      "id": "shrink-video",
+      "title": "Shrink a video",
+      "summary": "Make a video file much smaller, for sharing or email.",
+      "symbol": "arrow.down.right.and.arrow.up.left",
+      "fields": [
+        { "id": "input", "label": "Video", "kind": "inputFile", "contentTypes": ["public.movie"] },
+        { "id": "size", "label": "Size", "kind": "choice", "default": "1280",
+          "options": [
+            { "value": "854", "label": "480p" },
+            { "value": "1280", "label": "720p" },
+            { "value": "1920", "label": "1080p" },
+            { "value": "", "label": "Keep original" }
+          ] },
+        { "id": "quality", "label": "Quality", "kind": "integer", "default": 26, "minimum": 18, "maximum": 34,
+          "help": "Lower numbers look better and make bigger files." },
+        { "id": "mute", "label": "Remove sound", "kind": "toggle", "default": false }
+      ],
+      "output": { "template": "{input.stem} small.mp4", "nextTo": "input" },
+      "arguments": [
+        "-hide_banner", "-nostdin", "-i", "{input}",
+        { "if": "size", "then": ["-vf", "scale='min({size},iw)':-2"] },
+        "-c:v", "libx264", "-preset", "medium", "-crf", "{quality}",
+        { "if": "mute", "then": ["-an"], "else": ["-c:a", "aac", "-b:a", "128k"] },
+        "-movflags", "+faststart",
+        "{extra}",
+        "{output}"
+      ],
+      "progress": {
+        "total": "Duration: (\\d+):(\\d+):(\\d+(?:\\.\\d+)?)",
+        "current": "time=(\\d+):(\\d+):(\\d+(?:\\.\\d+)?)"
+      }
+    },
+    {
+      "id": "convert-video",
+      "title": "Convert a video",
+      "summary": "Save a video in another format, such as MP4, MOV or WebM.",
+      "symbol": "arrow.triangle.2.circlepath",
+      "fields": [
+        { "id": "input", "label": "Video", "kind": "inputFile", "contentTypes": ["public.movie"] },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "mp4",
+          "options": [
+            { "value": "mp4", "label": "MP4 (plays everywhere)" },
+            { "value": "mov", "label": "MOV (QuickTime)" },
+            { "value": "webm", "label": "WebM (for the web)" },
+            { "value": "mkv", "label": "MKV" }
+          ] }
+      ],
+      "output": { "template": "{input.stem}.{format}", "nextTo": "input" },
+      "arguments": ["-hide_banner", "-nostdin", "-i", "{input}", "{extra}", "{output}"],
+      "progress": {
+        "total": "Duration: (\\d+):(\\d+):(\\d+(?:\\.\\d+)?)",
+        "current": "time=(\\d+):(\\d+):(\\d+(?:\\.\\d+)?)"
+      }
+    },
+    {
+      "id": "trim",
+      "title": "Trim a clip",
+      "summary": "Keep only part of a video or audio file, without re-encoding.",
+      "symbol": "scissors",
+      "fields": [
+        { "id": "input", "label": "File", "kind": "inputFile", "contentTypes": ["public.audiovisual-content"] },
+        { "id": "start", "label": "Start", "kind": "text", "default": "00:00:00", "placeholder": "00:01:30",
+          "help": "Hours:minutes:seconds, or just seconds." },
+        { "id": "end", "label": "End", "kind": "text", "placeholder": "00:02:00",
+          "help": "Leave empty to keep everything after the start." }
+      ],
+      "output": { "template": "{input.stem} trimmed.{input.ext}", "nextTo": "input" },
+      "arguments": [
+        "-hide_banner", "-nostdin", "-ss", "{start}",
+        { "if": "end", "then": ["-to", "{end}"] },
+        "-i", "{input}", "-c", "copy", "{extra}", "{output}"
+      ]
+    },
+    {
+      "id": "extract-audio",
+      "title": "Extract the audio",
+      "summary": "Save just the sound from a video as an audio file.",
+      "symbol": "waveform",
+      "fields": [
+        { "id": "input", "label": "Video", "kind": "inputFile", "contentTypes": ["public.movie"] },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "m4a",
+          "options": [
+            { "value": "m4a", "label": "M4A (AAC)" },
+            { "value": "mp3", "label": "MP3" },
+            { "value": "wav", "label": "WAV (uncompressed)" },
+            { "value": "flac", "label": "FLAC (lossless)" }
+          ] }
+      ],
+      "output": { "template": "{input.stem}.{format}", "nextTo": "input" },
+      "arguments": ["-hide_banner", "-nostdin", "-i", "{input}", "-vn", "{extra}", "{output}"],
+      "progress": {
+        "total": "Duration: (\\d+):(\\d+):(\\d+(?:\\.\\d+)?)",
+        "current": "time=(\\d+):(\\d+):(\\d+(?:\\.\\d+)?)"
+      }
+    },
+    {
+      "id": "make-gif",
+      "title": "Make a GIF",
+      "summary": "Turn a short video into a smooth, looping GIF.",
+      "symbol": "photo.on.rectangle.angled",
+      "fields": [
+        { "id": "input", "label": "Video", "kind": "inputFile", "contentTypes": ["public.movie"] },
+        { "id": "width", "label": "Width", "kind": "integer", "default": 480, "minimum": 120, "maximum": 1280,
+          "help": "In pixels. Smaller GIFs load faster." },
+        { "id": "fps", "label": "Frames per second", "kind": "integer", "default": 12, "minimum": 5, "maximum": 30 }
+      ],
+      "output": { "template": "{input.stem}.gif", "nextTo": "input" },
+      "arguments": [
+        "-hide_banner", "-nostdin", "-i", "{input}",
+        "-vf", "fps={fps},scale={width}:-1:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse",
+        "-loop", "0", "{extra}", "{output}"
+      ],
+      "progress": {
+        "total": "Duration: (\\d+):(\\d+):(\\d+(?:\\.\\d+)?)",
+        "current": "time=(\\d+):(\\d+):(\\d+(?:\\.\\d+)?)"
+      }
+    },
+    {
+      "id": "remove-sound",
+      "title": "Remove the sound",
+      "summary": "Make a silent copy of a video, keeping the picture exactly as it is.",
+      "symbol": "speaker.slash",
+      "fields": [
+        { "id": "input", "label": "Video", "kind": "inputFile", "contentTypes": ["public.movie"] }
+      ],
+      "output": { "template": "{input.stem} silent.{input.ext}", "nextTo": "input" },
+      "arguments": ["-hide_banner", "-nostdin", "-i", "{input}", "-an", "-c:v", "copy", "{extra}", "{output}"]
+    }
+  ]
+}

@@ -31,5 +31,13 @@ struct RootView: View {
             }
         }
         .animation(.knobs, value: model.isPaletteVisible)
+        .alert(
+            "Settings problem",
+            isPresented: Binding(get: { model.libraryProblem != nil }, set: { if !$0 { model.libraryProblem = nil } })
+        ) {
+            Button("OK") { model.libraryProblem = nil }
+        } message: {
+            Text(model.libraryProblem ?? "")
+        }
     }
 }

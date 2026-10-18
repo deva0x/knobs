@@ -25,7 +25,7 @@ final class TaskSession: Identifiable {
 
     let manifest: ToolManifest
     let task: ManifestTask
-    nonisolated var id: String { Self.key(toolID: manifest.id, taskID: task.id) }
+    nonisolated var id: String { KnobsLibrary.key(toolID: manifest.id, taskID: task.id) }
 
     var values: [String: FieldValue] {
         didSet { rebuildDraft() }
@@ -47,6 +47,8 @@ final class TaskSession: Identifiable {
     private var reportedOutputPath: String?
     private let outputPathExpression: NSRegularExpression?
     private let clock: () -> Date
+    /// Called once per run when it ends, with the outcome and the file it produced.
+    var onFinish: ((RunOutcome, URL?) -> Void)?
 
     init(
         manifest: ToolManifest, task: ManifestTask, initialValues: [String: FieldValue],
@@ -74,10 +76,6 @@ final class TaskSession: Identifiable {
         task.fields.first { $0.kind == .outputFolder }
     }
 
-    nonisolated static func key(toolID: String, taskID: String) -> String {
-        "\(toolID)/\(taskID)"
-    }
-
     /// The task's main input: the first single- or multi-file field, shown as the big drop zone.
     var primaryInputField: Field? {
         task.fields.first { if case .inputFile = $0.kind { true } else { false } }
@@ -97,16 +95,18 @@ final class TaskSession: Identifiable {
         values[field.id] = value
     }
 
-    /// Values worth remembering between launches and in presets: no secrets, no files.
+    /// Values worth remembering between launches and in presets: everything except the main input file, which
+    /// changes every time, and secrets, which are never stored.
     var rememberableValues: [String: FieldValue] {
         values.filter { id, _ in
             guard let field = task.field(withID: id) else { return false }
-            return field.kind != .secret && !field.kind.holdsPaths
+            return field.kind != .secret && field.id != primaryInputField?.id
         }
     }
 
+    /// Applies a preset's settings, keeping the main input file the user already chose.
     func applyPreset(_ presetValues: [String: FieldValue]) {
-        var merged = values.filter { id, _ in task.field(withID: id)?.kind.holdsPaths == true }
+        var merged = values.filter { id, _ in id == primaryInputField?.id }
         for (id, value) in presetValues where task.field(withID: id) != nil {
             merged[id] = value
         }
@@ -114,7 +114,7 @@ final class TaskSession: Identifiable {
     }
 
     func resetToDefaults() {
-        values = values.filter { id, _ in task.field(withID: id)?.kind.holdsPaths == true }
+        values = values.filter { id, _ in id == primaryInputField?.id }
         extraArguments = ""
     }
 
@@ -178,6 +178,7 @@ final class TaskSession: Identifiable {
                 progress = 1
             }
             phase = .finished(outcome)
+            onFinish?(outcome, result?.outputURL)
             // The output now exists, so the next run must pick a fresh name.
             rebuildDraft()
         }

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct SidebarView: View {
     @Environment(AppModel.self) private var model
+    private static let visibleRecentRuns = 6
 
     var body: some View {
         @Bindable var model = model
@@ -15,6 +16,17 @@ struct SidebarView: View {
                         isRunning: model.isRunningAnything(of: manifest)
                     )
                     .tag(manifest.id)
+                }
+            }
+            if !model.library.recentRuns.isEmpty {
+                Section("Recent") {
+                    ForEach(model.library.recentRuns.prefix(Self.visibleRecentRuns)) { run in
+                        if let (manifest, task) = model.resolve(run) {
+                            RecentRunRow(run: run, manifest: manifest, task: task) {
+                                model.open(toolID: manifest.id, taskID: task.id)
+                            }
+                        }
+                    }
                 }
             }
             if !model.manifestFailures.isEmpty {
@@ -77,5 +89,40 @@ private struct ToolRow: View {
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
+    }
+}
+
+private struct RecentRunRow: View {
+    let run: RecentRun
+    let manifest: ToolManifest
+    let task: ManifestTask
+    let open: () -> Void
+
+    var body: some View {
+        Button(action: open) {
+            HStack(spacing: 9) {
+                Image(systemName: run.succeeded ? task.symbol : "exclamationmark.triangle")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(run.succeeded ? manifest.tint.color : .red)
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(task.title).lineLimit(1)
+                    Text(run.finishedAt, format: .relative(presentation: .named))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            if let path = run.outputPath, FileManager.default.fileExists(atPath: path) {
+                Button("Show Result in Finder") {
+                    NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: path)])
+                }
+            }
+        }
+        .accessibilityLabel("\(task.title), \(manifest.name), \(run.succeeded ? "finished" : "failed")")
     }
 }

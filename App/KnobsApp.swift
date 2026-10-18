@@ -8,8 +8,18 @@ struct KnobsApp: App {
     @State private var model = AppModel(
         manifestsDirectory: Bundle.main.url(forResource: "Manifests", withExtension: nil)
             ?? Bundle.main.bundleURL.appending(path: "Contents/Resources/Manifests"),
+        dataDirectory: KnobsApp.dataDirectory,
         environment: ProcessInfo.processInfo.environment
     )
+
+    /// Where presets and history live. `-KnobsDataDirectory <path>` overrides it, so tests and development runs
+    /// never touch a real user's settings.
+    private static var dataDirectory: URL {
+        if let override = UserDefaults.standard.string(forKey: "KnobsDataDirectory") {
+            return URL(filePath: (override as NSString).expandingTildeInPath)
+        }
+        return URL.applicationSupportDirectory.appending(path: "Knobs")
+    }
 
     var body: some Scene {
         WindowGroup("Knobs") {

@@ -19,11 +19,23 @@ final class AppModel {
     var taskPath: [String] = []
     var isPaletteVisible = false
 
+    private(set) var library: KnobsLibrary
+    /// Shown once in the window when the saved settings couldn't be read or written.
+    var libraryProblem: String?
+
     private var sessions: [String: TaskSession] = [:]
     private let locator: ToolLocator
     private let runner: ToolRunner
+    private let libraryFile: LibraryFile
 
-    init(manifestsDirectory: URL, environment: [String: String]) {
+    init(manifestsDirectory: URL, dataDirectory: URL, environment: [String: String]) {
+        libraryFile = LibraryFile(url: dataDirectory.appending(path: "library.json"))
+        do {
+            library = try libraryFile.load()
+        } catch {
+            library = KnobsLibrary()
+            libraryProblem = "Your saved settings couldn't be read, so Knobs started fresh. (\(error))"
+        }
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
         manifests = catalog.manifests
         manifestFailures = catalog.failures
@@ -56,9 +68,13 @@ final class AppModel {
     }
 
     func session(for task: ManifestTask, of manifest: ToolManifest) -> TaskSession {
-        let key = TaskSession.key(toolID: manifest.id, taskID: task.id)
+        let key = KnobsLibrary.key(toolID: manifest.id, taskID: task.id)
         if let session = sessions[key] { return session }
-        let session = TaskSession(manifest: manifest, task: task, initialValues: [:])
+        let session = TaskSession(
+            manifest: manifest, task: task, initialValues: library.lastValues(forTask: key))
+        session.onFinish = { [weak self] outcome, outputURL in
+            self?.recordRun(of: manifest, task, outcome: outcome, outputURL: outputURL)
+        }
         sessions[key] = session
         return session
     }
@@ -74,8 +90,56 @@ final class AppModel {
     }
 
     func run(_ session: TaskSession) {
-        guard let executable = executables[session.manifest.id] else { return }
+        guard let executable = executables[session.manifest.id], session.draft.isRunnable else { return }
+        library.rememberValues(session.rememberableValues, forTask: session.id)
+        saveLibrary()
         session.start(executable: executable, runner: runner)
+    }
+
+    // MARK: Presets and recent runs
+
+    func presets(for session: TaskSession) -> [Preset] {
+        library.presets(forTask: session.id)
+    }
+
+    func savePreset(named name: String, from session: TaskSession) {
+        library.savePreset(named: name, values: session.rememberableValues, forTask: session.id, id: UUID())
+        saveLibrary()
+    }
+
+    func deletePreset(_ preset: Preset, of session: TaskSession) {
+        library.deletePreset(preset.id, forTask: session.id)
+        saveLibrary()
+    }
+
+    func clearRecentRuns() {
+        library.clearRecentRuns()
+        saveLibrary()
+    }
+
+    /// The tool and task behind a recent run, when both still exist.
+    func resolve(_ run: RecentRun) -> (ToolManifest, ManifestTask)? {
+        guard let manifest = manifests.first(where: { $0.id == run.toolID }),
+            let task = manifest.task(withID: run.taskID)
+        else { return nil }
+        return (manifest, task)
+    }
+
+    private func recordRun(of manifest: ToolManifest, _ task: ManifestTask, outcome: RunOutcome, outputURL: URL?) {
+        guard outcome != .cancelled else { return }
+        library.recordRun(
+            RecentRun(
+                id: UUID(), toolID: manifest.id, taskID: task.id, finishedAt: Date(),
+                succeeded: outcome == .succeeded, outputPath: outputURL?.path))
+        saveLibrary()
+    }
+
+    private func saveLibrary() {
+        do {
+            try libraryFile.save(library)
+        } catch {
+            libraryProblem = "Knobs couldn't save your settings. (\(error))"
+        }
     }
 
     /// Files opened with Knobs (dropped on the Dock icon, or `open -a Knobs`): they fill the visible task when

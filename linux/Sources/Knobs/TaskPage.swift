@@ -141,15 +141,18 @@ private struct CommandCard: View {
                 .heading()
                 .halign(.start)
                 .padding(6, .bottom)
-            // The label is the card, so it fills the width and keeps its text at the left edge.
-            Text(command.displayString)
-                .selectable(true)
-                .wrap(true)
-                .xalign(0)
-                .monospace()
-                .hexpand()
-                .padding(12)
-                .card()
+            // The card is a box around the label: padding on the label itself would be a margin outside the card's
+            // border, leaving the text against the edge. The label fills the width and keeps its text at the left.
+            VStack {
+                Text(command.displayString)
+                    .selectable(true)
+                    .wrap(true)
+                    .xalign(0)
+                    .monospace()
+                    .hexpand()
+                    .padding(12)
+            }
+            .card()
         }
         .padding(12, .bottom)
     }
@@ -230,14 +233,17 @@ private struct OutcomeView: View {
                 }
             }
             if !session.log.lines.isEmpty {
-                Text(session.log.lines.suffix(Self.visibleLines).map(\.text).joined(separator: "\n"))
-                    .selectable(true)
-                    .wrap(true)
-                    .monospace()
-                    .caption()
-                    .halign(.start)
-                    .padding(12)
-                    .card()
+                VStack {
+                    Text(session.log.lines.suffix(Self.visibleLines).map(\.text).joined(separator: "\n"))
+                        .selectable(true)
+                        .wrap(true)
+                        .xalign(0)
+                        .monospace()
+                        .caption()
+                        .hexpand()
+                        .padding(12)
+                }
+                .card()
             }
         }
     }

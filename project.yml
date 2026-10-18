@@ -35,6 +35,12 @@ targets:
         CFBundleVersion: "1"
         LSMinimumSystemVersion: "26.0"
         LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: "Open source under the MIT License."
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Any File
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: None
+            LSItemContentTypes: [public.item, public.folder]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.deva0x.Knobs

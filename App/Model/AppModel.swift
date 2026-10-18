@@ -159,6 +159,11 @@ final class AppModel {
         executables[manifest.id] != nil
     }
 
+    /// Where the copy of the tool that Knobs runs lives, or nil when it isn't installed.
+    func location(of manifest: ToolManifest) -> URL? {
+        executables[manifest.id]
+    }
+
     func session(for task: ManifestTask, of manifest: ToolManifest) -> TaskSession {
         let key = KnobsLibrary.key(toolID: manifest.id, taskID: task.id)
         if let session = sessions[key] { return session }
@@ -293,7 +298,8 @@ final class AppModel {
     /// takes them all. Otherwise, one fitting task opens directly, and several are offered as a choice. Installed
     /// tools come first, and tasks that name the files' type are preferred over tasks that take anything (such as
     /// making an archive).
-    func openFiles(_ urls: [URL]) {
+    /// `tool` limits the choice to one tool's tasks, for files dropped on that tool's home.
+    func openFiles(_ urls: [URL], in tool: ToolManifest? = nil) {
         guard !urls.isEmpty else { return }
         func fits(_ field: Field?) -> Bool {
             guard let field else { return false }
@@ -303,7 +309,8 @@ final class AppModel {
             use(urls, in: session)
             return
         }
-        let fitting = manifests.flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
+        let fitting = (tool.map { [$0] } ?? manifests)
+            .flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
             .filter { fits(Self.openableField(of: $0.task)) }
         let installed = fitting.filter { isInstalled($0.manifest) }
         let pool = installed.isEmpty ? fitting : installed
@@ -331,6 +338,14 @@ final class AppModel {
             use(urls, for: only.task, of: only.manifest)
         } else if !choices.isEmpty {
             pendingFiles = PendingFiles(urls: urls, choices: choices)
+        }
+    }
+
+    /// Whether any of the tool's tasks takes all of these files, so a drop can say no before anything happens.
+    func canOpen(_ urls: [URL], in tool: ToolManifest) -> Bool {
+        tool.tasks.contains { task in
+            guard let field = Self.openableField(of: task) else { return false }
+            return urls.allSatisfy { FileTypeCheck.accepts($0, for: field.kind) }
         }
     }
 

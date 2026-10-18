@@ -36,6 +36,8 @@ struct CommandBar: View {
                     .truncationMode(.middle)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(.rect)
+                    // The command follows every change at once; a crossfade between two truncations reads as garble.
+                    .transaction { $0.animation = nil }
             }
             .buttonStyle(.plain)
             .help("Show the whole command")

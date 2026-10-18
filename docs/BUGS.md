@@ -73,3 +73,19 @@ Template:
   still crashed; removing only `fixedSize` stopped it.
 - Fix: the error text wraps normally inside the 560 pt column. Checked on screen: the same run now shows
   "ffmpeg stopped with an error" with Change Settings and Show Output, and the app stays up.
+
+## BUG-007: Add a Tool drew on top of the Recent list (fixed)
+- Found: 2026-10-18, Claude (Opus 5.5), full-resolution window capture
+- Steps: have five or more recent runs, so the sidebar list reaches the bottom of the window.
+- Expected: Add a Tool readable at the bottom of the sidebar.
+- Actual: the button was a bottom safe-area inset with nothing behind it, so recent rows scrolled under its
+  label and both were drawn on top of each other. Glass behind it was tried and was still too clear.
+- Fix: Add a Tool sits below the list in a stack, so no row passes beneath it. Checked in a capture.
+
+## BUG-008: The command bar showed two overlapping copies of the command (fixed)
+- Found: 2026-10-18, Claude (Opus 5.5), window captures while opening a task
+- Steps: open a file into Shrink a video while the Knobs window is behind other windows, then capture it.
+- Expected: one line, "ffmpeg -hide_banner -nostdin…".
+- Actual: two truncations of the command cross-faded on top of each other. A window that isn't drawn on
+  screen doesn't finish animations, so the half-faded frame stayed; on screen it flickers briefly.
+- Fix: the command text never animates; it follows each change at once. Checked in a capture.

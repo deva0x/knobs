@@ -7,6 +7,7 @@ struct ToolPage: View {
     let model: LinuxModel
     let manifest: ToolManifest
     let open: (String) -> Void
+    let remove: () -> Void
 
     var view: Body {
         ScrollView {
@@ -24,16 +25,19 @@ struct ToolPage: View {
                     .dimLabel()
                     .halign(.start)
                     .padding(6, .top)
-                Text("What do you want to do?")
-                    .heading()
-                    .halign(.start)
-                    .padding(24, .top)
-                    .padding(8, .bottom)
-                List(manifest.tasks, selection: nil) { task in
-                    NavigationRow(title: task.title, summary: task.summary) { open(task.id) }
+                // A tool added by name has no everyday tasks, only All options.
+                if !manifest.tasks.isEmpty {
+                    Text("What do you want to do?")
+                        .heading()
+                        .halign(.start)
+                        .padding(24, .top)
+                        .padding(8, .bottom)
+                    List(manifest.tasks, selection: nil) { task in
+                        NavigationRow(title: task.title, summary: task.summary) { open(task.id) }
+                    }
+                    .boxedList()
                 }
-                .boxedList()
-                Text("Anything else")
+                Text(manifest.tasks.isEmpty ? "Options" : "Anything else")
                     .heading()
                     .halign(.start)
                     .padding(24, .top)
@@ -45,6 +49,14 @@ struct ToolPage: View {
                     ) { open(HelpTaskBuilder.taskID) }
                 }
                 .boxedList()
+                if manifest.isAddedByUser {
+                    Button("Remove \(manifest.name) from Knobs", handler: remove)
+                        .destructive()
+                        .pill()
+                        .halign(.center)
+                        .insensitive(!model.canRemoveTool(manifest))
+                        .padding(24, .top)
+                }
             }
             .padding(24)
             .frame(maxWidth: 720)

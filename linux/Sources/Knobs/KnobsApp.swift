@@ -26,6 +26,7 @@ struct RootView: View {
     @State private var selectedToolID = ""
     /// The open task of the selected tool, or empty for the tool's page.
     @State private var openTaskID = ""
+    @State private var isAddingTool = false
 
     private var tool: ToolManifest? {
         model.manifest(withID: selectedToolID) ?? model.manifests.first
@@ -33,27 +34,44 @@ struct RootView: View {
 
     var view: Body {
         NavigationSplitView {
-            ScrollView {
-                List(
-                    model.manifests,
-                    selection: Binding {
-                        tool?.id ?? ""
-                    } set: { id in
-                        // A different tool opens on its page, as on the Mac.
-                        if id != selectedToolID { openTaskID = "" }
-                        selectedToolID = id
+            VStack {
+                ScrollView {
+                    List(
+                        model.manifests,
+                        selection: Binding {
+                            tool?.id ?? ""
+                        } set: { id in
+                            // A different tool opens on its page, as on the Mac.
+                            if id != selectedToolID { openTaskID = "" }
+                            selectedToolID = id
+                            isAddingTool = false
+                        }
+                    ) { manifest in
+                        ToolRow(manifest: manifest, isInstalled: model.location(of: manifest) != nil)
                     }
-                ) { manifest in
-                    ToolRow(manifest: manifest, isInstalled: model.location(of: manifest) != nil)
+                    .sidebarStyle()
                 }
-                .sidebarStyle()
+                .vexpand()
+                Button("Add a Tool") {
+                    isAddingTool = true
+                }
+                .flat()
+                .padding(8)
             }
             .topToolbar {
                 HeaderBar.empty()
                     .headerBarTitle { WindowTitle(subtitle: "", title: "Knobs") }
             }
         } content: {
-            if let tool {
+            if isAddingTool {
+                AddToolPage(model: model) { id in
+                    selectedToolID = id
+                    openTaskID = HelpTaskBuilder.taskID
+                    isAddingTool = false
+                } cancel: {
+                    isAddingTool = false
+                }
+            } else if let tool {
                 if let task = model.task(withID: openTaskID, of: tool) {
                     TaskPage(model: model, session: model.session(for: task, of: tool)) {
                         openTaskID = ""
@@ -65,6 +83,9 @@ struct RootView: View {
                 } else {
                     ToolPage(model: model, manifest: tool) { taskID in
                         openTaskID = taskID
+                    } remove: {
+                        model.removeTool(tool)
+                        selectedToolID = model.bundledManifests.first?.id ?? ""
                     }
                 }
             } else {

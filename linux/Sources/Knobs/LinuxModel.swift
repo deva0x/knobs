@@ -15,7 +15,7 @@ final class LinuxModel {
         case unavailable
     }
 
-    let manifests: [ToolManifest]
+    let bundledManifests: [ToolManifest]
     let manifestFailures: [ManifestError]
     private(set) var executables: [String: URL] = [:]
     private var sessions: [String: TaskSession] = [:]
@@ -47,7 +47,7 @@ final class LinuxModel {
         let catalog = ManifestLoader.loadCatalog(in: manifestsDirectory)
         let locator = ToolLocator(environmentPath: environment["PATH"])
         // Each tool under the name it is installed as, such as 7-Zip as `7z` on Ubuntu, once at launch.
-        manifests = catalog.manifests.map(locator.resolve)
+        bundledManifests = catalog.manifests.map(locator.resolve)
         manifestFailures = catalog.failures
         self.locator = locator
         runner = ToolRunner(environment: ToolRunner.environment(base: environment, locator: locator))
@@ -72,6 +72,37 @@ final class LinuxModel {
             return URL(filePath: dataHome).appending(path: "knobs")
         }
         return URL(filePath: NSHomeDirectory()).appending(path: ".local/share/knobs")
+    }
+
+    /// Every tool in the sidebar: the bundled ones, then the ones the user added by name.
+    var manifests: [ToolManifest] {
+        bundledManifests + library.addedTools.map(ToolManifest.addedTool(named:))
+    }
+
+    /// Where a tool the user is about to add is installed, or nil when no tool has that name.
+    func locate(_ name: String) -> URL? {
+        locator.locate(name)
+    }
+
+    /// Adds an installed tool by name and returns its id, or nil when the name is taken or not a bare name.
+    func addTool(named name: String) -> String? {
+        guard !manifests.contains(where: { $0.executable == name }), library.addTool(named: name) else { return nil }
+        saveLibrary()
+        refreshAvailability()
+        return ToolManifest.addedTool(named: name).id
+    }
+
+    /// Removing a tool while it runs would leave a run nothing can reach or cancel, so it waits until it stops.
+    func canRemoveTool(_ manifest: ToolManifest) -> Bool {
+        manifest.isAddedByUser && !sessions.values.contains { $0.manifest.id == manifest.id && $0.isRunning }
+    }
+
+    func removeTool(_ manifest: ToolManifest) {
+        guard canRemoveTool(manifest) else { return }
+        sessions = sessions.filter { $0.value.manifest.id != manifest.id }
+        allOptions[manifest.id] = nil
+        library.removeTool(named: manifest.executable)
+        saveLibrary()
     }
 
     /// Looks every tool up again, for "Check again" after the user installs one.

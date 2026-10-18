@@ -89,3 +89,21 @@ Template:
 - Actual: two truncations of the command cross-faded on top of each other. A window that isn't drawn on
   screen doesn't finish animations, so the half-faded frame stayed; on screen it flickers briefly.
 - Fix: the command text never animates; it follows each change at once. Checked in a capture.
+
+## BUG-009: Opening a task in another tool shows that tool's home instead of the task (open, blocked)
+- Found: 2026-10-18, Claude (Opus 5.5), on-screen pass with a fresh data folder
+- Steps: open a task in one tool (Compress an image, ImageMagick). Then either open a video with Knobs and
+  choose Shrink a video, or click a Recent row that belongs to a different tool.
+- Expected: the chosen task, with the file in it.
+- Actual: the other tool's home. The task's session does get the file; clicking its card shows it ready.
+- Evidence (temporary logging of every write): `open(toolID:taskID:)` sets the tool and its path together.
+  The detail's `NavigationStack` is recreated per tool by `.id(tool.id)`; the outgoing stack then writes an
+  empty path through the shared binding, and the new stack also ignores a path it starts with.
+- Tried, none reliable: (1) a path per tool with the stack bound to its own tool's entry: the outgoing stack
+  then clears only its own entry, but the new stack still shows the home; (2) writing the path again in the
+  new stack's `onAppear` (inside the id): worked once for the chooser, then failed for Recent and on a rerun
+  of the chooser, so it was timing; (3) one persistent stack without the stack-level id: still the home.
+- Not a redesign regression: the build of 6ebca0b, before the redesign, does the same.
+- Status: reverted to the committed code; not fixed. Next idea, not tried: push after the selection change
+  lands, by having the model hold a pending task that the tool home consumes in its `.task`, rather than
+  setting the path at the moment of the switch. Within the same tool everything works.

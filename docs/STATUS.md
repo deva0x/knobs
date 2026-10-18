@@ -37,4 +37,6 @@ Updated: 2026-10-18 IST
 5. Choose where the website is hosted (M10).
 
 ## Blocked
-Nothing. No open bugs (BUG-001 is fixed).
+- BUG-009 (open, older than the redesign): opening a task in a different tool, from a Recent row or the file
+  chooser, shows that tool's home instead of the task. Three fixes were tried and reverted; see BUGS for the
+  evidence and the next idea. Within one tool everything works.

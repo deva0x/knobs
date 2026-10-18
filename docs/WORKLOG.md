@@ -65,3 +65,13 @@ Each entry uses these headings:
 **Validation:** `scripts/ci.sh` full: PASS (145 tests in 26 suites, all tool tasks for real, Debug app build with warnings as errors). Rename tests pass.
 **Bugs and blockers:** Screen still locked, so nothing from the three review rounds or preset rename is verified in the running app. Deferred low: an option with an empty summary whose wrapped description starts with "-" loses that text (no fixture has it); progress from two streams can interleave.
 **Next:** UI pass when the screen is available (review changes, quit dialog, About, rename, icon in Dock, light mode, screenshots for docs and website).
+
+## 2026-10-18 16:39 IST · Claude (Opus 5.5) · HEAD 2ac89a0
+
+Milestone: macOS UI redesign committed (89d4f15 task stage + inspector, 2ac89a0 tool home).
+Outcome: task screen is a stage for its input (preview, file facts, dial, result, failure); settings in the native inspector; tool home hero with tint wash, "takes" chips, drop to open.
+Evidence: built with warnings as errors; ci.sh fast PASS (134 tests) via the pre-commit hook; on-screen checks with computer use in dark and light: ffmpeg/yt-dlp/rsync/jq homes, Shrink a video on a 350 MB clip (dial at 18-42%, result -94%), Compress an image (-53%), a failing run, the chooser, link and folder tasks, All options.
+Bugs: BUG-006 (failure screen crashed the app through a split-view layout loop from a vertical fixedSize) found and fixed before commit; also fixed the dial's clock lagging and its low contrast on bright previews, and secondary buttons taking the tint.
+Not verified: presets rename through the toolbar menu (needs full-screen control; covered by core tests), drag and drop onto the tool home (no drag source available to the background tools), Reduce Motion (system setting off-limits), real VoiceOver (AX tree checked instead; text values not readable there).
+Noticed: NotInstalledPanel on the task stage also uses a vertical fixedSize, untestable here since every tool is installed. The failure line picks ffmpeg's last error line ("Option not found") over the more specific one; Show Output has both.
+Next: screenshots for README and website, then the Linux version from the spike's findings.

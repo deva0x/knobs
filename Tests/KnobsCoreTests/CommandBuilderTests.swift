@@ -19,7 +19,7 @@ import Testing
             draft.command.argv == [
                 "-hide_banner", "-nostdin", "-i", video,
                 "-vf", "scale='min(1280,iw)':-2",
-                "-c:v", "libx264", "-preset", "medium", "-crf", "26",
+                "-c:v", "h264", "-preset", "medium", "-crf", "26",
                 "-c:a", "aac", "-b:a", "128k",
                 "-movflags", "+faststart",
                 "/Users/me/Movies/holiday small.mp4",

@@ -132,13 +132,15 @@ Template:
   Broadway. The same change turns off Pango markup on every row that shows manifest, help or path text, so a
   file name with `&` or help with `<` shows as written.
 
-## BUG-012: On Fedora, Shrink a video fails with Fedora's own ffmpeg (open)
+## BUG-012: On Fedora, Shrink a video failed with Fedora's own ffmpeg (fixed)
 - Found: 2026-10-18, Claude, install-testing the .rpm in a clean `fedora:44` container through Broadway
 - Steps: install the .rpm and `ffmpeg-free` (what the .rpm recommends), run ffmpeg → Shrink a video.
 - Expected: a smaller H.264 copy, as on macOS and Ubuntu.
 - Actual: "ffmpeg stopped with an error: Error opening output files: Encoder not found". Fedora's
   `ffmpeg-free` leaves out libx264, which the task names; it has libopenh264 instead. Tasks that don't re-encode
   work (Remove the sound made a silent copy in 2 s). RPM Fusion's `ffmpeg` has libx264.
-- Options, not chosen yet: tell Fedora users to install RPM Fusion's ffmpeg (README says so now), or let a
-  manifest name a fallback encoder when the first isn't available (libopenh264 has no `-crf` quality control,
-  so the task would need a bitrate setting instead).
+- Fix: the task asks for the codec, `-c:v h264`, instead of the encoder, so ffmpeg uses the best H.264 encoder
+  it has: libx264 on macOS, Ubuntu and RPM Fusion (checked: "Matched encoder 'libx264'"), libopenh264 with
+  Fedora's ffmpeg-free. The x264-only `-preset` and `-crf` are then ignored with a warning, so Quality has no
+  effect there. Checked in the installed Fedora app: Shrink a video "Done in 3 s", 5.0 MB to 2.6 MB, 1280x720
+  H.264 by libopenh264. The manifest golden test and the ffmpeg integration test pass on macOS.

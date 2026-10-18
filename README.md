@@ -92,8 +92,8 @@ scripts/linux.sh run
 
 Then open http://localhost:8085. `scripts/linux.sh package <version> [arm64|amd64]` writes a .deb, an .rpm and a .tar.gz to `dist/linux/`; the amd64 run also writes an Arch Linux package (`knobs-bin`).
 
-On Fedora, Shrink a video needs the full `ffmpeg` from RPM Fusion: Fedora's own `ffmpeg-free` has no x264
-encoder. The other ffmpeg tasks work with either.
+On Fedora, Shrink a video works with Fedora's own `ffmpeg-free`, but its Quality setting only takes effect with
+the full `ffmpeg` from RPM Fusion, which has the x264 encoder.
 
 ## Security
 

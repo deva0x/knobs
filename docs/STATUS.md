@@ -18,7 +18,7 @@ Updated: 2026-10-18 IST
   - The .deb: installed in a clean Ubuntu 26.04 container, found its manifests and settings folder on its own,
     and ran Shrink a video (36.3 MB to 1.34 MB). 7-Zip is found as Ubuntu's `7z` (DEC-016) and made a valid ZIP.
   - The .rpm: installed in a clean Fedora 44 container (pulling in swift-lang-runtime and GTK 4.22) and ran
-    Remove the sound. Shrink a video fails there with Fedora's `ffmpeg-free`, which lacks libx264 (BUG-012).
+    Remove the sound, and Shrink a video once BUG-012 was fixed (H.264 through Fedora's own encoder).
   - Arch (DEC-017): the `knobs-bin` package installed in a clean archlinux container (GTK 4.24) and ran Shrink a
     video. The x86_64 build runs on a real Omarchy (Arch, Hyprland) desktop on Deva's omarchy-1; only looked at,
     not clicked through (no safe way to send clicks to a desktop someone may be using).
@@ -44,9 +44,6 @@ Updated: 2026-10-18 IST
    Ubuntu 26.04, Fedora 43 and newer only, and AppImage doesn't fit. Accept that floor, or un-defer Flatpak to
    also reach Ubuntu 24.04 LTS and Debian 13? I recommended AppImage before the spike showed this; that advice
    was wrong.
-7. Fedora and Shrink a video (BUG-012): keep pointing Fedora users to RPM Fusion's ffmpeg (done in the README),
-   or teach manifests a fallback encoder so it works with Fedora's own ffmpeg-free (a quality slider becomes a
-   bitrate setting there).
 
 ## Blocked
 - BUG-009 (open, older than the redesign): opening a task in a different tool, from a Recent row or the file

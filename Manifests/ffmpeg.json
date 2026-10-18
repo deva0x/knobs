@@ -32,7 +32,7 @@
       "arguments": [
         "-hide_banner", "-nostdin", "-i", "{input}",
         { "if": "size", "then": ["-vf", "scale='min({size},iw)':-2"] },
-        "-c:v", "libx264", "-preset", "medium", "-crf", "{quality}",
+        "-c:v", "h264", "-preset", "medium", "-crf", "{quality}",
         { "if": "mute", "then": ["-an"], "else": ["-c:a", "aac", "-b:a", "128k"] },
         "-movflags", "+faststart",
         "{extra}",

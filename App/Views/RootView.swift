@@ -30,7 +30,7 @@ struct RootView: View {
         .overlay {
             if model.isPaletteVisible {
                 CommandPaletteView()
-                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+                    .knobsTransition(.opacity.combined(with: .scale(scale: 0.98)))
             }
         }
         .animation(.knobs, value: model.isPaletteVisible)

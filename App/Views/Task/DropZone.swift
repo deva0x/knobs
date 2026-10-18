@@ -10,6 +10,7 @@ struct DropZone: View {
     @State private var isTargeted = false
     @State private var isImporting = false
     @State private var rejectedDrop = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var paths: [String] { session.value(of: field)?.pathList ?? [] }
     private var tint: Color { session.manifest.tint.color }
@@ -45,8 +46,7 @@ struct DropZone: View {
                 flashRejection()
                 return false
             }
-            let newPaths = accepted.map(\.path)
-            session.setValue(.paths(allowsMultiple ? paths + newPaths : [newPaths[0]]), for: field)
+            add(accepted)
             return true
         } isTargeted: { targeted in
             withAnimation(.knobs) { isTargeted = targeted }
@@ -55,11 +55,25 @@ struct DropZone: View {
             isPresented: $isImporting, allowedContentTypes: allowedTypes, allowsMultipleSelection: allowsMultiple
         ) {
             result in
-            if case .success(let urls) = result, !urls.isEmpty {
-                session.setValue(.paths(allowsMultiple ? paths + urls.map(\.path) : [urls[0].path]), for: field)
-            }
+            if case .success(let urls) = result, !urls.isEmpty { add(urls) }
         }
         .disabled(session.isRunning)
+        .task(id: rejectedDrop) {
+            guard rejectedDrop, (try? await Task.sleep(for: .seconds(2))) != nil else { return }
+            withAnimation(.knobs) { rejectedDrop = false }
+        }
+    }
+
+    /// Adds chosen files, ignoring ones already in the list, or replaces the file of a single-file field.
+    private func add(_ urls: [URL]) {
+        let newPaths = urls.map(\.path)
+        guard allowsMultiple else {
+            session.setValue(.paths([newPaths[0]]), for: field)
+            return
+        }
+        var combined = paths
+        for path in newPaths where !combined.contains(path) { combined.append(path) }
+        session.setValue(.paths(combined), for: field)
     }
 
     private var emptyState: some View {
@@ -69,6 +83,7 @@ struct DropZone: View {
                 .foregroundStyle(isTargeted ? tint : .secondary)
                 .symbolEffect(.bounce, value: isTargeted)
                 .contentTransition(.symbolEffect(.replace))
+                .accessibilityHidden(true)
             Text(rejectedDrop ? "That isn't \(kindName)" : "Drop \(kindName) here")
                 .font(.headline)
                 .foregroundStyle(rejectedDrop ? .red : .primary)
@@ -88,12 +103,14 @@ struct DropZone: View {
                     style: StrokeStyle(lineWidth: isTargeted ? 2 : 1.25, dash: isTargeted ? [] : [6, 5])
                 )
         }
-        .scaleEffect(isTargeted ? 1.01 : 1)
+        .scaleEffect(isTargeted && !reduceMotion ? 1.01 : 1)
         .contentShape(.rect)
         .onTapGesture { isImporting = true }
-        .accessibilityElement(children: .combine)
+        // One button for VoiceOver, whose action opens the file chooser like a click anywhere in the zone.
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(field.label): none chosen. Drop \(kindName) here, or choose one.")
         .accessibilityAddTraits(.isButton)
+        .accessibilityAction { isImporting = true }
     }
 
     private var filledState: some View {
@@ -115,7 +132,7 @@ struct DropZone: View {
         .background(.background.secondary, in: .rect(cornerRadius: Metrics.cardRadius))
         .overlay {
             RoundedRectangle(cornerRadius: Metrics.cardRadius)
-                .strokeBorder(isTargeted ? tint : Color.primary.opacity(0.07), lineWidth: isTargeted ? 2 : 1)
+                .strokeBorder(isTargeted ? tint : Color.hairline, lineWidth: isTargeted ? 2 : 1)
         }
         .overlay(alignment: .topTrailing) {
             if !allowsMultiple {
@@ -133,15 +150,11 @@ struct DropZone: View {
                 .padding(14)
             }
         }
-        .transition(.scale(scale: 0.97).combined(with: .opacity))
+        .knobsTransition(.scale(scale: 0.97).combined(with: .opacity))
     }
 
     private func flashRejection() {
         withAnimation(.knobs) { rejectedDrop = true }
-        Task {
-            try? await Task.sleep(for: .seconds(2))
-            withAnimation(.knobs) { rejectedDrop = false }
-        }
     }
 }
 
@@ -151,12 +164,19 @@ struct FileSummaryRow: View {
     let showsRemoveButton: Bool
     let remove: () -> Void
 
-    private var url: URL { URL(filePath: path) }
+    @State private var details = ""
 
-    private var details: String {
-        let values = try? url.resourceValues(forKeys: [.fileSizeKey, .localizedTypeDescriptionKey])
-        let size = values?.fileSize.map { ByteCount.string(Int64($0)) }
-        return [size, values?.localizedTypeDescription].compactMap { $0 }.joined(separator: " · ")
+    private var url: URL { URL(filePath: path) }
+    /// Room kept free on the right for the Replace and Remove buttons that float over a single file.
+    private static let floatingButtonsWidth: CGFloat = 150
+
+    /// Size and kind, read once per file rather than on every redraw: the file may be on a slow drive.
+    private static func details(of url: URL) async -> String {
+        await Task.detached(priority: .utility) {
+            let values = try? url.resourceValues(forKeys: [.fileSizeKey, .localizedTypeDescriptionKey])
+            let size = values?.fileSize.map { ByteCount.string(Int64($0)) }
+            return [size, values?.localizedTypeDescription].compactMap { $0 }.joined(separator: " · ")
+        }.value
     }
 
     var body: some View {
@@ -171,12 +191,12 @@ struct FileSummaryRow: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Text(url.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
-                    .font(.caption)
+                    .font(.helpText)
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
                     .truncationMode(.head)
             }
-            .padding(.trailing, showsRemoveButton ? 0 : 150)
+            .padding(.trailing, showsRemoveButton ? 0 : Self.floatingButtonsWidth)
             Spacer(minLength: 0)
             if showsRemoveButton {
                 Button(action: remove) {
@@ -189,6 +209,7 @@ struct FileSummaryRow: View {
             }
         }
         .padding(14)
+        .task(id: path) { details = await Self.details(of: url) }
         .draggable(url)
         .contextMenu {
             Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
@@ -202,6 +223,7 @@ struct FileThumbnail: View {
     let url: URL
     let size: CGFloat
     @State private var thumbnail: NSImage?
+    @State private var icon: NSImage?
     @Environment(\.displayScale) private var displayScale
 
     var body: some View {
@@ -214,10 +236,10 @@ struct FileThumbnail: View {
                     .clipShape(.rect(cornerRadius: 9, style: .continuous))
                     .overlay {
                         RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .strokeBorder(.primary.opacity(0.1), lineWidth: 0.5)
+                            .strokeBorder(Color.hairline, lineWidth: 0.5)
                     }
-            } else {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+            } else if let icon {
+                Image(nsImage: icon)
                     .resizable()
                     .frame(width: size, height: size)
             }
@@ -226,6 +248,7 @@ struct FileThumbnail: View {
         .transition(.opacity)
         .task(id: url) {
             thumbnail = nil
+            icon = NSWorkspace.shared.icon(forFile: url.path)
             let request = QLThumbnailGenerator.Request(
                 fileAt: url, size: CGSize(width: size, height: size), scale: displayScale,
                 representationTypes: .thumbnail)

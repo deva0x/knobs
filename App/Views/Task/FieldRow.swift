@@ -13,7 +13,7 @@ struct FieldRow: View {
                 Text(field.label)
                 if let help = field.help {
                     Text(help)
-                        .font(.caption)
+                        .font(.helpText)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -111,9 +111,15 @@ private struct IntegerControl: View {
     /// Up to this many steps a slider can still land on every value; beyond it, typing the number is faster.
     private static let maximumSliderSteps = 101
 
+    /// Computed without `range.count`, which overflows for a range as wide as `Int.min...Int.max`.
+    private var suitsASlider: Bool {
+        let (span, overflow) = range.upperBound.subtractingReportingOverflow(range.lowerBound)
+        return !overflow && span < Self.maximumSliderSteps
+    }
+
     var body: some View {
         HStack(spacing: 10) {
-            if range.count <= Self.maximumSliderSteps {
+            if suitsASlider {
                 Slider(
                     value: Binding(get: { Double(value) }, set: { value = Int($0.rounded()) }),
                     in: Double(range.lowerBound)...Double(range.upperBound),
@@ -151,6 +157,7 @@ private struct PathPicker: View {
     let field: Field
     @Bindable var session: TaskSession
     @State private var isImporting = false
+    @State private var icon: NSImage?
 
     /// Paths as shown: a default such as `~/Downloads` is expanded, the way the command builder expands it.
     private var paths: [String] {
@@ -183,9 +190,11 @@ private struct PathPicker: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                 } icon: {
-                    Image(nsImage: NSWorkspace.shared.icon(forFile: paths[0]))
-                        .resizable()
-                        .frame(width: 16, height: 16)
+                    if let icon {
+                        Image(nsImage: icon)
+                            .resizable()
+                            .frame(width: 16, height: 16)
+                    }
                 }
                 .help(paths.joined(separator: "\n"))
                 .frame(maxWidth: 200, alignment: .trailing)
@@ -198,7 +207,9 @@ private struct PathPicker: View {
                 .accessibilityLabel("Clear \(field.label)")
             }
             Button("Choose…") { isImporting = true }
+                .accessibilityLabel("Choose \(field.label.lowercased())")
         }
+        .task(id: paths.first) { icon = paths.first.map { NSWorkspace.shared.icon(forFile: $0) } }
         .fileImporter(
             isPresented: $isImporting, allowedContentTypes: allowedTypes, allowsMultipleSelection: allowsMultiple
         ) {

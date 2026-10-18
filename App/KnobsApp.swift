@@ -46,16 +46,24 @@ struct KnobsCommands: Commands {
             Button("Go to Task…") { model.isPaletteVisible = true }
                 .keyboardShortcut("k")
         }
+        // The canonical home of the task shortcuts; buttons in the window don't repeat them. While Go to Task is
+        // open, the task underneath can't be run from the keyboard by accident.
         CommandMenu("Task") {
             Button("Run") {
                 if let session = model.visibleSession { model.run(session) }
             }
             .keyboardShortcut("r")
-            .disabled(!(model.visibleSession?.draft.isRunnable ?? false) || (model.visibleSession?.isRunning ?? true))
+            .disabled(model.isPaletteVisible || !(model.visibleSession.map(model.canRun) ?? false))
 
             Button("Cancel Run") { model.visibleSession?.cancel() }
                 .keyboardShortcut(".")
                 .disabled(!(model.visibleSession?.isRunning ?? false))
+
+            Button("Open Result") {
+                if let url = model.visibleSession?.result?.outputURL { NSWorkspace.shared.open(url) }
+            }
+            .keyboardShortcut("o")
+            .disabled(model.isPaletteVisible || model.visibleSession?.result?.outputURL == nil)
 
             Divider()
 

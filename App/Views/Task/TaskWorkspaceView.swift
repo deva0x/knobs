@@ -103,15 +103,14 @@ struct SettingsGroup<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(.sectionHeader)
                 .foregroundStyle(.secondary)
                 .padding(.leading, 4)
                 .accessibilityAddTraits(.isHeader)
             VStack(spacing: 0) { content }
                 .background(.background.secondary, in: .rect(cornerRadius: Metrics.cardRadius))
                 .overlay {
-                    RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(
-                        .primary.opacity(0.07), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(Color.hairline, lineWidth: 1)
                 }
         }
     }
@@ -140,12 +139,12 @@ struct ExtraArgumentsSection: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
+                        .font(Font.helpText.weight(.semibold))
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                     Text("Extra arguments")
-                        .font(.subheadline.weight(.semibold))
+                        .font(.sectionHeader)
                     if !session.extraArguments.isEmpty && !isExpanded {
-                        Text("in use").font(.caption).foregroundStyle(.secondary)
+                        Text("in use").font(.helpText).foregroundStyle(.secondary)
                     }
                 }
                 .foregroundStyle(.secondary)
@@ -154,11 +153,13 @@ struct ExtraArgumentsSection: View {
             .buttonStyle(.plain)
             .padding(.leading, 4)
             .accessibilityLabel("Extra arguments")
-            .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+            .accessibilityValue(
+                [isExpanded ? "Expanded" : "Collapsed", session.extraArguments.isEmpty ? nil : "in use"]
+                    .compactMap { $0 }.joined(separator: ", "))
 
             if isExpanded {
                 VStack(alignment: .leading, spacing: 6) {
-                    TextField("-metadata title=\"Our trip\"", text: $session.extraArguments)
+                    TextField("--option value", text: $session.extraArguments)
                         .font(.system(.body, design: .monospaced))
                         .textFieldStyle(.roundedBorder)
                         .accessibilityLabel("Extra arguments")
@@ -166,12 +167,12 @@ struct ExtraArgumentsSection: View {
                         splitError
                             ?? "Options added here go into the command as written. Quotes keep words together. Nothing runs through a shell."
                     )
-                    .font(.caption)
+                    .font(.helpText)
                     .foregroundStyle(splitError == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.red))
                     .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.leading, 4)
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .knobsTransition(.opacity.combined(with: .move(edge: .top)))
             }
         }
     }
@@ -197,11 +198,17 @@ private struct HeroTextField: View {
         return field.label
     }
 
+    /// Read from the manifest's own placeholder, so no tool is named in Swift: a web address means a link.
+    private var takesALink: Bool {
+        placeholder.hasPrefix("https://") || placeholder.hasPrefix("http://")
+    }
+
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: "link")
+            Image(systemName: takesALink ? "link" : "character.cursor.ibeam")
                 .font(.title3)
                 .foregroundStyle(isFocused ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                .accessibilityHidden(true)
             TextField(field.label, text: text, prompt: Text(placeholder))
                 .textFieldStyle(.plain)
                 .font(.title3)
@@ -213,7 +220,7 @@ private struct HeroTextField: View {
                         text.wrappedValue = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
                     }
                 }
-                .help("Paste a link from the clipboard")
+                .help(takesALink ? "Paste a link from the clipboard" : "Paste from the clipboard")
             } else {
                 Button {
                     text.wrappedValue = ""
@@ -230,10 +237,10 @@ private struct HeroTextField: View {
         .overlay {
             RoundedRectangle(cornerRadius: Metrics.cardRadius)
                 .strokeBorder(
-                    isFocused ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.primary.opacity(0.1)),
+                    isFocused ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.hairline),
                     lineWidth: isFocused ? 2 : 1)
         }
         .disabled(session.isRunning)
-        .onAppear { if text.wrappedValue.isEmpty { isFocused = true } }
+        .onAppear { if text.wrappedValue.isEmpty && !session.isRunning { isFocused = true } }
     }
 }

@@ -13,6 +13,7 @@ struct NotInstalledPanel: View {
         VStack(alignment: .leading, spacing: 12) {
             Label("\(manifest.name) isn't installed", systemImage: "shippingbox")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             Text(
                 "Knobs runs the copy of \(manifest.name) installed on your Mac. Install it with Homebrew in Terminal, then check again."
             )
@@ -24,19 +25,23 @@ struct NotInstalledPanel: View {
                     .textSelection(.enabled)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(.background.tertiary, in: .rect(cornerRadius: 8))
+                    .background(.background.tertiary, in: .rect(cornerRadius: Metrics.wellRadius))
                 Button(didCopy ? "Copied" : "Copy") {
                     Pasteboard.copy(installCommand)
                     withAnimation(.knobs) { didCopy = true }
+                }
+                .task(id: didCopy) {
+                    guard didCopy, (try? await Task.sleep(for: .seconds(1.5))) != nil else { return }
+                    withAnimation(.knobs) { didCopy = false }
                 }
                 Button("Check Again") { model.refreshAvailability() }
             }
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.orange.opacity(0.08), in: .rect(cornerRadius: Metrics.cardRadius))
+        .background(.background.secondary, in: .rect(cornerRadius: Metrics.cardRadius))
         .overlay {
-            RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(.orange.opacity(0.25), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(Color.hairline, lineWidth: 1)
         }
     }
 }

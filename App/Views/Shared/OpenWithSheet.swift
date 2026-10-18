@@ -4,7 +4,6 @@ import SwiftUI
 /// "What do you want to do with this file?": shown when a file opened with Knobs fits several tasks.
 struct OpenWithSheet: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.dismiss) private var dismiss
     let pending: AppModel.PendingFiles
 
     private var title: String {
@@ -25,7 +24,7 @@ struct OpenWithSheet: View {
             }
             ScrollView {
                 VStack(spacing: 4) {
-                    ForEach(pending.choices, id: \.task.id.self) { choice in
+                    ForEach(pending.choices) { choice in
                         Button {
                             model.use(pending.urls, for: choice.task, of: choice.manifest)
                         } label: {
@@ -33,10 +32,11 @@ struct OpenWithSheet: View {
                                 GlyphTile(symbol: choice.task.symbol, tint: choice.manifest.tint, size: 30)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(choice.task.title).font(.body.weight(.medium))
-                                    Text(choice.manifest.name).font(.caption).foregroundStyle(.secondary)
+                                    Text(choice.manifest.name).font(.helpText).foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                                Image(systemName: "chevron.right").font(.helpText).foregroundStyle(.tertiary)
+                                    .accessibilityHidden(true)
                             }
                             .padding(.horizontal, 10)
                             .padding(.vertical, 7)
@@ -60,9 +60,17 @@ struct OpenWithSheet: View {
 
 /// A list row that highlights on hover and press, like a menu.
 private struct ChoiceRowStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        ChoiceRow(configuration: configuration)
+    }
+}
+
+/// Hover state lives in a view: state inside a ButtonStyle itself isn't kept by SwiftUI.
+private struct ChoiceRow: View {
+    let configuration: ButtonStyleConfiguration
     @State private var isHovered = false
 
-    func makeBody(configuration: Configuration) -> some View {
+    var body: some View {
         configuration.label
             .background(
                 Color.primary.opacity(configuration.isPressed ? 0.12 : isHovered ? 0.07 : 0),

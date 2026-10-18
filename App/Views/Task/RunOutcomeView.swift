@@ -62,10 +62,11 @@ private struct ResultCard: View {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 40))
                     .foregroundStyle(.green)
+                    .accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 4) {
                 Label("Done", systemImage: "checkmark.circle.fill")
-                    .font(.caption.weight(.semibold))
+                    .font(Font.helpText.weight(.semibold))
                     .foregroundStyle(.green)
                     .symbolEffect(.bounce, value: appeared)
                 Text(
@@ -97,7 +98,7 @@ private struct ResultCard: View {
                     HStack(spacing: 8) {
                         Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
                         Button("Open") { NSWorkspace.shared.open(url) }
-                            .keyboardShortcut("o")
+                            .help("Open the result (⌘O)")
                     }
                 } else if let folder = result.folderURL {
                     Button("Open Folder") { NSWorkspace.shared.open(folder) }
@@ -105,7 +106,7 @@ private struct ResultCard: View {
                 Button(showsOutput ? "Hide Output" : "Show Output") { showsOutput.toggle() }
                     .buttonStyle(.plain)
                     .foregroundStyle(.tint)
-                    .font(.caption)
+                    .font(.helpText)
             }
         }
         .padding(16)
@@ -113,7 +114,7 @@ private struct ResultCard: View {
         .overlay {
             RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(.green.opacity(0.25), lineWidth: 1)
         }
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .knobsTransition(.move(edge: .bottom).combined(with: .opacity))
         .onAppear { appeared = true }
         .accessibilityElement(children: .contain)
     }
@@ -149,6 +150,7 @@ private struct FailureCard: View {
             Image(systemName: isCancel ? "stop.circle" : "exclamationmark.triangle.fill")
                 .font(.system(size: 26))
                 .foregroundStyle(isCancel ? Color.secondary : Color.red)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title).font(.headline)
                 if let detail {
@@ -170,22 +172,25 @@ private struct FailureCard: View {
             RoundedRectangle(cornerRadius: Metrics.cardRadius)
                 .strokeBorder((isCancel ? Color.primary : Color.red).opacity(0.18), lineWidth: 1)
         }
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .knobsTransition(.move(edge: .bottom).combined(with: .opacity))
     }
 }
 
-/// The tool's own output: monospaced, selectable, following the newest line.
+/// The tool's own output: monospaced, selectable, following the newest line until the user scrolls up to read.
 struct OutputConsole: View {
     let log: OutputLog
+    @State private var followsNewestLine = true
+    /// How close to the bottom still counts as "at the bottom", so a partial line doesn't stop following.
+    private static let bottomTolerance: CGFloat = 24
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Output").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text("Output").font(Font.helpText.weight(.semibold)).foregroundStyle(.secondary)
                 Spacer()
                 if log.droppedLineCount > 0 {
                     Text("Showing the last \(log.lines.count) lines")
-                        .font(.caption)
+                        .font(.helpText)
                         .foregroundStyle(.tertiary)
                 }
                 Button {
@@ -215,14 +220,20 @@ struct OutputConsole: View {
                     .padding(12)
                 }
                 .frame(height: 220)
+                .onScrollGeometryChange(for: Bool.self) { geometry in
+                    geometry.contentOffset.y + geometry.containerSize.height
+                        >= geometry.contentSize.height - Self.bottomTolerance
+                } action: { _, isAtBottom in
+                    followsNewestLine = isAtBottom
+                }
                 .onChange(of: log.lines.last?.id) { _, last in
-                    if let last { proxy.scrollTo(last, anchor: .bottom) }
+                    if followsNewestLine, let last { proxy.scrollTo(last, anchor: .bottom) }
                 }
             }
         }
         .background(.background.secondary, in: .rect(cornerRadius: Metrics.wellRadius))
         .overlay {
-            RoundedRectangle(cornerRadius: Metrics.wellRadius).strokeBorder(.primary.opacity(0.08), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Metrics.wellRadius).strokeBorder(Color.hairline, lineWidth: 1)
         }
         .transition(.opacity)
     }

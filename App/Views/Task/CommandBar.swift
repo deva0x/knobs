@@ -48,10 +48,6 @@ struct CommandBar: View {
             Button {
                 Pasteboard.copy(session.draft.command.displayString)
                 withAnimation(.knobs) { didCopy = true }
-                Task {
-                    try? await Task.sleep(for: .seconds(1.5))
-                    withAnimation(.knobs) { didCopy = false }
-                }
             } label: {
                 Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
                     .contentTransition(.symbolEffect(.replace))
@@ -61,6 +57,11 @@ struct CommandBar: View {
             .foregroundStyle(.secondary)
             .help("Copy the command")
             .accessibilityLabel(didCopy ? "Copied" : "Copy command")
+            // Tied to the view, so the reset is dropped if the bar goes away first.
+            .task(id: didCopy) {
+                guard didCopy, (try? await Task.sleep(for: .seconds(1.5))) != nil else { return }
+                withAnimation(.knobs) { didCopy = false }
+            }
 
             Button {
                 model.run(session)
@@ -73,8 +74,7 @@ struct CommandBar: View {
             .buttonStyle(.glassProminent)
             .tint(.signal)
             .controlSize(.large)
-            .keyboardShortcut("r", modifiers: .command)
-            .disabled(!session.draft.isRunnable || !model.isInstalled(session.manifest))
+            .disabled(!model.canRun(session))
             .help(runHelp)
         }
     }
@@ -136,7 +136,6 @@ struct CommandBar: View {
             Button("Cancel", role: .cancel) { session.cancel() }
                 .buttonStyle(.glass)
                 .controlSize(.large)
-                .keyboardShortcut(".", modifiers: .command)
         }
     }
 }
@@ -157,7 +156,7 @@ private struct FullCommandPopover: View {
             }
             .frame(maxHeight: 320)
             Text("Each line is one argument, passed to the tool exactly as shown. No shell is involved.")
-                .font(.caption)
+                .font(.helpText)
                 .foregroundStyle(.secondary)
         }
         .padding(16)
@@ -186,7 +185,9 @@ enum CommandText {
             case .secret:
                 piece.foregroundColor = .secondary
             case .missing:
-                piece.foregroundColor = .orange
+                // Not orange: signal orange belongs to the Run button alone (docs/DESIGN.md).
+                piece.foregroundColor = .secondary
+                piece.underlineStyle = Text.LineStyle(pattern: .dash)
                 piece.font = .system(size: 12, design: .monospaced).italic()
             }
             text += piece

@@ -89,6 +89,7 @@ private struct TaskCard: View {
     var isSecondary = false
     let open: () -> Void
     @State private var isHovered = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button(action: open) {
@@ -115,11 +116,12 @@ private struct TaskCard: View {
             .overlay {
                 RoundedRectangle(cornerRadius: Metrics.cardRadius, style: .continuous)
                     .strokeBorder(
-                        isHovered ? tint.color.opacity(0.55) : Color.primary.opacity(isSecondary ? 0.16 : 0.08),
+                        isHovered
+                            ? tint.color.opacity(0.55) : isSecondary ? Color.primary.opacity(0.16) : Color.hairline,
                         style: StrokeStyle(lineWidth: 1, dash: isSecondary ? [5, 4] : []))
             }
             .shadow(color: .black.opacity(isHovered ? 0.10 : 0), radius: 10, y: 4)
-            .offset(y: isHovered ? -2 : 0)
+            .offset(y: isHovered && !reduceMotion ? -2 : 0)
             .contentShape(.rect(cornerRadius: Metrics.cardRadius))
         }
         .buttonStyle(.plain)

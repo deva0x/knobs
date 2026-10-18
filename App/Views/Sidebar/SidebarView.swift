@@ -38,9 +38,10 @@ struct SidebarView: View {
                 Section("Recent") {
                     ForEach(model.library.recentRuns.prefix(Self.visibleRecentRuns)) { run in
                         if let (manifest, task) = model.resolve(run) {
-                            RecentRunRow(run: run, manifest: manifest, task: task) {
-                                model.open(toolID: manifest.id, taskID: task.id)
-                            }
+                            RecentRunRow(
+                                run: run, manifest: manifest, task: task,
+                                open: { model.open(toolID: manifest.id, taskID: task.id) },
+                                clearAll: { model.clearRecentRuns() })
                         }
                     }
                 }
@@ -76,10 +77,10 @@ struct SidebarView: View {
                 model.isPaletteVisible = true
             } label: {
                 HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
+                    Image(systemName: "magnifyingglass").accessibilityHidden(true)
                     Text("Find a task")
                     Spacer()
-                    Text("⌘K").font(.caption.monospaced()).foregroundStyle(.tertiary)
+                    Text("⌘K").font(Font.helpText.monospaced()).foregroundStyle(.tertiary)
                 }
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 10)
@@ -109,7 +110,7 @@ private struct ToolRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(manifest.name)
                 if !isInstalled {
-                    Text("Not installed").font(.caption).foregroundStyle(.secondary)
+                    Text("Not installed").font(.helpText).foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
@@ -128,6 +129,7 @@ private struct RecentRunRow: View {
     let manifest: ToolManifest
     let task: ManifestTask
     let open: () -> Void
+    let clearAll: () -> Void
 
     var body: some View {
         Button(action: open) {
@@ -139,7 +141,7 @@ private struct RecentRunRow: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(task.title).lineLimit(1)
                     Text(run.finishedAt, format: .relative(presentation: .named))
-                        .font(.caption)
+                        .font(.helpText)
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)
@@ -152,7 +154,9 @@ private struct RecentRunRow: View {
                 Button("Show Result in Finder") {
                     NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: path)])
                 }
+                Divider()
             }
+            Button("Clear Recent Runs", action: clearAll)
         }
         .accessibilityLabel("\(task.title), \(manifest.name), \(run.succeeded ? "finished" : "failed")")
     }

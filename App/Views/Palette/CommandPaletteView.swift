@@ -47,6 +47,7 @@ struct CommandPaletteView: View {
                     Image(systemName: "magnifyingglass")
                         .font(.title3)
                         .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                     TextField("Shrink a video, extract audio, compress a PDF…", text: $query)
                         .textFieldStyle(.plain)
                         .font(.title3)
@@ -91,6 +92,8 @@ struct CommandPaletteView: View {
             }
             .frame(width: 560)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
+            // Escape closes the palette wherever focus is, not only in the search field.
+            .onExitCommand(perform: close)
             .padding(.top, 90)
             .accessibilityAddTraits(.isModal)
         }
@@ -103,11 +106,11 @@ struct CommandPaletteView: View {
             GlyphTile(symbol: entry.symbol, tint: entry.manifest.tint, size: 28)
             VStack(alignment: .leading, spacing: 1) {
                 Text(entry.title).font(.body.weight(.medium))
-                Text(entry.subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Text(entry.subtitle).font(.helpText).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer()
             if isHighlighted {
-                Image(systemName: "return").font(.caption).foregroundStyle(.secondary)
+                Image(systemName: "return").font(.helpText).foregroundStyle(.secondary).accessibilityHidden(true)
             }
         }
         .padding(.horizontal, 10)

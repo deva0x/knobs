@@ -196,8 +196,13 @@ final class AppModel {
         taskPath = taskID.map { [$0] } ?? []
     }
 
+    /// Whether Run is available: the tool is installed, the command is complete, and the task isn't running.
+    func canRun(_ session: TaskSession) -> Bool {
+        isInstalled(session.manifest) && session.draft.isRunnable && !session.isRunning
+    }
+
     func run(_ session: TaskSession) {
-        guard let executable = executables[session.manifest.id], session.draft.isRunnable else { return }
+        guard canRun(session), let executable = executables[session.manifest.id] else { return }
         library.rememberValues(session.rememberableValues, forTask: session.id)
         saveLibrary()
         session.start(executable: executable, runner: runner)
@@ -251,9 +256,16 @@ final class AppModel {
 
     /// Files opened with Knobs, waiting for the user to pick which task gets them.
     struct PendingFiles: Identifiable {
+        struct Choice: Identifiable {
+            let manifest: ToolManifest
+            let task: ManifestTask
+            /// Task ids repeat across tools, so the tool is part of the id.
+            var id: String { KnobsLibrary.key(toolID: manifest.id, taskID: task.id) }
+        }
+
         let id = UUID()
         let urls: [URL]
-        let choices: [(manifest: ToolManifest, task: ManifestTask)]
+        let choices: [Choice]
     }
 
     var pendingFiles: PendingFiles?
@@ -283,7 +295,8 @@ final class AppModel {
         if choices.count == 1, let only = choices.first {
             use(urls, for: only.task, of: only.manifest)
         } else if !choices.isEmpty {
-            pendingFiles = PendingFiles(urls: urls, choices: choices)
+            pendingFiles = PendingFiles(
+                urls: urls, choices: choices.map { PendingFiles.Choice(manifest: $0.manifest, task: $0.task) })
         }
     }
 

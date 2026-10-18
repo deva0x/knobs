@@ -51,14 +51,23 @@ private struct AllOptionsContent: View {
     @State private var showsOnlyActive = false
     @State private var showsExtraArguments = true
     @State private var showsOutput = false
+    /// Built once: big tools list hundreds of options, and the list is filtered on every keystroke.
+    private let fieldsByID: [String: Field]
 
-    private var activeFieldIDs: Set<String> {
-        Set(generated.options.map(\.fieldID).filter { session.value(of: field($0))?.isSet == true })
+    init(manifest: ToolManifest, generated: HelpTaskBuilder.GeneratedTask, session: TaskSession) {
+        self.manifest = manifest
+        self.generated = generated
+        self.session = session
+        fieldsByID = Dictionary(session.task.fields.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
-    private var visibleOptions: [(fieldID: String, option: HelpOption)] {
+    /// Options default to off and empty, so the switched-on ones are exactly the values the user set.
+    private var activeFieldIDs: Set<String> {
+        Set(session.values.filter { $0.value.isSet }.keys)
+    }
+
+    private func visibleOptions(active: Set<String>) -> [(fieldID: String, option: HelpOption)] {
         let words = query.lowercased().split(separator: " ").map(String.init)
-        let active = activeFieldIDs
         return generated.options.filter { entry in
             if showsOnlyActive && !active.contains(entry.fieldID) { return false }
             guard !words.isEmpty else { return true }
@@ -67,30 +76,27 @@ private struct AllOptionsContent: View {
         }
     }
 
-    private func field(_ id: String) -> Field {
-        session.task.field(withID: id)!
-    }
-
     var body: some View {
-        ScrollView {
+        let active = activeFieldIDs
+        return ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
                 HStack(spacing: 10) {
                     HStack(spacing: 6) {
-                        Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                        Image(systemName: "magnifyingglass").foregroundStyle(.secondary).accessibilityHidden(true)
                         TextField("Search \(generated.options.count) options", text: $query)
                             .textFieldStyle(.plain)
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 7)
-                    .background(.background.secondary, in: .rect(cornerRadius: 8))
-                    .overlay { RoundedRectangle(cornerRadius: 8).strokeBorder(.primary.opacity(0.08)) }
-                    Toggle("Only switched on (\(activeFieldIDs.count))", isOn: $showsOnlyActive)
+                    .background(.background.secondary, in: .rect(cornerRadius: Metrics.wellRadius))
+                    .overlay { RoundedRectangle(cornerRadius: Metrics.wellRadius).strokeBorder(Color.hairline) }
+                    Toggle("Only switched on (\(active.count))", isOn: $showsOnlyActive)
                         .toggleStyle(.checkbox)
                         .fixedSize()
                 }
 
-                let options = visibleOptions
+                let options = visibleOptions(active: active)
                 if options.isEmpty {
                     Text(showsOnlyActive ? "No options are switched on yet." : "No option matches “\(query)”.")
                         .foregroundStyle(.secondary)
@@ -100,17 +106,21 @@ private struct AllOptionsContent: View {
                     LazyVStack(spacing: 0) {
                         ForEach(Array(options.enumerated()), id: \.element.fieldID) { index, entry in
                             if index > 0 { Divider().padding(.leading, 16) }
-                            OptionRow(option: entry.option, field: field(entry.fieldID), session: session)
+                            if let field = fieldsByID[entry.fieldID] {
+                                OptionRow(option: entry.option, field: field, session: session)
+                            }
                         }
                     }
                     .background(.background.secondary, in: .rect(cornerRadius: Metrics.cardRadius))
                     .overlay {
-                        RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(.primary.opacity(0.07))
+                        RoundedRectangle(cornerRadius: Metrics.cardRadius).strokeBorder(Color.hairline)
                     }
                 }
 
-                SettingsGroup(title: "Files") {
-                    FieldRow(field: field(HelpTaskBuilder.filesFieldID), session: session)
+                if let files = fieldsByID[HelpTaskBuilder.filesFieldID] {
+                    SettingsGroup(title: "Files") {
+                        FieldRow(field: files, session: session)
+                    }
                 }
                 ExtraArgumentsSection(session: session, isExpanded: $showsExtraArguments)
                 RunOutcomeView(session: session, showsOutput: $showsOutput)
@@ -139,7 +149,7 @@ private struct AllOptionsContent: View {
                 HStack(spacing: 8) {
                     Text("All options").font(.system(size: 22, weight: .semibold))
                     Text("Best effort")
-                        .font(.caption.weight(.medium))
+                        .font(Font.helpText.weight(.medium))
                         .padding(.horizontal, 7)
                         .padding(.vertical, 2)
                         .background(.primary.opacity(0.07), in: .capsule)
@@ -172,7 +182,7 @@ private struct OptionRow: View {
                         .font(.system(.body, design: .monospaced).weight(.medium))
                     if !otherSpellings.isEmpty {
                         Text(otherSpellings)
-                            .font(.system(.caption, design: .monospaced))
+                            .font(.system(.subheadline, design: .monospaced))
                             .foregroundStyle(.tertiary)
                     }
                 }
@@ -190,16 +200,20 @@ private struct OptionRow: View {
                     .textFieldStyle(.roundedBorder)
                     .font(.system(.body, design: .monospaced))
                     .frame(width: 200)
+                    .accessibilityHint(option.summary)
             } else {
                 Toggle(option.preferredFlag, isOn: toggleBinding)
                     .labelsHidden()
                     .toggleStyle(.switch)
+                    .accessibilityHint(option.summary)
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .disabled(session.isRunning)
-        .accessibilityElement(children: .combine)
+        // The control stays its own element, so VoiceOver can switch it on or type into it; the flag and its
+        // description reach VoiceOver as the control's label and hint, so the text beside it is skipped.
+        .accessibilityElement(children: .contain)
     }
 
     private var textBinding: Binding<String> {

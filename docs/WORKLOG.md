@@ -25,3 +25,11 @@ Each entry uses these headings:
 **Validation:** `swift test`: 83 tests in 11 suites passed. `swift test --filter FFmpegIntegrationTests` ran for real (0.6 s, every ffmpeg task produced its output file). Fast mode skips the integration suite (81 tests). Pre-commit hook passed on e6fd8d2 and d3475f8.
 **Bugs and blockers:** none. The first ocrmypdf install hit a Homebrew lock from the parallel install; the retry succeeded.
 **Next:** M4 thin app slice with ffmpeg, then screenshots and a design review.
+
+## 2026-10-18 09:00 IST · Claude Code (Opus 5.5) · HEAD 3920f5e
+
+**Work:** M4 app slice, M6 manifests for all ten tools, and the M8 website (built by a website subagent and reviewed here).
+**Files and decisions:** App/ now has AppModel, TaskSession, a sidebar, tool gallery, task workspace, drop zone with Quick Look, a glass command bar with colored preview, result, failure and cancel cards, an output console, a ⌘K palette, and opening files with Knobs (Dock or `open -a`). Manifest format extensions: `equals` conditions, `{output.*}` and `.base` path parts, folder defaults with `~`, and `outputPathPattern`. Nine new manifests. ImageMagick text uses /System/Library/Fonts/Helvetica.ttc because ImageMagick has no default font. 7-Zip progress uses backspaces, so the runner treats 0x08 as a line break. website/ holds a static site; the agent's report lists its fonts (Archivo, IBM Plex Mono) and checks.
+**Validation:** `swift test --filter IntegrationTests`: all 11 integration tests across 10 suites pass, running every task of every tool on generated fixtures. yt-dlp runs offline through --enable-file-urls; whisper transcribes `say` output containing "hello". In the app, Shrink a video on a 21.2 MB sample gave a playable 1280x720 H.264 file of 1.6 MB (−92%) in 2 s, checked with ffprobe; screenshot at docs/screenshots/m4-shrink-video-done-dark.jpg. App builds with warnings as errors. Website: the agent ran three review rounds and saved screenshots; desktop light and dark were spot-checked here.
+**Bugs and blockers:** Ghostscript treats % in output file names specially, so a file name containing % would produce a wrong output name. Not yet handled (to log in BUGS).
+**Next:** M5 (presets, remembered values, recent runs), M7 (All options and Add a tool), then a UI review loop across every tool in light and dark, then full code review rounds.

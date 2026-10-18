@@ -24,14 +24,15 @@ echo "ok"
 
 if [ "$mode" = fast ]; then
     step "Core unit tests"
-    swift test --skip IntegrationTests
+    # Warnings fail here too, as they do in the app build, so the commit hook catches them.
+    swift test -Xswiftc -warnings-as-errors --skip IntegrationTests
     printf '\nci.sh fast: PASS\n'
     exit 0
 fi
 
 step "Core unit and integration tests"
 if [ "$mode" = release ]; then export KNOBS_REQUIRE_TOOLS=1; fi
-swift test
+swift test -Xswiftc -warnings-as-errors
 
 build_app() {
     xcodebuild -project Knobs.xcodeproj -scheme Knobs -configuration "$1" \

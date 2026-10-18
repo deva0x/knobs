@@ -97,7 +97,7 @@ public final class ToolRun: Sendable {
         let process = state.withLock { state -> Process? in
             guard !state.isFinished, state.exitStatus == nil, let process = state.process else { return nil }
             state.isCancelled = true
-            return state.process
+            return process
         }
         guard let process, process.isRunning else { return }
         let pid = process.processIdentifier

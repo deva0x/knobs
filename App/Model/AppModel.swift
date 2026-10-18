@@ -36,25 +36,17 @@ final class AppModel {
     private let libraryFile: LibraryFile
     private let helpReader: HelpReader
 
-    static let addedToolIDPrefix = "added-"
-
     /// Every tool in the sidebar: the bundled ones, then the ones the user added.
     var manifests: [ToolManifest] {
         bundledManifests + addedManifests
     }
 
-    /// Tools added by name have no hand-written tasks; everything comes from "All options".
     var addedManifests: [ToolManifest] {
-        library.addedTools.map { name in
-            ToolManifest(
-                id: Self.addedToolIDPrefix + name, name: name,
-                summary: "Added by you. Its options come from its own help.",
-                executable: name, brewFormula: name, homepage: nil, symbol: "terminal", tint: .gray, tasks: [])
-        }
+        library.addedTools.map(ToolManifest.addedTool(named:))
     }
 
     func isAdded(_ manifest: ToolManifest) -> Bool {
-        manifest.id.hasPrefix(Self.addedToolIDPrefix)
+        manifest.isAddedByUser
     }
 
     init(manifestsDirectory: URL, dataDirectory: URL, environment: [String: String]) {
@@ -131,7 +123,7 @@ final class AppModel {
         guard library.addTool(named: name) else { return }
         saveLibrary()
         refreshAvailability()
-        open(toolID: Self.addedToolIDPrefix + name, taskID: HelpTaskBuilder.taskID)
+        open(toolID: ToolManifest.addedToolIDPrefix + name, taskID: HelpTaskBuilder.taskID)
     }
 
     /// Removing a tool while it runs would leave a run nothing can reach or cancel, so it waits until it stops.

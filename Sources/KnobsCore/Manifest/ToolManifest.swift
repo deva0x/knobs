@@ -57,6 +57,20 @@ public struct ToolManifest: Sendable, Hashable, Identifiable {
     public func task(withID taskID: String) -> ManifestTask? {
         tasks.first { $0.id == taskID }
     }
+
+    /// Tools the user added by name get ids with this prefix, so they never clash with a bundled tool's id.
+    public static let addedToolIDPrefix = "added-"
+
+    /// A tool the user added by name. It has no hand-written tasks; everything comes from "All options".
+    public static func addedTool(named name: String) -> ToolManifest {
+        ToolManifest(
+            id: addedToolIDPrefix + name, name: name, summary: "Added by you. Its options come from its own help.",
+            executable: name, brewFormula: name, homepage: nil, symbol: "terminal", tint: .gray, tasks: [])
+    }
+
+    public var isAddedByUser: Bool {
+        id.hasPrefix(Self.addedToolIDPrefix)
+    }
 }
 
 /// The color family of a tool's glyph tile. The app maps each case to a system color.

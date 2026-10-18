@@ -484,9 +484,8 @@ struct DialGauge: View {
     private static let diameter: CGFloat = 196
 
     var body: some View {
-        // Only the sweep needs frames; with a percentage or under Reduce Motion, once a second keeps the clock going.
-        let isSweeping = progress == nil && !reduceMotion
-        TimelineView(.animation(minimumInterval: isSweeping ? 1.0 / 30 : 1)) { context in
+        // Only the sweep needs frames; the clock below keeps its own time.
+        TimelineView(.animation(minimumInterval: 1.0 / 30, paused: progress != nil || reduceMotion)) { context in
             ZStack {
                 Canvas { canvas, size in
                     drawTicks(in: canvas, size: size, time: context.date.timeIntervalSince(startedAt))
@@ -500,10 +499,13 @@ struct DialGauge: View {
                         Text("Working")
                             .font(.system(size: 20, weight: .semibold, design: .rounded))
                     }
-                    // Whole seconds gone, like the command bar's clock, so the two never disagree.
-                    Text(FileFacts.durationText(seconds: context.date.timeIntervalSince(startedAt).rounded(.down)))
-                        .font(Font.helpText.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                    // Ticks on the same schedule as the command bar's clock, counted from the start, so the two
+                    // always show the same second.
+                    TimelineView(.periodic(from: startedAt, by: 1)) { clock in
+                        Text(FileFacts.durationText(seconds: clock.date.timeIntervalSince(startedAt).rounded(.down)))
+                            .font(Font.helpText.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         }

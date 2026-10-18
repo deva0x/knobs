@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Builds a release DMG of Knobs on this Mac. There is no hosted CI or release pipeline (DEC-002).
 #   scripts/release.sh 0.1.0
-# 1. Runs scripts/ci.sh release.
-# 2. Builds the app in Release.
+# 1. Runs scripts/ci.sh release, which also builds the app in Release.
+# 2. Copies that app into a staging folder.
 # 3. With a "Developer ID Application" certificate: signs the app with the hardened runtime, notarizes it with
 #    the `knobs-notary` keychain profile and staples the ticket. Without one, it builds an unsigned DMG and says so.
 # 4. Builds the DMG (the app plus an Applications link), and signs, notarizes and staples it too when it can.
@@ -30,14 +30,9 @@ fi
 
 step() { printf '\n==> %s\n' "$1"; }
 
-step "Local CI (release mode)"
+step "Local CI (release mode), which also builds the Release app"
 scripts/ci.sh release
-
-step "Release build"
-xcodegen generate --quiet
-xcodebuild -project Knobs.xcodeproj -scheme Knobs -configuration Release \
-    -derivedDataPath build/Release -quiet build
-app="build/Release/Build/Products/Release/Knobs.app"
+app="build/DerivedData/Build/Products/Release/Knobs.app"
 
 mkdir -p dist
 staging=$(mktemp -d build/dmg.XXXXXX)

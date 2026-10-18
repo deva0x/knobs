@@ -8,10 +8,12 @@ Updated: 2026-10-18 IST
 - Done: M0 to M3. Most of M4 to M9 is built; see the boxes in PLAN.
 - Verified in the app on this Mac: ffmpeg Shrink a video (21.2 MB to 1.6 MB, checked with ffprobe), ExifTool
   Show hidden details, ImageMagick Compress, All options for ffmpeg, Add a Tool with `jq`, Go to Task (⌘K),
-  the Open With chooser, and the new large link field on yt-dlp Download a video.
+  the Open With chooser, and the new large link field on yt-dlp Download a video (seen with Paste and the
+  folder icon; typing a link and Run becoming enabled is not checked yet).
 - Verified by tests: every task of all ten tools runs for real in `ToolIntegrationTests` (`scripts/ci.sh`
   passed on 2026-10-18).
-- Built but not yet seen on screen: the app icon in the Dock and Finder, and the About window. The screen was
+- Built but not yet seen on screen: the app icon in the Dock and Finder (check whether macOS 26 re-masks the
+  legacy icon set and clips its shadow; an Icon Composer `.icon` may be needed), and the About window. The screen was
   locked, so these wait for the next UI pass.
 - Open milestone exits:
   - M4/M5: the light-and-dark UI review loop across every screen, and final screenshots in `docs/screenshots/`.

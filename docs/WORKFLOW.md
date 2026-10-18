@@ -64,15 +64,19 @@ Things an unattended agent never does: push, create or change remote repos, publ
 GitHub settings, use `sudo`, delete files outside the repo, download anything other than Homebrew formulas
 and the files listed in DECISIONS, or enter credentials.
 
-## Releasing (from M7 on)
+## Releasing (from M9 on)
 
-`scripts/release.sh 0.1.0` does the following on this Mac:
-1. Runs `scripts/ci.sh release`.
-2. Archives with `xcodebuild` in Release and exports with the Developer ID method.
-3. Submits the app with `xcrun notarytool submit --keychain-profile knobs-notary --wait`, then staples it.
-4. Builds the DMG with `hdiutil`, signs it, notarizes it, and staples it.
+`scripts/release.sh 0.1.0` does the following on this Mac. It checks first that `project.yml` and
+`CHANGELOG.md` both name the version.
+1. Runs `scripts/ci.sh release`, which also builds the Release app.
+2. Signs the app with the Developer ID Application certificate and the hardened runtime.
+3. Submits it with `xcrun notarytool submit --keychain-profile knobs-notary --wait`, then staples it.
+4. Builds the DMG with `hdiutil`, then signs, notarizes and staples the DMG too.
 5. Writes `dist/Knobs-0.1.0.dmg` and its SHA-256.
 6. Prints the `gh release create` command for Deva to run. It doesn't run it.
+
+Without the certificate it skips steps 2 to 4 and leaves an unsigned DMG, saying so. Without the notary
+profile it signs but doesn't notarize, and says so.
 
 One-time setup only Deva can do:
 - Create a **Developer ID Application** certificate: Xcode → Settings → Accounts → your team → Manage

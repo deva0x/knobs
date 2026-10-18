@@ -7,6 +7,28 @@ struct SidebarView: View {
     private static let visibleRecentRuns = 6
 
     var body: some View {
+        // Add a Tool sits below the list rather than over it, so rows never scroll beneath its label.
+        VStack(spacing: 0) {
+            toolList
+            Button {
+                isAddingTool = true
+            } label: {
+                Label("Add a Tool", systemImage: "plus")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .help("Add any command-line tool by name")
+        }
+        .sheet(isPresented: $isAddingTool) { AddToolSheet() }
+    }
+
+    private var toolList: some View {
         List(selection: Binding(get: { model.selectedToolID }, set: { model.selectTool($0) })) {
             Section("Tools") {
                 ForEach(model.bundledManifests) { manifest in
@@ -57,21 +79,6 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .bottom) {
-            Button {
-                isAddingTool = true
-            } label: {
-                Label("Add a Tool", systemImage: "plus")
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .help("Add any command-line tool by name")
-        }
-        .sheet(isPresented: $isAddingTool) { AddToolSheet() }
         .safeAreaInset(edge: .top) {
             Button {
                 model.isPaletteVisible = true

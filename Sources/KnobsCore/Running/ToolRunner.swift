@@ -184,10 +184,14 @@ public final class ToolRun: Sendable {
             buffer.append(data)
             var lines: [String] = []
             // Tools redraw their status with carriage returns (ffmpeg) or backspaces (7-Zip), so those end a line too.
-            while let end = buffer.firstIndex(where: Self.isLineBreak) {
-                lines.append(String(decoding: buffer[buffer.startIndex..<end], as: UTF8.self))
-                buffer = Data(buffer[buffer.index(after: end)...])
+            // The scan moves along the buffer and keeps the unfinished rest once, so a chunk of many short lines
+            // costs one pass rather than a copy of the remainder per line.
+            var lineStart = buffer.startIndex
+            while let end = buffer[lineStart...].firstIndex(where: Self.isLineBreak) {
+                lines.append(String(decoding: buffer[lineStart..<end], as: UTF8.self))
+                lineStart = buffer.index(after: end)
             }
+            buffer = Data(buffer[lineStart...])
             if buffer.count > Self.maximumPendingBytes {
                 lines.append(String(decoding: buffer, as: UTF8.self))
                 buffer = Data()

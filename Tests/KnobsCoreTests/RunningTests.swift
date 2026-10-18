@@ -142,6 +142,18 @@ import Testing
         #expect(events == [.line("one two three", .standardOutput), .finished(.succeeded)])
     }
 
+    @Test func aBurstOfManyLinesArrivesWholeAndInOrder() async {
+        let count = 5_000
+        let run = runner.start(
+            executable: URL(filePath: "/usr/bin/seq"), arguments: ["1", String(count)], workingDirectory: nil,
+            progress: nil)
+        let lines = await events(of: run).compactMap { event -> String? in
+            if case .line(let text, _) = event { return text }
+            return nil
+        }
+        #expect(lines == (1...count).map(String.init))
+    }
+
     @Test func argumentsArePassedVerbatimWithoutAShell() async {
         let run = runner.start(
             executable: URL(filePath: "/bin/echo"), arguments: ["$HOME; echo hacked"], workingDirectory: nil,

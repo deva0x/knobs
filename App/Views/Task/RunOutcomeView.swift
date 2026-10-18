@@ -15,7 +15,16 @@ struct RunOutcomeView: View {
                 if showsOutput { OutputConsole(log: session.log) }
             case .finished(.succeeded):
                 if let result = session.result {
-                    ResultCard(session: session, result: result, showsOutput: $showsOutput)
+                    if session.producesResult {
+                        ResultCard(session: session, result: result, showsOutput: $showsOutput)
+                    } else {
+                        Label(
+                            "Done in \(Duration.seconds(result.duration).formatted(.units(allowed: [.minutes, .seconds], width: .narrow)))",
+                            systemImage: "checkmark.circle.fill"
+                        )
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.green)
+                    }
                 }
                 if showsOutput { OutputConsole(log: session.log) }
             case .finished(let outcome):
@@ -94,7 +103,8 @@ private struct ResultCard: View {
                     Button("Open Folder") { NSWorkspace.shared.open(folder) }
                 }
                 Button(showsOutput ? "Hide Output" : "Show Output") { showsOutput.toggle() }
-                    .buttonStyle(.link)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.tint)
                     .font(.caption)
             }
         }

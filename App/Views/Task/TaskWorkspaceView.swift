@@ -11,8 +11,17 @@ struct TaskWorkspaceView: View {
     /// The main input gets the big drop zone; any other fields are ordinary rows.
     private var heroField: Field? { session.primaryInputField }
 
+    /// Tasks without an input file but with a required text field, such as a link, show that field large instead.
+    private var heroTextField: Field? {
+        guard heroField == nil else { return nil }
+        return session.task.fields.first { field in
+            if case .text = field.kind { return field.isRequired }
+            return false
+        }
+    }
+
     private var settingFields: [Field] {
-        session.task.fields.filter { $0.id != heroField?.id }
+        session.task.fields.filter { $0.id != heroField?.id && $0.id != heroTextField?.id }
     }
 
     var body: some View {
@@ -25,6 +34,9 @@ struct TaskWorkspaceView: View {
                     }
                     if let heroField {
                         DropZone(field: heroField, session: session)
+                    }
+                    if let heroTextField {
+                        HeroTextField(field: heroTextField, session: session)
                     }
                     if !settingFields.isEmpty {
                         SettingsGroup(title: "Settings") {
@@ -162,5 +174,66 @@ struct ExtraArgumentsSection: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+    }
+}
+
+/// A large, address-bar-like field for a task's main text input, such as a video link, with a Paste button.
+private struct HeroTextField: View {
+    let field: Field
+    @Bindable var session: TaskSession
+    @FocusState private var isFocused: Bool
+
+    private var text: Binding<String> {
+        Binding {
+            if case .text(let text)? = session.value(of: field) { return text }
+            return ""
+        } set: {
+            session.setValue(.text($0), for: field)
+        }
+    }
+
+    private var placeholder: String {
+        if case .text(let placeholder?) = field.kind { return placeholder }
+        return field.label
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "link")
+                .font(.title3)
+                .foregroundStyle(isFocused ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+            TextField(field.label, text: text, prompt: Text(placeholder))
+                .textFieldStyle(.plain)
+                .font(.title3)
+                .focused($isFocused)
+                .accessibilityLabel(field.label)
+            if text.wrappedValue.isEmpty {
+                Button("Paste") {
+                    if let pasted = NSPasteboard.general.string(forType: .string) {
+                        text.wrappedValue = pasted.trimmingCharacters(in: .whitespacesAndNewlines)
+                    }
+                }
+                .help("Paste a link from the clipboard")
+            } else {
+                Button {
+                    text.wrappedValue = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Clear \(field.label.lowercased())")
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(.background.secondary, in: .rect(cornerRadius: Metrics.cardRadius))
+        .overlay {
+            RoundedRectangle(cornerRadius: Metrics.cardRadius)
+                .strokeBorder(
+                    isFocused ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.primary.opacity(0.1)),
+                    lineWidth: isFocused ? 2 : 1)
+        }
+        .disabled(session.isRunning)
+        .onAppear { if text.wrappedValue.isEmpty { isFocused = true } }
     }
 }

@@ -68,7 +68,10 @@ final class AppModel {
         locator = ToolLocator(environmentPath: environment["PATH"])
         runner = ToolRunner(environment: ToolRunner.environment(base: environment, locator: locator))
         helpReader = HelpReader(runner: runner)
-        selectedToolID = catalog.manifests.first?.id
+        // Reopen the tool used most recently, so the app picks up where it left off.
+        let recentToolID = library.recentRuns.first?.toolID
+        selectedToolID =
+            catalog.manifests.first { $0.id == recentToolID }?.id ?? catalog.manifests.first?.id
         refreshAvailability()
     }
 
@@ -221,8 +224,18 @@ final class AppModel {
         }
     }
 
-    /// Files opened with Knobs (dropped on the Dock icon, or `open -a Knobs`): they fill the visible task when
-    /// it accepts them, otherwise the first task that does, preferring the selected tool.
+    /// Files opened with Knobs, waiting for the user to pick which task gets them.
+    struct PendingFiles: Identifiable {
+        let id = UUID()
+        let urls: [URL]
+        let choices: [(manifest: ToolManifest, task: ManifestTask)]
+    }
+
+    var pendingFiles: PendingFiles?
+
+    /// Files opened with Knobs (dropped on the Dock icon, or `open -a Knobs`). They fill the visible task when it
+    /// takes them. Otherwise, one fitting task opens directly, and several are offered as a choice. Tasks that name
+    /// the file's type are preferred over tasks that take any file (such as making an archive).
     func openFiles(_ urls: [URL]) {
         guard let first = urls.first else { return }
         if let session = visibleSession, !session.isRunning, let field = session.primaryInputField,
@@ -231,18 +244,36 @@ final class AppModel {
             session.setValue(.paths(Self.paths(urls, for: field)), for: field)
             return
         }
-        let toolsInOrder = manifests.filter { $0.id == selectedToolID } + manifests.filter { $0.id != selectedToolID }
-        for manifest in toolsInOrder {
-            for task in manifest.tasks {
-                let session = session(for: task, of: manifest)
-                guard !session.isRunning, let field = session.primaryInputField,
-                    FileTypeCheck.accepts(first, for: field.kind)
-                else { continue }
-                open(toolID: manifest.id, taskID: task.id)
-                session.setValue(.paths(Self.paths(urls, for: field)), for: field)
-                return
-            }
+        let candidates = manifests.flatMap { manifest in manifest.tasks.map { (manifest: manifest, task: $0) } }
+        let fitting = candidates.filter { candidate in
+            guard let field = Self.primaryInputField(of: candidate.task) else { return false }
+            return FileTypeCheck.accepts(first, for: field.kind)
         }
+        let specific = fitting.filter { candidate in
+            guard case .inputFile(let contentTypes, _)? = Self.primaryInputField(of: candidate.task)?.kind else {
+                return false
+            }
+            return !contentTypes.isEmpty
+        }
+        let choices = specific.isEmpty ? fitting : specific
+        if choices.count == 1, let only = choices.first {
+            use(urls, for: only.task, of: only.manifest)
+        } else if !choices.isEmpty {
+            pendingFiles = PendingFiles(urls: urls, choices: choices)
+        }
+    }
+
+    /// Opens a task with the given files in its main input.
+    func use(_ urls: [URL], for task: ManifestTask, of manifest: ToolManifest) {
+        pendingFiles = nil
+        let session = session(for: task, of: manifest)
+        open(toolID: manifest.id, taskID: task.id)
+        guard !session.isRunning, let field = session.primaryInputField else { return }
+        session.setValue(.paths(Self.paths(urls, for: field)), for: field)
+    }
+
+    private static func primaryInputField(of task: ManifestTask) -> Field? {
+        task.fields.first { if case .inputFile = $0.kind { true } else { false } }
     }
 
     private static func paths(_ urls: [URL], for field: Field) -> [String] {

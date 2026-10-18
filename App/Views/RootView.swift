@@ -34,6 +34,9 @@ struct RootView: View {
             }
         }
         .animation(.knobs, value: model.isPaletteVisible)
+        .sheet(item: Binding(get: { model.pendingFiles }, set: { model.pendingFiles = $0 })) { pending in
+            OpenWithSheet(pending: pending)
+        }
         .alert(
             "Settings problem",
             isPresented: Binding(get: { model.libraryProblem != nil }, set: { if !$0 { model.libraryProblem = nil } })

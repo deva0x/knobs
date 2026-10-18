@@ -102,14 +102,14 @@ struct FieldRow: View {
     }
 }
 
-/// A slider for small ranges, a stepper for large ones, always with the exact number visible.
+/// A slider for small ranges and a typed number for large ones, always with a stepper and the exact value.
 private struct IntegerControl: View {
     let label: String
     let range: ClosedRange<Int>
     @Binding var value: Int
 
-    /// Above this many steps a slider gets too fiddly to land on an exact number.
-    private static let maximumSliderSteps = 60
+    /// Up to this many steps a slider can still land on every value; beyond it, typing the number is faster.
+    private static let maximumSliderSteps = 101
 
     var body: some View {
         HStack(spacing: 10) {
@@ -123,11 +123,23 @@ private struct IntegerControl: View {
                 .frame(width: 180)
                 .accessibilityLabel(label)
                 .accessibilityValue("\(value)")
-            }
-            Text("\(value)")
+                Text("\(value)")
+                    .font(.body.monospacedDigit())
+                    .frame(minWidth: 34, alignment: .trailing)
+                    .accessibilityHidden(true)
+            } else {
+                TextField(
+                    label,
+                    value: Binding(get: { value }, set: { value = min(max($0, range.lowerBound), range.upperBound) }),
+                    format: .number.grouping(.never)
+                )
+                .labelsHidden()
+                .multilineTextAlignment(.trailing)
+                .textFieldStyle(.roundedBorder)
                 .font(.body.monospacedDigit())
-                .frame(minWidth: 34, alignment: .trailing)
-                .accessibilityHidden(true)
+                .frame(width: 90)
+                .help("\(range.lowerBound) to \(range.upperBound)")
+            }
             Stepper(label, value: $value, in: range)
                 .labelsHidden()
         }
@@ -140,7 +152,10 @@ private struct PathPicker: View {
     @Bindable var session: TaskSession
     @State private var isImporting = false
 
-    private var paths: [String] { session.value(of: field)?.pathList ?? [] }
+    /// Paths as shown: a default such as `~/Downloads` is expanded, the way the command builder expands it.
+    private var paths: [String] {
+        (session.value(of: field)?.pathList ?? []).map { ($0 as NSString).expandingTildeInPath }
+    }
 
     private var allowedTypes: [UTType] {
         switch field.kind {

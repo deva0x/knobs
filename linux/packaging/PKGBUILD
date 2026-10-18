@@ -1,0 +1,33 @@
+# Knobs for Arch Linux. Arch has no Swift toolchain in its official repositories, so, like other "-bin"
+# packages, this one installs the binary built in the Ubuntu container, which carries Swift's runtime, and
+# uses Arch's own GTK. scripts/linux.sh package fills in the version and the checksum.
+pkgname=knobs-bin
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc="Command-line tools, as simple windows"
+arch=('x86_64')
+url="https://github.com/deva0x/knobs"
+license=('MIT')
+depends=('gtk4' 'libadwaita' 'glibc' 'gcc-libs')
+optdepends=(
+    'ffmpeg: video and audio tasks'
+    '7zip: archive tasks'
+    'imagemagick: image tasks'
+    'pandoc-cli: document conversion'
+    'perl-image-exiftool: photo details'
+    'ghostscript: PDF tasks'
+    'rsync: folder copies'
+    'yt-dlp: downloads'
+    'ocrmypdf: searchable PDFs (AUR)'
+    'whisper.cpp: transcription (AUR)'
+)
+provides=('knobs')
+conflicts=('knobs')
+source=("knobs-$pkgver-linux-$CARCH.tar.gz")
+sha256sums=('@SHA256@')
+# The binary is already stripped; makepkg's own strip and debug split would only repeat that.
+options=('!strip' '!debug')
+
+package() {
+    cp -a "$srcdir/knobs/." "$pkgdir/"
+}

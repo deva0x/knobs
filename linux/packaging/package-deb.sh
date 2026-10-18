@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Builds the .deb in the Ubuntu container. Usage: package-deb.sh <built binary> <version> <output folder>
+# Lays out the .deb's files and control file in the Ubuntu container of the package's architecture, where
+# dpkg-shlibdeps can see that architecture's libraries. scripts/linux.sh then packs <stage folder> with dpkg-deb
+# in a native container: under emulation, tar can't read the file list dpkg-deb gives it.
+# Usage: package-deb.sh <built binary> <version> <stage folder, new and empty>
 set -euo pipefail
 binary=$1
 version=$2
-out=$3
+stage=$3
 work=$(mktemp -d)
-stage=$work/knobs
 /knobs/linux/packaging/stage.sh "$binary" "$stage" "$version"
 # Debian keeps the license as the package's copyright file.
 install -Dm644 /knobs/LICENSE "$stage/usr/share/doc/knobs/copyright"
@@ -30,5 +32,3 @@ Description: Command-line tools, as simple windows
  Knobs puts the everyday jobs of ffmpeg, yt-dlp, ImageMagick, pandoc and other
  command-line tools behind plain controls, and always shows the exact command.
 CONTROL
-mkdir -p "$out"
-dpkg-deb --root-owner-group --build "$stage" "$out/knobs_${version}_${arch}.deb"

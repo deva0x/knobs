@@ -103,3 +103,11 @@ showing the preferred name while running another (the screen must show the comma
 Limits: names are resolved once at launch, so a tool installed later under an alternative name is found on
 the next launch. Ubuntu's `7z` is the same 7-Zip as `7zz`; an old p7zip `7z` elsewhere is untested with the
 7-Zip tasks.
+
+## DEC-017: An Arch Linux package, from the Ubuntu-built binary (2026-10-18, chosen by Deva)
+Deva has an Omarchy (Arch) machine and asked for an Arch package. Arch has no Swift toolchain in its official
+repositories, so `knobs-bin` follows the AUR "-bin" pattern: its PKGBUILD installs the x86_64 binary built in the
+Ubuntu container (Swift's runtime linked in) and depends on Arch's own gtk4 and libadwaita. Arch publishes x86_64
+images only, so the package comes with `scripts/linux.sh package <version> amd64`. Publishing to the AUR is
+Deva's call (it needs an AUR account and a public download for the tarball).
+

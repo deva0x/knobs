@@ -1,0 +1,6 @@
+# The Arch Linux environment that turns the Ubuntu-built binary into a pacman package, used only on this Mac
+# through OrbStack or Docker. Arch publishes x86_64 images only. makepkg refuses to run as root, hence the user.
+FROM archlinux:latest
+RUN pacman -Syu --noconfirm --disable-sandbox base-devel \
+    && pacman -Scc --noconfirm \
+    && useradd --create-home builder

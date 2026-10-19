@@ -191,7 +191,7 @@ Template:
   test, `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd`, pins the drain timeout; it passed on the Mac before
   and after the change.
 
-## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open, not seen since BUG-014's fix)
+## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open)
 - Found: 2026-10-19, Claude, checking the new close confirmation through Broadway.
 - Steps: ffmpeg → Shrink a video on a 30-second 720p clip → Run → close the window → Stop and Close. Once it
   also happened after plain Cancel presses, in a loop whose timing went irregular.

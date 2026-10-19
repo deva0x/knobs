@@ -274,3 +274,11 @@ Work:
 
 Next action: nothing for BUG-014. BUG-015 stays open until it stays absent; BUG-016 needs an upstream fix or a
 Linux Process replacement (not planned).
+
+## 2026-10-19 07:24 IST · Claude Code (Opus 5.5) · HEAD 936e418
+
+Correction to the 07:23 entry: "ToolRunnerTests 5 of 5 on Linux after the fix" overstates it. In those five Linux
+runs the burst test `aBurstOfManyLinesArrivesWholeAndInOrder` passed every time, but the suite failed every time
+on the new `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd` (5.0 s, BUG-016), which was not yet wrapped in
+`withKnownIssue`. After that wrap, `scripts/ci.sh linux` passed (151 tests, 1 known issue). Also trimmed BUG-015's
+status label to the template's `(open)`; its body keeps the trial details.

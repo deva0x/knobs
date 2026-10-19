@@ -27,3 +27,4 @@ The first release.
   Arch Linux (`knobs-bin`), for arm64 and x86_64, built locally with `scripts/linux.sh package`.
 - A tool installed under another name is found under it, and the command shows that name (7-Zip as `7z`).
 - Drop files on a tool's page to see the tasks that take them.
+- On Linux, closing the window while a task runs asks first, and stops the task before closing.

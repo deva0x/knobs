@@ -206,3 +206,41 @@ changed. Ten findings reported in the review tool, most severe first:
 10. finishIfDone(ignoringOpenStreams:) is a behaviour-switching boolean (engineering rules).
 Also noted, not reported: the temporary image knobs-shots-tmp can now be removed (its container is gone).
 Next: Deva picks which findings to fix.
+
+## 2026-10-19 06:53 IST · Claude (Opus 5.5) · HEAD 55a1584
+
+Review fixes: all ten findings of the full code review, one commit each.
+
+- Outcome: every finding fixed with tests where they fit; docs updated with the code.
+- Evidence: `scripts/ci.sh fast` on every commit; `scripts/ci.sh` full PASS (159 tests in 27 suites, plus 2
+  Toolbox tests, app build); Mac app launched and All options loaded; Linux checked through Broadway.
+- Boundaries: this repo only; no push; no hosted CI; the new burst test is left as it is.
+- Stop condition: ten commits in, then report what the Linux checks turned up.
+
+Commits:
+1. 2eba140 core: two named ways for a run to finish, instead of a flag (finding 10).
+2. 83ba95c core: split output into lines in one pass (finding 8), test `aBurstOfManyLinesArrivesWholeAndInOrder`.
+3. ad4fcd2 core: a clean exit after Cancel still counts as success (finding 2), test reproduced first.
+4. 7cbaba1 manifest: an optional field inside a longer string needs an `if` (finding 5).
+5. 8e64330 manifest: integer and number fields need a default (finding 4); Linux floor fixed too.
+6. 8e23f01 website: quote commands exactly as the app does (finding 6), WebsiteTests compares them.
+7. 2de4704 + eeef184 session: one Toolbox for both apps (finding 9). 2de4704 went in with only the file rename
+   staged (a `git add` of a deleted path failed), so its message describes eeef184, which holds the change.
+8. eb2dea4 session: Check Again also tries a tool's other names (finding 3); new KnobsSessionTests target, 2
+   tests that failed before the fix.
+9. 3109b9c linux: redraw a running task only when the run changed something (finding 7). Same Shrink a video
+   run in Broadway: 839 redraws before, 418 after. Run times are not compared (shared Docker host).
+10. 55a1584 linux: ask before closing the window while a task runs (finding 1). Keep Running left ffmpeg
+   running; Stop and Close stopped it. Correction to that commit's message: in the cited trial the app exited
+   by crashing (BUG-015), after ffmpeg had stopped.
+
+Found on the way (logged, not fixed, out of scope):
+- BUG-014: on Linux only the first 8 KB of a burst of output is read; `scripts/ci.sh linux` now fails on the
+  new burst test. The pre-review ToolRunner fails it the same way (3 of 3), so it is older than these fixes.
+- BUG-015: occasional libdispatch crash on Linux after a run stops; 3 crashes early, none in 54 later Cancel
+  presses across 8e9ef20, eb2dea4, 3109b9c, 55a1584 and HEAD. Probably the same cause as BUG-014.
+- The bisect worktree `.cache/wt-before-review` (269 MB, gitignored) is still registered; remove it with
+  `git worktree remove --force .cache/wt-before-review` when no longer useful.
+
+Next action: BUG-014 (see BUGS.md): log each output read on Linux, then replace `readabilityHandler` in
+`ToolRunner.listen` if confirmed; rerun `scripts/ci.sh linux` and the Broadway Cancel trial for BUG-015.

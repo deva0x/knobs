@@ -13,7 +13,7 @@ Updated: 2026-10-19 IST
   `scripts/release.sh` checks against `dist/`; real Linux screenshots; a 404 page, Cloudflare headers, a
   home-screen icon and a link-preview image. Checked in a browser at 320, 375, 768, 940, 980, 1100, 1280 and
   1440 px, light and dark, by keyboard, and with JavaScript off; no console errors. `scripts/ci.sh linux`
-  passes with the website tests (140 tests, 2026-10-19).
+  passed with the website tests (140 tests) earlier on 2026-10-19; it now fails on BUG-014, see below.
 - Verified in the Mac app on this Mac: ffmpeg Shrink a video, Compress an image, a failing run, the Open With
   chooser, link and folder tasks, All options, Add a Tool with `jq`, ⌘K, in light and dark.
 - Verified by tests: `scripts/ci.sh` full passes (149 tests in 26 suites, every task of all ten tools running for
@@ -43,7 +43,17 @@ Updated: 2026-10-19 IST
 - Not checked by me (system settings I may not change): Reduce Motion and real VoiceOver.
 - Release: `scripts/ci.sh release` passes and `scripts/release.sh 0.1.0` builds an unsigned DMG; signing and
   notarizing need Deva's certificate and notary profile.
-- Next action: nothing left that I can do without Deva; see below.
+- Review fixes (2026-10-19): all ten findings of the full code review are fixed, one commit each (2eba140,
+  83ba95c, ad4fcd2, 7cbaba1, 8e64330, 8e23f01, 2de4704 with eeef184, eb2dea4, 3109b9c, 55a1584). Both apps now
+  share one `Toolbox` (KnobsSession), tested by the new KnobsSessionTests. On Linux, closing the window during a
+  run asks first (Keep Running, or Stop and Close), and a run redraws the window only when something changed
+  (839 redraws down to 418 on the same Shrink a video run). `scripts/ci.sh` full passes (159 tests in 27
+  suites plus 2 Toolbox tests, app build).
+- Blocked: `scripts/ci.sh linux` fails on BUG-014 (Linux reads only the first 8 KB of a burst of output; older
+  than the review fixes). BUG-015, an occasional libdispatch crash on Linux after a run stops, is probably the
+  same cause.
+- Next action: BUG-014: log each output read on Linux, then replace `readabilityHandler` in
+  `ToolRunner.listen` if confirmed, and rerun `scripts/ci.sh linux` and the Broadway Cancel trial (BUG-015).
 
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a

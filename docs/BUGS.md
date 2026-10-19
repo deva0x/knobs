@@ -167,3 +167,35 @@ Template:
   and Shrink a video then ran ("Done in 11 s") and wrote `Sunset over Goa small.mp4` beside the input. The
   packages in `dist/linux/` were rebuilt afterwards.
 - Upstream: worth reporting to Adwaita for Swift (Codeberg) once the repository is public; not reported yet.
+
+## BUG-014: On Linux, a tool's output stops after the first 8 KB and the run ends without the rest (open)
+- Found: 2026-10-19, Claude, running `scripts/ci.sh linux` after the review fixes.
+- Steps: `scripts/ci.sh linux`; the test `aBurstOfManyLinesArrivesWholeAndInOrder` runs `/usr/bin/seq 1 5000`.
+- Expected: all 5000 lines, in order, then `.finished(.succeeded)`.
+- Actual: lines 1 to 1859 only, every time, and the test takes about 2.07 s, which is `ToolRunner.drainTimeout`.
+  Lines 1 to 1859 plus the unfinished `1860` are exactly 8192 bytes, so the output handler ran for one read and
+  never again; the run then finished through the drain timeout as a success with a truncated log. On a real
+  run this would cut the output log and any progress that comes after the first 8 KB.
+- Not a regression: the same test against the pre-review `ToolRunner.swift` (commit 8e9ef20) fails the same way
+  on Linux, 3 runs out of 3. The Mac passes it.
+- Cause (hypothesis, not confirmed): `FileHandle.readabilityHandler` in swift-corelibs-foundation stops being
+  called after the first `availableData` read of a pipe. Next step: log the byte count of each handler call on
+  Linux, then, if confirmed, read each pipe with a blocking loop of its own instead of `readabilityHandler`,
+  keeping the drain timeout's job of ending a run whose helper holds the pipe open.
+- Effect on CI: `scripts/ci.sh linux` fails on this test until it is fixed. The test is right and stays.
+
+## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open)
+- Found: 2026-10-19, Claude, checking the new close confirmation through Broadway.
+- Steps: ffmpeg → Shrink a video on a 30-second 720p clip → Run → close the window → Stop and Close. Once it
+  also happened after plain Cancel presses, in a loop whose timing went irregular.
+- Expected: the run stops and the app exits normally (or keeps running after Cancel).
+- Actual: twice, the app died with "Bad pointer dereference" on the DispatchWorker thread in
+  `_dispatch_event_loop_drain`, while the main thread was still in GTK's loop. One of those was the Stop and
+  Close check cited in commit 55a1584, which says "the app exited": it did, after ffmpeg had stopped, but by
+  this crash. A plain close with nothing running exits with status 0.
+- Seen and not seen: 2 of 4 Stop and Close trials and 1 Cancel loop on HEAD crashed. Afterwards, 12 Cancel
+  presses each on 8e9ef20, eb2dea4 and 3109b9c, and 6 each on 55a1584 built in a worktree and on HEAD, did not
+  crash. Not shown to be a regression.
+- Cause (hypothesis): the same part as BUG-014. A run's pipes close when `ToolRun` lets its `Process` go, which
+  may happen before libdispatch has removed the pipe's read source; a reused file descriptor would then hand
+  the event loop a stale source. Fixing BUG-014 by not using `readabilityHandler` would remove that path too.

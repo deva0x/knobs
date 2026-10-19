@@ -127,6 +127,11 @@ import Testing
 /// Runs small system programs, so these tests use real processes but no third-party tools.
 @Suite struct ToolRunnerTests {
     private let runner = ToolRunner(environment: ProcessInfo.processInfo.environment)
+    #if os(Linux)
+        private static let runsOnLinux = true
+    #else
+        private static let runsOnLinux = false
+    #endif
 
     private func events(of run: ToolRun) async -> [RunEvent] {
         var events: [RunEvent] = []
@@ -152,6 +157,23 @@ import Testing
             return nil
         }
         #expect(lines == (1...count).map(String.init))
+    }
+
+    @Test func aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd() async {
+        let helperLifetime = Duration.seconds(5)
+        let run = runner.start(
+            executable: URL(filePath: "/bin/sh"), arguments: ["-c", "/bin/sleep 5 & echo done"],
+            workingDirectory: nil, progress: nil)
+        let started = ContinuousClock.now
+        #expect(await events(of: run) == [.line("done", .standardOutput), .finished(.succeeded)])
+        // Ended by the drain timeout after the tool exited, not by the helper closing the pipe. On Linux,
+        // Foundation's Process reports the exit only once the helper has exited too (BUG-016).
+        let elapsed = ContinuousClock.now - started
+        withKnownIssue("BUG-016: on Linux, Process reports the tool's exit only once its helpers exit") {
+            #expect(elapsed < helperLifetime)
+        } when: {
+            Self.runsOnLinux
+        }
     }
 
     @Test func argumentsArePassedVerbatimWithoutAShell() async {

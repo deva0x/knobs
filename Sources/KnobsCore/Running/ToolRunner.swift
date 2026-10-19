@@ -64,6 +64,8 @@ public final class ToolRun: Sendable {
     private let progress: Mutex<ProgressParser?>
     private let cancelGracePeriod: Duration
 
+    /// The most one read of an output pipe takes.
+    private static let readBufferBytes = 64 * 1024
     /// Partial lines longer than this are emitted anyway, so a tool that never prints a newline can't grow memory.
     private static let maximumPendingBytes = 64 * 1024
     /// Progress is read from the end of a line only; status lines are short, and a pattern's cost grows with input.
@@ -132,8 +134,6 @@ public final class ToolRun: Sendable {
         process.standardOutput = standardOutput
         process.standardError = standardError
 
-        listen(to: standardOutput, as: .standardOutput)
-        listen(to: standardError, as: .standardError)
         process.terminationHandler = { [weak self] process in
             self?.processExited(status: process.terminationStatus, reason: process.terminationReason)
         }
@@ -145,10 +145,11 @@ public final class ToolRun: Sendable {
         do {
             try Self.withSignalsUnblocked { try process.run() }
         } catch {
-            standardOutput.fileHandleForReading.readabilityHandler = nil
-            standardError.fileHandleForReading.readabilityHandler = nil
             finish(with: .couldNotStart(error.localizedDescription))
+            return
         }
+        listen(to: standardOutput, as: .standardOutput)
+        listen(to: standardError, as: .standardError)
     }
 
     /// On Linux, `Process` spawns the tool with the calling thread's signal mask, and Dispatch and Swift
@@ -165,15 +166,29 @@ public final class ToolRun: Sendable {
         return try body()
     }
 
+    /// Reads the pipe with blocking reads on a thread of its own until every writer has closed it, then closes the
+    /// stream. Not `readabilityHandler`: on Linux it stops being called after the first 8 KB (BUG-014). The thread
+    /// reads its own duplicate of the descriptor and closes it itself, so the number can't be reused under it. A
+    /// helper that keeps the pipe open after the tool exits keeps the thread waiting until the helper exits (Cancel
+    /// stops the whole group); the run itself still finishes through the drain timeout, except where BUG-016 holds
+    /// back the exit on Linux. A read error other than an interruption ends the stream like the end of output does,
+    /// and so does a failed `dup` (only when the app has run out of descriptors), which loses that stream's output.
     private func listen(to pipe: Pipe, as stream: OutputLog.Stream) {
-        pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
-            let data = handle.availableData
-            if data.isEmpty {
-                handle.readabilityHandler = nil
-                self?.streamClosed(stream)
-            } else {
-                self?.received(data, from: stream)
+        let descriptor = dup(pipe.fileHandleForReading.fileDescriptor)
+        Thread.detachNewThread { [weak self] in
+            defer { close(descriptor) }
+            var buffer = [UInt8](repeating: 0, count: Self.readBufferBytes)
+            while true {
+                let count = read(descriptor, &buffer, buffer.count)
+                if count > 0 {
+                    self?.received(Data(buffer[..<count]), from: stream)
+                } else if count < 0 && errno == EINTR {
+                    continue
+                } else {
+                    break
+                }
             }
+            self?.streamClosed(stream)
         }
     }
 

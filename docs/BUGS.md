@@ -168,7 +168,7 @@ Template:
   packages in `dist/linux/` were rebuilt afterwards.
 - Upstream: worth reporting to Adwaita for Swift (Codeberg) once the repository is public; not reported yet.
 
-## BUG-014: On Linux, a tool's output stops after the first 8 KB and the run ends without the rest (open)
+## BUG-014: On Linux, a tool's output stops after the first 8 KB and the run ends without the rest (fixed)
 - Found: 2026-10-19, Claude, running `scripts/ci.sh linux` after the review fixes.
 - Steps: `scripts/ci.sh linux`; the test `aBurstOfManyLinesArrivesWholeAndInOrder` runs `/usr/bin/seq 1 5000`.
 - Expected: all 5000 lines, in order, then `.finished(.succeeded)`.
@@ -178,11 +178,18 @@ Template:
   run this would cut the output log and any progress that comes after the first 8 KB.
 - Not a regression: the same test against the pre-review `ToolRunner.swift` (commit 8e9ef20) fails the same way
   on Linux, 3 runs out of 3. The Mac passes it.
-- Cause (hypothesis, not confirmed): `FileHandle.readabilityHandler` in swift-corelibs-foundation stops being
-  called after the first `availableData` read of a pipe. Next step: log the byte count of each handler call on
-  Linux, then, if confirmed, read each pipe with a blocking loop of its own instead of `readabilityHandler`,
-  keeping the drain timeout's job of ending a run whose helper holds the pipe open.
-- Effect on CI: `scripts/ci.sh linux` fails on this test until it is fixed. The test is right and stays.
+- Cause (confirmed 2026-10-19 on swift:6.2-noble, with the byte count of each handler call logged):
+  swift-corelibs-foundation's `FileHandle.readabilityHandler` ran once for standard output, read 8192 bytes,
+  and was never called again, not even for the end of output; standard error got its one empty read at the end.
+  After a short read the handler does run again (5 bytes, then the empty end-of-output read, in a smaller run),
+  so it is a full 8192-byte read that leaves it silent.
+- Fix: `ToolRun.listen` no longer uses `readabilityHandler`. Each pipe is read with blocking `read` calls on a
+  thread of its own, from a duplicate of the pipe's descriptor that the thread closes itself; the threads start
+  only once the tool has started. One implementation for both platforms. The drain timeout is unchanged (but see
+  BUG-016 for Linux). Checks: the burst test passes on Linux (5 of 5 runs of ToolRunnerTests, then
+  `scripts/ci.sh linux`: PASS, 151 tests); `scripts/ci.sh fast` and `scripts/ci.sh` full pass on the Mac. A new
+  test, `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd`, pins the drain timeout; it passed on the Mac before
+  and after the change.
 
 ## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open)
 - Found: 2026-10-19, Claude, checking the new close confirmation through Broadway.
@@ -199,3 +206,21 @@ Template:
 - Cause (hypothesis): the same part as BUG-014. A run's pipes close when `ToolRun` lets its `Process` go, which
   may happen before libdispatch has removed the pipe's read source; a reused file descriptor would then hand
   the event loop a stale source. Fixing BUG-014 by not using `readabilityHandler` would remove that path too.
+
+## BUG-016: On Linux, a run whose tool leaves a helper running looks unfinished until the helper exits (open)
+- Found: 2026-10-19, Claude, adding a test for the drain timeout while fixing BUG-014.
+- Steps: on Linux, run `/bin/sh -c '/bin/sleep 5 & echo done'` through `ToolRunner` (the test
+  `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd`).
+- Expected: `done`, then `.finished(.succeeded)` about 2 s later (`ToolRunner.drainTimeout`), as on the Mac.
+- Actual: `.finished` comes after 5 s, when `sleep` exits. `Process.terminationHandler` itself is only called
+  then (logged: about 5.5 s after the start), so the drain timeout never gets its chance. The same happens with
+  the pre-fix `ToolRunner` (readabilityHandler), so it is older than BUG-014's fix.
+- Cause: swift-corelibs-foundation's `Process` (release/6.2, `Sources/Foundation/Process.swift`) learns that the
+  tool exited by watching one end of a `socketpair`; the other end is left open in the tool, without
+  close-on-exec (its own descriptor-closing loop skips it), so every helper the tool starts inherits it, and the
+  socket only reports the hang-up, and `waitpid` only runs, once the last helper has exited.
+- Effect: a tool that exits but leaves a helper behind shows as running until that helper exits. Cancel still
+  ends it, because Cancel signals the tool's whole process group. No manifest tool is known to do this.
+- Not fixed: Knobs can't reach that descriptor without replacing `Process` on Linux. The test records the
+  Linux failure as a known issue (`withKnownIssue`), so it fails, and asks for the marker to be removed, once
+  this is fixed.

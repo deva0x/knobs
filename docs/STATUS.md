@@ -13,7 +13,7 @@ Updated: 2026-10-19 IST
   `scripts/release.sh` checks against `dist/`; real Linux screenshots; a 404 page, Cloudflare headers, a
   home-screen icon and a link-preview image. Checked in a browser at 320, 375, 768, 940, 980, 1100, 1280 and
   1440 px, light and dark, by keyboard, and with JavaScript off; no console errors. `scripts/ci.sh linux`
-  passed with the website tests (140 tests) earlier on 2026-10-19; it now fails on BUG-014, see below.
+  passes with the website tests (151 tests after the BUG-014 fix).
 - Verified in the Mac app on this Mac: ffmpeg Shrink a video, Compress an image, a failing run, the Open With
   chooser, link and folder tasks, All options, Add a Tool with `jq`, ⌘K, in light and dark.
 - Verified by tests: `scripts/ci.sh` full passes (149 tests in 26 suites, every task of all ten tools running for
@@ -49,11 +49,12 @@ Updated: 2026-10-19 IST
   run asks first (Keep Running, or Stop and Close), and a run redraws the window only when something changed
   (839 redraws down to 418 on the same Shrink a video run). `scripts/ci.sh` full passes (159 tests in 27
   suites plus 2 Toolbox tests, app build).
-- Blocked: `scripts/ci.sh linux` fails on BUG-014 (Linux reads only the first 8 KB of a burst of output; older
-  than the review fixes). BUG-015, an occasional libdispatch crash on Linux after a run stops, is probably the
-  same cause.
-- Next action: BUG-014: log each output read on Linux, then replace `readabilityHandler` in
-  `ToolRunner.listen` if confirmed, and rerun `scripts/ci.sh linux` and the Broadway Cancel trial (BUG-015).
+- BUG-014 fixed (2026-10-19): each output pipe is read with a blocking loop on its own thread, on both
+  platforms, so Linux gets all of a tool's output. `scripts/ci.sh fast`, `scripts/ci.sh` full (160 tests in 27
+  suites plus 2, app build) and `scripts/ci.sh linux` (151 tests, one known issue: BUG-016) pass.
+- BUG-016 (new, open, older than the fix): on Linux, a tool that leaves a helper running looks unfinished until
+  the helper exits, because Foundation's `Process` reports the exit late. Cancel still stops it.
+- Next action: the Broadway Run → Cancel and Stop and Close trial for BUG-015 on the fixed build.
 
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a

@@ -302,3 +302,34 @@ the draft, and approved posting it from deva0x).
 - BUGS (014, 015, 016) and STATUS now carry the upstream links.
 
 Next action: none. Watch #5618 for maintainer questions.
+
+## 2026-10-19 08:37 IST · Claude Code (Opus 5.5) · HEAD 78fbd9d
+
+Release files rebuilt from 78fbd9d and install-tested (Deva: "rebuild the DMG and all Linux packages from current
+main, install-test each in clean containers").
+
+- Outcome: every file in dist/ includes the review fixes and the BUG-014 fix, and each one has run a real task.
+- Evidence: scripts/linux.sh package (arm64, amd64), clean-container installs through Broadway, scripts/release.sh.
+- Boundaries: build outputs in dist/ (gitignored) and STATUS only; no signing, upload or push.
+- Stop condition: all seven Linux packages pass a run and the DMG is built.
+
+Results:
+- scripts/linux.sh package 0.1.0 arm64 and amd64: exit 0 both; seven files written 08:01-08:14 IST.
+- Each package installed in a clean container (dist/linux mounted read-only), started under Broadway, ffmpeg
+  Shrink a video on .cache/fixtures-linux/sample.mp4 (36.3 MB 1080p), checked with ffprobe and the result card:
+  - arm64 .deb, ubuntu:26.04 (installed all ten tools as Recommends): 1.34 MB, 1280x720 H.264+AAC 10.0 s, Done in 7 s
+  - arm64 .rpm, fedora:44 (swift-lang-runtime 6.3.2, gtk4 4.22.5, ffmpeg-free): 2.6 MB (openh264), Done in 4 s
+  - aarch64 tarball in ubuntu:26.04 with runtime libraries only: all ten manifests found, 1.34 MB, Done in 5 s
+  - x86_64 (emulated): .deb Done in 10 s, .rpm Done in 4 s, tarball Done in 11 s, Arch knobs-bin (gtk4
+    4.24.1, libadwaita 1.10.0) Done in 9 s; all 1280x720 H.264+AAC 10 s files.
+  - ldd: no missing libraries in any of the seven.
+- Emulation limits found (not package bugs): GNU tar 1.35 under x86 emulation fails with "Function not
+  implemented" below the top folder (plain mkdir works), so the x86_64 tarball was unpacked with bsdtar; pacman
+  needs --disable-sandbox (as linux/Dockerfile.arch already uses). The packaged builds link Swift statically, so
+  SWIFT_BACKTRACE prints "unable to locate swift-backtrace" there; expected.
+- scripts/release.sh 0.1.0: ci.sh release PASS (160 tests in 27 suites, Debug and Release app builds), unsigned
+  dist/Knobs-0.1.0.dmg (SHA-256 dcbd7d68...; hdiutil verify valid; checksum file matches). The script exits
+  before its website link check when unsigned, so I ran that check by hand: all eight #release files present.
+- Test containers removed; the install script lives in my scratch folder, not the repo.
+
+Next action: none for an agent. Deva: certificate and notary profile, then GitHub repo, push and release upload.

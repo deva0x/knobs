@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-19 IST
+Updated: 2026-10-19 IST (release files rebuilt 08:36)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -30,7 +30,8 @@ Updated: 2026-10-19 IST
     video. The x86_64 build runs on a real Omarchy (Arch, Hyprland) desktop on Deva's omarchy-1; only looked at,
     not clicked through (no safe way to send clicks to a desktop someone may be using).
   - x86_64: the .deb and .rpm installed in clean x86_64 Ubuntu 26.04 and Fedora 44 containers and drew their
-    window; their arm64 twins ran the real tasks.
+    window; their arm64 twins ran the real tasks. Since the 08:00 rebuild all x86_64 packages ran Shrink a video
+    too (see Release below).
   - Long option lists filter when typing pauses, so typing keeps up (checked through Broadway).
   - BUG-013 fixed: a file chosen in the file dialog could arrive as a garbled path (a use-after-free in Adwaita
     for Swift); Knobs now opens GTK's dialog itself. All seven Linux packages were rebuilt with the fix on
@@ -41,8 +42,19 @@ Updated: 2026-10-19 IST
   home (an image opens the chooser, a PDF is refused), the About window, the quit-while-running dialog (Keep
   Running continues, Stop and Quit stops ffmpeg and quits), and BUG-009's fix.
 - Not checked by me (system settings I may not change): Reduce Motion and real VoiceOver.
-- Release: `scripts/ci.sh release` passes and `scripts/release.sh 0.1.0` builds an unsigned DMG; signing and
-  notarizing need Deva's certificate and notary profile.
+- Release files rebuilt from 78fbd9d (2026-10-19, 08:01-08:36 IST), so they include the review fixes and the
+  BUG-014 fix:
+  - `scripts/release.sh 0.1.0`: `scripts/ci.sh release` PASS (160 tests in 27 suites with every tool required,
+    Debug and Release app builds), then an unsigned `dist/Knobs-0.1.0.dmg` (hdiutil verify: valid; SHA-256 file
+    matches). Signing and notarizing need Deva's certificate and notary profile. An unsigned run stops before
+    the website link check, so it was run by hand: all eight files `#release` links to are in `dist/`.
+  - All seven Linux packages (`scripts/linux.sh package 0.1.0` arm64 and amd64), each installed in a clean
+    container and run through Broadway: Shrink a video on the 36.3 MB 1080p sample gave a 10 s 1280x720
+    H.264+AAC file and "Done in N s" every time. arm64 .deb (Ubuntu 26.04), .rpm (Fedora 44, GTK 4.22.5,
+    swift-lang-runtime 6.3.2) and tarball; x86_64 .deb, .rpm, tarball and Arch `knobs-bin` (GTK 4.24.1,
+    libadwaita 1.10.0) under emulation. Under emulation GNU tar 1.35 can't unpack anything ("Function not
+    implemented") and pacman needs `--disable-sandbox`; both are OrbStack/Rosetta limits, so the x86_64 tarball
+    was unpacked with bsdtar. None of these were tried on a real x86_64 machine.
 - Review fixes (2026-10-19): all ten findings of the full code review are fixed, one commit each (2eba140,
   83ba95c, ad4fcd2, 7cbaba1, 8e64330, 8e23f01, 2de4704 with eeef184, eb2dea4, 3109b9c, 55a1584). Both apps now
   share one `Toolbox` (KnobsSession), tested by the new KnobsSessionTests. On Linux, closing the window during a

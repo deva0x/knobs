@@ -282,3 +282,23 @@ runs the burst test `aBurstOfManyLinesArrivesWholeAndInOrder` passed every time,
 on the new `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd` (5.0 s, BUG-016), which was not yet wrapped in
 `withKnownIssue`. After that wrap, `scripts/ci.sh linux` passed (151 tests, 1 known issue). Also trimmed BUG-015's
 status label to the template's `(open)`; its body keeps the trial details.
+
+## 2026-10-19 07:47 IST · Claude Code (Opus 5.5) · HEAD 34320b4
+
+Upstream reports for the Linux Foundation bugs (Deva asked in chat to file them under the project's rules, read
+the draft, and approved posting it from deva0x).
+
+- Searched swiftlang/swift-corelibs-foundation first (CONTRIBUTING: GitHub issues; no issue template).
+  BUG-016 is already #4795 (open since 2023), so nothing new was filed. BUG-015's crash is #3276 (open since
+  2020, reproduced there on 6.4 in 2026-09). BUG-014 had no matching report; #3275 is only the missing
+  end-of-file call.
+- Wrote a standalone program (no Knobs code, kept in my scratch folder) that collects `seq 1 5000` through
+  readabilityHandler. swift:6.2-noble (6.2.4) and swift:6.4-noble (6.4.1), aarch64 under OrbStack: 8,192 of
+  23,893 bytes delivered and 15,701 left unread, 5 of 5 runs on each. macOS 27.0.1 with Swift 6.4: all bytes
+  in 2 chunks and end of file seen, 3 of 3.
+- Posted https://github.com/swiftlang/swift-corelibs-foundation/issues/5618 as deva0x, with the text Deva
+  approved. Did not comment on #4795 or #3276. No pull request: the fix belongs in Foundation or libdispatch
+  and needs the maintainers' view first.
+- BUGS (014, 015, 016) and STATUS now carry the upstream links.
+
+Next action: none. Watch #5618 for maintainer questions.

@@ -56,6 +56,8 @@ Updated: 2026-10-19 IST
   the helper exits, because Foundation's `Process` reports the exit late. Cancel still stops it.
 - BUG-015 (Linux libdispatch crash after a run stops) not seen after the fix: 23 Run → Cancel cycles and 5 Stop
   and Close trials through Broadway, with backtraces on, no crash. Kept open because it was rare before too.
+- Upstream (2026-10-19): BUG-014 reported as swiftlang/swift-corelibs-foundation#5618; BUG-015's crash matches
+  #3276 and BUG-016 is #4795, both already open there.
 - Next action: none for BUG-014. Watch for BUG-015 in later Linux checks; BUG-016 needs a Linux `Process`
   replacement or an upstream fix, not planned.
 

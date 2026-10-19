@@ -190,6 +190,9 @@ Template:
   `scripts/ci.sh linux`: PASS, 151 tests); `scripts/ci.sh fast` and `scripts/ci.sh` full pass on the Mac. A new
   test, `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd`, pins the drain timeout; it passed on the Mac before
   and after the change.
+- Upstream: reported as swiftlang/swift-corelibs-foundation#5618
+  (https://github.com/swiftlang/swift-corelibs-foundation/issues/5618), 2026-10-19, with a standalone program
+  (no Knobs code) that loses 15,701 of 23,893 bytes on Swift 6.2.4 and 6.4.1 (5 of 5 runs each) and none on macOS.
 
 ## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open)
 - Found: 2026-10-19, Claude, checking the new close confirmation through Broadway.
@@ -216,6 +219,9 @@ Template:
 - Still open: the crash was already rare before the fix (none in 54 Cancel presses on older builds), so its
   absence now does not prove the cause. Close it once it stays absent; if it comes back, the hypothesis above is
   wrong, since the pipe sources are gone.
+- Upstream: the same crash (`_dispatch_event_loop_drain`, bad pointer dereference, with `readabilityHandler` on
+  pipes) is swiftlang/swift-corelibs-foundation#3276 (https://github.com/swiftlang/swift-corelibs-foundation/issues/3276),
+  open since 2020 and reproduced there on Swift 6.4 in September 2026. That supports the hypothesis above.
 
 ## BUG-016: On Linux, a run whose tool leaves a helper running looks unfinished until the helper exits (open)
 - Found: 2026-10-19, Claude, adding a test for the drain timeout while fixing BUG-014.
@@ -231,6 +237,10 @@ Template:
   socket only reports the hang-up, and `waitpid` only runs, once the last helper has exited.
 - Effect: a tool that exits but leaves a helper behind shows as running until that helper exits. Cancel still
   ends it, because Cancel signals the tool's whole process group. No manifest tool is known to do this.
+- Upstream: already reported as swiftlang/swift-corelibs-foundation#4795
+  (https://github.com/swiftlang/swift-corelibs-foundation/issues/4795), open since 2023, which suggests
+  `pidfd_open` or `signalfd` instead of the socket. Not reported again (it would be a duplicate). Open pull
+  request #5366 changes the same socket but keeps the child's end inheritable, so it would not fix this.
 - Not fixed: Knobs can't reach that descriptor without replacing `Process` on Linux. The test records the
   Linux failure as a known issue (`withKnownIssue`), so it fails, and asks for the marker to be removed, once
   this is fixed.

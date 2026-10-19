@@ -54,7 +54,10 @@ Updated: 2026-10-19 IST
   suites plus 2, app build) and `scripts/ci.sh linux` (151 tests, one known issue: BUG-016) pass.
 - BUG-016 (new, open, older than the fix): on Linux, a tool that leaves a helper running looks unfinished until
   the helper exits, because Foundation's `Process` reports the exit late. Cancel still stops it.
-- Next action: the Broadway Run → Cancel and Stop and Close trial for BUG-015 on the fixed build.
+- BUG-015 (Linux libdispatch crash after a run stops) not seen after the fix: 23 Run → Cancel cycles and 5 Stop
+  and Close trials through Broadway, with backtraces on, no crash. Kept open because it was rare before too.
+- Next action: none for BUG-014. Watch for BUG-015 in later Linux checks; BUG-016 needs a Linux `Process`
+  replacement or an upstream fix, not planned.
 
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a

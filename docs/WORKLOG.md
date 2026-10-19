@@ -244,3 +244,33 @@ Found on the way (logged, not fixed, out of scope):
 
 Next action: BUG-014 (see BUGS.md): log each output read on Linux, then replace `readabilityHandler` in
 `ToolRunner.listen` if confirmed; rerun `scripts/ci.sh linux` and the Broadway Cancel trial for BUG-015.
+
+## 2026-10-19 07:23 IST · Claude Code (Opus 5.5) · HEAD 173eaa3
+
+BUG-014 fixed, BUG-015 checked, BUG-016 found (task from the session that ran the review fixes).
+
+- Outcome: Linux reads all of a tool's output; the drain timeout and `.finished`-last behaviour are unchanged.
+- Evidence: `scripts/ci.sh fast`, `scripts/ci.sh` full and `scripts/ci.sh linux`; Broadway trial for BUG-015.
+- Boundaries: ToolRunner.swift, RunningTests.swift, BUGS, STATUS, this log. No push, nothing outside the repo.
+- Stop condition: all three CI modes pass and the BUG-015 trial is recorded.
+
+Work:
+- Confirmed BUG-014 on swift:6.2-noble with a logging copy (scratch, outside the repo): standard output's
+  readabilityHandler ran once with 8192 bytes and never again, not even for end of output.
+- 173eaa3 core: each output pipe is read with blocking `read` calls on its own thread, from a dup'd descriptor
+  the thread closes itself; threads start after `process.run()` succeeds. One implementation, no #if.
+- New test `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd` pins the drain timeout (passed on the Mac before
+  and after the change). On Linux it showed BUG-016, older than the fix (same 5 s with the old ToolRunner):
+  swift-corelibs-foundation's Process reports the exit only once helpers exit (socketpair end left open in the
+  child). Recorded in the test with `withKnownIssue` on Linux only.
+- Results: ToolRunnerTests 5 of 5 on Linux after the fix; `scripts/ci.sh fast` PASS (149 + 2);
+  `scripts/ci.sh` full PASS (160 tests in 27 suites + 2, Debug app build); `scripts/ci.sh linux` PASS (151 tests,
+  1 known issue = BUG-016).
+- BUG-015: `scripts/linux.sh build` from 173eaa3, run as `scripts/linux.sh run` does plus SWIFT_BACKTRACE.
+  23 Run -> Cancel cycles with ffmpeg running (Shrink a video, generated 30 s 720p clip) in one process, then 5
+  Stop and Close trials in fresh containers: no crash, every exit status 0. Left open (rare before the fix too).
+- Clean-up: the trial clip I copied to .cache/bug015 is removed; the knobs-linux container is stopped (exited),
+  as `scripts/linux.sh run` leaves it. The bisect worktree .cache/wt-before-review is untouched.
+
+Next action: nothing for BUG-014. BUG-015 stays open until it stays absent; BUG-016 needs an upstream fix or a
+Linux Process replacement (not planned).

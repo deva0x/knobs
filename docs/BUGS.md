@@ -191,7 +191,7 @@ Template:
   test, `aHelperThatKeepsTheOutputOpenDoesNotHoldUpTheEnd`, pins the drain timeout; it passed on the Mac before
   and after the change.
 
-## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open)
+## BUG-015: On Linux, the app sometimes crashes in libdispatch after a run is stopped (open, not seen since BUG-014's fix)
 - Found: 2026-10-19, Claude, checking the new close confirmation through Broadway.
 - Steps: ffmpeg → Shrink a video on a 30-second 720p clip → Run → close the window → Stop and Close. Once it
   also happened after plain Cancel presses, in a loop whose timing went irregular.
@@ -206,6 +206,16 @@ Template:
 - Cause (hypothesis): the same part as BUG-014. A run's pipes close when `ToolRun` lets its `Process` go, which
   may happen before libdispatch has removed the pipe's read source; a reused file descriptor would then hand
   the event loop a stale source. Fixing BUG-014 by not using `readabilityHandler` would remove that path too.
+- After BUG-014's fix (173eaa3, 2026-10-19): Knobs no longer creates any dispatch source for a run's pipes. The
+  Linux app built from that commit, started as `scripts/linux.sh run` does but with
+  `SWIFT_BACKTRACE=enable=yes,interactive=no,output-to=stderr`, ran ffmpeg Shrink a video on a generated 30-second
+  720p clip: 23 Run → Cancel cycles with ffmpeg running (cancelled 0.3 to 4 s after Run; counted by the
+  partly written output files and a watcher of ffmpeg's process ids), all in one app process that stayed up, with
+  no ffmpeg left over; then 5 Stop and Close trials in fresh containers (closed 0.3 to 4 s after Run), each
+  exiting with status 0 and no backtrace. No crash.
+- Still open: the crash was already rare before the fix (none in 54 Cancel presses on older builds), so its
+  absence now does not prove the cause. Close it once it stays absent; if it comes back, the hypothesis above is
+  wrong, since the pipe sources are gone.
 
 ## BUG-016: On Linux, a run whose tool leaves a helper running looks unfinished until the helper exits (open)
 - Found: 2026-10-19, Claude, adding a test for the drain timeout while fixing BUG-014.

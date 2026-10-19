@@ -13,8 +13,8 @@ struct KnobsApp: App {
         environment: ProcessInfo.processInfo.environment)
 
     var scene: Scene {
-        Window(id: "main") { _ in
-            RootView(model: model)
+        Window(id: "main") { window in
+            RootView(model: model, window: window)
         }
         .defaultSize(width: 1100, height: 760)
         .title("Knobs")
@@ -22,12 +22,16 @@ struct KnobsApp: App {
 }
 
 /// The window: tools in the sidebar, and the selected tool's page or one of its tasks beside them.
-struct RootView: View {
+struct RootView: WindowView {
     let model: Toolbox
+    let window: AdwaitaWindow
     @State private var selectedToolID = ""
     /// The open task of the selected tool, or empty for the tool's page.
     @State private var openTaskID = ""
     @State private var isAddingTool = false
+    @State private var isConfirmingClose = false
+    /// Set once every run has stopped, so the close that follows goes through.
+    @State private var haveRunsStopped = false
 
     private var tool: ToolManifest? {
         model.manifest(withID: selectedToolID) ?? model.manifests.first
@@ -95,6 +99,32 @@ struct RootView: View {
                     description: "Knobs couldn't read its tool descriptions.")
             }
         }
+        .alertDialog(
+            visible: $isConfirmingClose, heading: "A task is still running",
+            body: "Closing Knobs stops it, and the file it was making may be left incomplete."
+        )
+        .response("Keep Running", role: .close) {}
+        .response("Stop and Close", appearance: .destructive, role: .default, action: stopRunsAndClose)
+    }
+
+    /// A tool outlives the app that started it, so a run must be stopped before the window closes. Ask first,
+    /// because stopping can leave an incomplete output file.
+    func window(_ window: Window) -> Window {
+        window.onClose {
+            guard model.hasRunningTasks, !haveRunsStopped else { return .close }
+            isConfirmingClose = true
+            return .cancel
+        }
+    }
+
+    private func stopRunsAndClose() {
+        Task {
+            await model.stopAllRuns()
+            haveRunsStopped = true
+            window.close()
+        }
+        // The runs report stopping through the main queue, which only the pump drains on Linux.
+        MainQueuePump.pump(while: { !haveRunsStopped }, observing: {}, redraw: {})
     }
 }
 

@@ -32,7 +32,9 @@ struct AllOptionsPage: View {
                 )
                 .onAppear {
                     Task { await model.loadAllOptions(for: manifest) }
-                    MainQueuePump.pump(while: { isReading }, tick: { revision += 1 })
+                    MainQueuePump.pump(
+                        while: { isReading }, observing: { _ = model.allOptions[manifest.id] },
+                        redraw: { revision += 1 })
                 }
             case .unavailable?:
                 StatusPage(

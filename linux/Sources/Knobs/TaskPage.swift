@@ -8,8 +8,8 @@ struct TaskPage: View {
     let model: Toolbox
     let session: TaskSession
     let back: () -> Void
-    /// The session is shared with KnobsSession and doesn't tell Adwaita when it changes, so every edit and every
-    /// tick of a run (see `MainQueuePump`) bumps this to redraw the page.
+    /// The session is shared with KnobsSession and doesn't tell Adwaita when it changes, so every edit, and every
+    /// change a run makes (see `MainQueuePump`), bumps this to redraw the page.
     @State private var revision = 0
     /// Narrows a long settings list, such as a tool's All options, to the ones whose name or help has every word.
     @State private var query = ""
@@ -75,7 +75,10 @@ struct TaskPage: View {
                 RunControls(model: model, session: session) {
                     model.run(session)
                     revision += 1
-                    MainQueuePump.pump(while: { session.isRunning }, tick: { revision += 1 })
+                    MainQueuePump.pump(
+                        while: { session.isRunning },
+                        observing: { _ = (session.phase, session.progress, session.log, session.result) },
+                        redraw: { revision += 1 })
                 } cancel: {
                     session.cancel()
                     revision += 1

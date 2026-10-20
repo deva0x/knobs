@@ -455,3 +455,45 @@ Signed and notarized release DMG; commit email chosen.
 
 Next action: Deva runs the email rewrite in /Users/deva/opensource/knobs; then an agent verifies no old address
 remains on main, appends the old-to-new hash table here, and updates hashes in STATUS and BUGS.
+
+## 2026-10-20 21:40 IST · Claude Code (Opus 5.5) · HEAD 0178bde
+
+Commit email rewritten; old-to-new commit hash map.
+
+- Deva ran the history rewrite in the main checkout at 21:39 IST (Terminal 2): 111 commits, refs/heads/main and
+  refs/heads/claude/where-are-we-e513b3 rewritten, every author and committer email that was
+  bitdeva@gmail.com or admin@mantis.dev set to 95619082+deva0x@users.noreply.github.com.
+- Checked: both branches now carry only that address (222 author+committer fields); no ref outside
+  refs/original/ has an old address; for each of the 111 commit pairs the tree, message, author and committer
+  names and dates are identical; main and the worktree branch both point to 0178bde; both checkouts clean.
+- The pre-rewrite commits remain under refs/original/ on this Mac only. A push of main does not send them.
+- STATUS (12) and BUGS (8) hash references now use the new hashes. Entries above this one keep the old hashes,
+  as this log is append-only; the table below maps each old commit (oldest first) to its new one.
+
+Old → new:
+9c35b01 → 88b9f47   d70de1c → cdf12f7   188d6e1 → 4580f8a   3b24ad6 → 3dd97fe   e6fd8d2 → 57d2c79
+d3475f8 → 78537c1   cbac6c1 → 2560381   bbf7f96 → 1b4f0d1   260884c → ffd244f   31f7de1 → 32b87bf
+3920f5e → ef311dc   f66a78d → 6277ecf   e666504 → 50e5526   cebec4b → 08f2eb6   66bbe28 → cf3fa99
+6a0964e → b696fdb   ed93a85 → 598b7ac   78f3135 → 532ae67   8f49c25 → 2e469cb   2c79664 → e688673
+df7998f → 3fca5cf   c049ba0 → 154e08d   1d35adb → 7b8b48b   6ffef0e → a59b413   5c131bf → 08ca993
+be605c6 → 501e981   e139085 → b48d653   afe2bc1 → 93a9d50   da6e454 → 75d0747   5b7a5ea → 391785d
+8058f9b → 57a9149   10af92b → f694802   881a412 → 96d5a3b   d2957a2 → ff35f02   1d6eb14 → 881a496
+8bb32f4 → 1a9a652   73fcf9d → e359957   73a2492 → 085d4e5   8b65539 → 7fa786a   6c4b19e → f024bab
+bc70b0d → 351f702   9ac67b2 → b1273e5   81fe6f3 → 538fca2   20dc614 → 48403b9   6ebca0b → 5f1a1c8
+5fa5668 → 5898b75   89d4f15 → 6847da1   2ac89a0 → ce2f7d6   db71595 → 83eab73   5540c63 → 84811e9
+0834f6f → 7c1094d   d0a504e → e93d90f   3985268 → e0b0d72   60b41b4 → 4612192   8a22cb2 → 1e340ce
+180cd09 → 6e7a7b5   e4865d5 → 959d3d6   d4c79a9 → aecf556   dbffefa → fabd99e   f7ef830 → ec9ab5a
+10e3913 → 784383a   64021e9 → 17331ff   f6a2b03 → 6534690   219ff02 → db4e44e   c96463f → 7d249e3
+2ba8387 → 0a65df8   2be1e21 → b34388a   0a0fc15 → 5223a15   789b5ec → ef7cfd9   9a644be → 82b5359
+c595cb9 → 7c6ff4e   27e0991 → d65c0f9   067ba47 → a2b0d19   c2334d8 → 53b610d   88ebd8e → d806632
+90ea2c0 → cf80a04   3a8f951 → 574d79d   a98f908 → 75fd459   917dbcb → 04421f8   026f959 → d002dbf
+70e2bf4 → 34fe6ab   e614051 → fb83742   a99aa87 → 6582adf   5720ff3 → 6ef3179   fef48f8 → 666dbf2
+4f091ae → ce7e743   8e9ef20 → 7269d78   2eba140 → d1ed5a4   83ba95c → 75161d5   ad4fcd2 → b95fd27
+7cbaba1 → ac258ba   8e64330 → cb0acc6   8e23f01 → 74ca5f3   2de4704 → 3787282   eeef184 → 911e759
+eb2dea4 → d1c75cd   3109b9c → 4340d06   55a1584 → 989f83f   24dd81b → 91d2ff7   173eaa3 → 560bad8
+936e418 → 7eec4d9   34320b4 → 8ffeafc   78fbd9d → dac2af0   fc2f295 → 0333b86   5084c1d → 75d0fbb
+3952940 → af32b05   cf50d66 → ff5cb5f   29e6196 → a14e683   928f8b6 → 0fc443c   5ace0a7 → f154022
+45dcea1 → 0178bde   
+
+Next action: Deva creates the GitHub repository, turns off Actions, adds the remote and pushes main (STATUS,
+"Waiting on Deva" 1). Deva also opens Knobs from the DMG once.

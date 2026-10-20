@@ -103,7 +103,7 @@ Template:
   then clears only its own entry, but the new stack still shows the home; (2) writing the path again in the
   new stack's `onAppear` (inside the id): worked once for the chooser, then failed for Recent and on a rerun
   of the chooser, so it was timing; (3) one persistent stack without the stack-level id: still the home.
-- Not a redesign regression: the build of 6ebca0b, before the redesign, does the same.
+- Not a redesign regression: the build of 5f1a1c8, before the redesign, does the same.
 - Status before the fix: reverted to the committed code. Within the same tool everything worked.
 - Fix (2026-10-19, the recorded next idea): switching tools no longer sets the path in the same moment. The
   model keeps a pending task for the new tool, and that tool's home opens it from its `.task` once it is on
@@ -176,7 +176,7 @@ Template:
   Lines 1 to 1859 plus the unfinished `1860` are exactly 8192 bytes, so the output handler ran for one read and
   never again; the run then finished through the drain timeout as a success with a truncated log. On a real
   run this would cut the output log and any progress that comes after the first 8 KB.
-- Not a regression: the same test against the pre-review `ToolRunner.swift` (commit 8e9ef20) fails the same way
+- Not a regression: the same test against the pre-review `ToolRunner.swift` (commit 7269d78) fails the same way
   on Linux, 3 runs out of 3. The Mac passes it.
 - Cause (confirmed 2026-10-19 on swift:6.2-noble, with the byte count of each handler call logged):
   swift-corelibs-foundation's `FileHandle.readabilityHandler` ran once for standard output, read 8192 bytes,
@@ -201,15 +201,15 @@ Template:
 - Expected: the run stops and the app exits normally (or keeps running after Cancel).
 - Actual: twice, the app died with "Bad pointer dereference" on the DispatchWorker thread in
   `_dispatch_event_loop_drain`, while the main thread was still in GTK's loop. One of those was the Stop and
-  Close check cited in commit 55a1584, which says "the app exited": it did, after ffmpeg had stopped, but by
+  Close check cited in commit 989f83f, which says "the app exited": it did, after ffmpeg had stopped, but by
   this crash. A plain close with nothing running exits with status 0.
 - Seen and not seen: 2 of 4 Stop and Close trials and 1 Cancel loop on HEAD crashed. Afterwards, 12 Cancel
-  presses each on 8e9ef20, eb2dea4 and 3109b9c, and 6 each on 55a1584 built in a worktree and on HEAD, did not
+  presses each on 7269d78, d1c75cd and 4340d06, and 6 each on 989f83f built in a worktree and on HEAD, did not
   crash. Not shown to be a regression.
 - Cause (hypothesis): the same part as BUG-014. A run's pipes close when `ToolRun` lets its `Process` go, which
   may happen before libdispatch has removed the pipe's read source; a reused file descriptor would then hand
   the event loop a stale source. Fixing BUG-014 by not using `readabilityHandler` would remove that path too.
-- After BUG-014's fix (173eaa3, 2026-10-19): Knobs no longer creates any dispatch source for a run's pipes. The
+- After BUG-014's fix (560bad8, 2026-10-19): Knobs no longer creates any dispatch source for a run's pipes. The
   Linux app built from that commit, started as `scripts/linux.sh run` does but with
   `SWIFT_BACKTRACE=enable=yes,interactive=no,output-to=stderr`, ran ffmpeg Shrink a video on a generated 30-second
   720p clip: 23 Run → Cancel cycles with ffmpeg running (cancelled 0.3 to 4 s after Run; counted by the

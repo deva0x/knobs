@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-20 IST (commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -42,7 +42,7 @@ Updated: 2026-10-20 IST (signed and notarized DMG 21:34; Developer ID certificat
   home (an image opens the chooser, a PDF is refused), the About window, the quit-while-running dialog (Keep
   Running continues, Stop and Quit stops ffmpeg and quits), and BUG-009's fix.
 - Not checked by me (system settings I may not change): Reduce Motion and real VoiceOver.
-- Release files include the review fixes and the BUG-014 fix (the code is unchanged since 78fbd9d):
+- Release files include the review fixes and the BUG-014 fix (the code is unchanged since dac2af0):
   - Signed and notarized Mac DMG (2026-10-20, 21:34 IST): Deva ran `scripts/release.sh 0.1.0` in the main
     checkout. `scripts/ci.sh release` PASS (160 tests in 27 suites, Debug and Release app builds); the app and
     the DMG were each signed with "Developer ID Application: DEVAPRASAD T P (P564YR8496)", accepted by Apple's
@@ -58,8 +58,8 @@ Updated: 2026-10-20 IST (signed and notarized DMG 21:34; Developer ID certificat
     libadwaita 1.10.0) under emulation. Under emulation GNU tar 1.35 can't unpack anything ("Function not
     implemented") and pacman needs `--disable-sandbox`; both are OrbStack/Rosetta limits, so the x86_64 tarball
     was unpacked with bsdtar. None of these were tried on a real x86_64 machine.
-- Review fixes (2026-10-19): all ten findings of the full code review are fixed, one commit each (2eba140,
-  83ba95c, ad4fcd2, 7cbaba1, 8e64330, 8e23f01, 2de4704 with eeef184, eb2dea4, 3109b9c, 55a1584). Both apps now
+- Review fixes (2026-10-19): all ten findings of the full code review are fixed, one commit each (d1ed5a4,
+  75161d5, b95fd27, ac258ba, cb0acc6, 74ca5f3, 3787282 with 911e759, d1c75cd, 4340d06, 989f83f). Both apps now
   share one `Toolbox` (KnobsSession), tested by the new KnobsSessionTests. On Linux, closing the window during a
   run asks first (Keep Running, or Stop and Close), and a run redraws the window only when something changed
   (839 redraws down to 418 on the same Shrink a video run). `scripts/ci.sh` full passes (159 tests in 27
@@ -79,12 +79,7 @@ Updated: 2026-10-20 IST (signed and notarized DMG 21:34; Developer ID certificat
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
 publish, or a system setting:
-1. Rewrite the commit email before the first push. Deva chose GitHub's private address
-   95619082+deva0x@users.noreply.github.com (2026-10-20); this repository's git config uses it for new commits.
-   The existing commits still carry bitdeva@gmail.com (and a few admin@mantis.dev), and the repo guard leaves
-   the rewrite to Deva. Afterwards every commit hash changes: an agent then appends an old-to-new hash table to
-   WORKLOG and updates the hashes in STATUS and BUGS.
-2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
+1. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
    Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
    command). The website's Download buttons link straight to that release's files (`#release` in
    website/index.html); only "Every file of this release" goes to the latest-release page.
@@ -92,16 +87,20 @@ publish, or a system setting:
    before Actions is off), then `gh api -X PUT repos/deva0x/knobs/actions/permissions -F enabled=false`, then
    add the remote and push `main`. Before the release, date CHANGELOG's `[0.1.0] - not yet released`.
    Checked 2026-10-20: no token, key or `/Users/deva` path in any commit, no `.github` folder, the biggest file
-   is a 1 MB screenshot. Push only after step 1, so no commit carries a personal address.
-3. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
+   is a 1 MB screenshot. Every commit carries GitHub's private address
+   95619082+deva0x@users.noreply.github.com, Deva's choice: Deva rewrote the history at 21:39 IST on
+   2026-10-20, and this repository's git config uses that address for new commits. Commit hashes changed then;
+   WORKLOG's 2026-10-20 entry after the rewrite maps old to new. The pre-rewrite commits stay on this Mac under
+   `refs/original/`, which pushing `main` does not send; delete them after the push.
+2. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
    site's address (website/README.md, "Link previews") and deploy again. Checked 2026-10-20: Wrangler is signed
    in to one Cloudflare account with Pages write access, and no Pages project exists yet, so the first deploy
    creates `knobs`. Wrangler leaves a `.wrangler/` cache in the repo, now ignored.
-4. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).
-5. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
+3. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).
+4. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), and click through Knobs on
    omarchy-1.
-6. Open `dist/Knobs-0.1.0.dmg`, drag Knobs to Applications and open it, to see it start without a Gatekeeper
+5. Open `dist/Knobs-0.1.0.dmg`, drag Knobs to Applications and open it, to see it start without a Gatekeeper
    warning (PLAN M9's exit check). Also export a .p12 backup of the Developer ID certificate (created
    2026-10-20 21:22 IST through Xcode); its private key is only in this Mac's login keychain.
 

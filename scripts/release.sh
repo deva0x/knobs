@@ -8,7 +8,8 @@
 # 4. Builds the DMG with diskutil (the app plus an Applications link), and signs, notarizes and staples it too when it can.
 # 5. Writes dist/Knobs-<version>.dmg and its SHA-256.
 # 6. When everything is signed and notarized, adds the DMG to Sparkle's feed, website/appcast.xml, signed with
-#    Knobs' EdDSA key from the keychain (DEC-024), and prints the `gh release create` command for Deva.
+#    Knobs' EdDSA key from the keychain (DEC-024), fills in the Homebrew cask (DEC-025), and prints the
+#    `gh release create` command for Deva.
 #    It never runs that command, never deploys the website and never pushes.
 set -euo pipefail
 
@@ -190,6 +191,13 @@ fi
 cp "$feed/appcast.xml" website/appcast.xml
 echo "website/appcast.xml now offers $version."
 
+step "Fill in the Homebrew cask"
+# For the deva0x/homebrew-knobs tap (DEC-025), without the template's own comment.
+mkdir -p dist/homebrew
+sed -e '/^#/d' -e "s/@VERSION@/$version/" -e "s/@SHA256@/$(cut -d' ' -f1 "dist/Knobs-$version.dmg.sha256")/" \
+    scripts/homebrew/knobs.rb >dist/homebrew/knobs.rb
+echo "dist/homebrew/knobs.rb is the cask for $version."
+
 echo
 echo "When Deva approves publishing, Deva runs:"
 # The Linux packages of the same version, from `scripts/linux.sh package`, go up beside the DMG.
@@ -198,5 +206,6 @@ for file in dist/linux/*"$version"*; do
     [ -f "$file" ] && linux_files="$linux_files '$file'"
 done
 echo "  gh release create v$version '$dmg' 'dist/Knobs-$version.dmg.sha256'$linux_files --title 'Knobs $version' --notes-file <notes>"
-echo "Only after that release exists: commit website/appcast.xml and deploy website/, so the feed and the download"
-echo "buttons never point at files that aren't there yet (docs/WORKFLOW.md, Releasing)."
+echo "Only after that release exists: commit website/appcast.xml and deploy website/, and put dist/homebrew/knobs.rb"
+echo "in the tap as Casks/knobs.rb, so the feed, the download buttons and the cask never point at files that aren't"
+echo "there yet (docs/WORKFLOW.md, Releasing)."

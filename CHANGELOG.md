@@ -22,6 +22,7 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
 - Mac: updates. Knobs > Check for Updates… finds, downloads and installs a new version, signed by the Knobs
   project. On its second launch Knobs asks whether to check automatically, once a day; nothing is checked on its own
   before you answer, and Knobs > Check for Updates Automatically changes the answer (DEC-024).
+- Mac: a Homebrew cask, `brew install --cask deva0x/knobs/knobs` (DEC-025).
 
 ### Fixed
 - Linux: the file dialog shows all the types a task takes at once (it opened showing only videos for tasks that

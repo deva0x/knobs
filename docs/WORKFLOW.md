@@ -109,11 +109,15 @@ version; raise it by one each release).
 7. Adds the stapled DMG to Sparkle's feed, `website/appcast.xml`, with Sparkle's `generate_appcast`: signed with
    the `knobs` key from the login keychain (the keychain may ask to allow it), the version's CHANGELOG section as
    the notes, and a download address on the GitHub release. It fails if the new entry isn't signed.
-8. Prints the `gh release create` command for Deva to run, with the DMG and the same version's Linux packages
+9. Prints the `gh release create` command for Deva to run, with the DMG and the same version's Linux packages
    from `dist/linux/`. It doesn't run it.
 
-Only after the release exists: commit `website/appcast.xml` and deploy `website/` (see Website above). Before
-that, the feed and the download buttons would point at files that aren't there.
+8. Fills in the Homebrew cask from `scripts/homebrew/knobs.rb` to `dist/homebrew/knobs.rb` (DEC-025).
+
+Only after the release exists: commit `website/appcast.xml` and deploy `website/` (see Website above), and put
+`dist/homebrew/knobs.rb` in the `deva0x/homebrew-knobs` tap as `Casks/knobs.rb`, then check it there with
+`brew audit --cask --online deva0x/knobs/knobs`. Before that, the feed, the download buttons and the cask would
+point at files that aren't there.
 
 Without the certificate it skips steps 2 to 4 and leaves an unsigned DMG, saying so. Without the notary
 profile it signs but doesn't notarize, and says so.

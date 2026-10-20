@@ -43,8 +43,10 @@ Updated: 2026-10-21 IST (Sparkle updates, waiting on the signing key; pdftoppm e
   it quit Knobs. The installed app's settings have no Sparkle keys. Also checked: the build setting is a real
   boolean in the built Info.plist, and adding a build-3 DMG to that feed kept build 2's signed entry. Not yet
   checked: Apple notarizing an app with Sparkle inside (first at `scripts/release.sh 0.2.0`; if it is rejected,
-  `xcrun notarytool log <submission id> --keychain-profile knobs-notary` names the file). Next: the Homebrew cask
-  and the release files, with `CFBundleVersion` 2.
+  `xcrun notarytool log <submission id> --keychain-profile knobs-notary` names the file). Homebrew cask (DEC-025): template
+  `scripts/homebrew/knobs.rb`, filled by `release.sh` into `dist/homebrew/knobs.rb`; filled with test values it
+  parses (`ruby -c`), but `brew style` and `brew audit` take casks only from a tap, so they run once the tap exists
+  (waiting on Deva, item 4). Next: the release files, with `CFBundleVersion` 2.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it
@@ -197,6 +199,9 @@ system setting:
    (it keeps the private key in the login keychain and prints a public key), then hand the printed public key to
    an agent or put it in `project.yml` as `SUPublicEDKey: "<key>"`. Back up the private key with the same tool's
    `-x <file>` somewhere safe outside the repo; losing it means no copy of Knobs can be updated again.
+4. Homebrew tap (DEC-025): create the public GitHub repository `deva0x/homebrew-knobs` (empty is fine), and either
+   push `dist/homebrew/knobs.rb` to it as `Casks/knobs.rb` after the release, or extend DEC-020 so an agent may.
+   Then README's Download section and the website get `brew install --cask deva0x/knobs/knobs`.
 3. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
    and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its

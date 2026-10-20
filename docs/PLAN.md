@@ -159,7 +159,8 @@ One commit or more per item, each with its docs, tested, and tried in the app wh
 - [x] A notification and Dock progress when a run finishes while Knobs is in the background (Mac)
 - [x] Run a single-file task on many files, one after another
 - [x] Updates through Sparkle, asking before the first check (Mac); Deva makes the signing key before the release
-- [ ] Homebrew cask (Deva creates `deva0x/homebrew-knobs`)
+- [x] Homebrew cask: template and release.sh step; published to `deva0x/homebrew-knobs` (Deva creates it) after the
+  release
 - [ ] Release files: version 0.2.0 and `CFBundleVersion` 2 (release.sh can't check that one, as no feed exists
   yet), CHANGELOG, README tools, website `#release`, Linux packages checked in
   clean containers, then Deva runs `scripts/release.sh 0.2.0` and `gh release create`; after that the website,

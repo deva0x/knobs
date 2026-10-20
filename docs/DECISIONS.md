@@ -196,3 +196,12 @@ User-Agent "Knobs/<version> Sparkle/<version>".
 - Debug builds have no updater: they share the installed app's bundle id, and so its Sparkle settings.
 - 0.1.0 has no updater, so its users hear about 0.2.0 from the website or GitHub only. The Linux app doesn't update
   itself; the AUR package updates through the AUR, and a .deb or .rpm by installing the newer one.
+
+## DEC-025: A Homebrew cask in Knobs' own tap (2026-10-21, chosen by Deva)
+Deva picked "Homebrew cask" for 0.2.0. The cask lives in a tap of Knobs' own, `deva0x/homebrew-knobs` (Casks/knobs.rb),
+so `brew install --cask deva0x/knobs/knobs` installs Knobs in one command; Homebrew's main cask list wants a project
+with more users first. Its template is `scripts/homebrew/knobs.rb`; `scripts/release.sh` fills in the version and
+the DMG's checksum to `dist/homebrew/knobs.rb`. The cask downloads the GitHub release's DMG, needs Apple Silicon and
+macOS 26, finds new versions through the Sparkle feed, and says `auto_updates true`, so `brew upgrade` leaves
+updates to Sparkle (DEC-024). Deva creates the tap repository; agents may not create remote repositories, and
+pushing to it needs Deva's push or an extension of DEC-020. It is published only once the release holds the DMG.

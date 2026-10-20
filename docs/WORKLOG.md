@@ -430,3 +430,28 @@ that is okay" for the legal name in it).
 
 Next action: Deva stores the knobs-notary profile, then scripts/release.sh 0.1.0 signs and notarizes (run by
 Deva, or by an agent once Deva allows codesign here). Deva also picks the commit email.
+
+## 2026-10-20 21:37 IST · Claude Code (Opus 5.5) · HEAD 5ace0a7
+
+Signed and notarized release DMG; commit email chosen.
+
+- Deva stored the knobs-notary profile in Terminal 1 (notarytool: "Success. Credentials validated."); I checked
+  it with `notarytool history --keychain-profile knobs-notary` ("No submission history", no error).
+- Deva ran scripts/release.sh 0.1.0 in the main checkout (Terminal 2, 21:32-21:36 IST), at HEAD 5ace0a7 (code
+  unchanged since 78fbd9d). ci.sh release PASS (160 tests in 27 suites, Debug and Release builds). App signed
+  with "Developer ID Application: DEVAPRASAD T P (P564YR8496)" with no keychain prompt; notary submission
+  c1e934c7 Accepted and stapled; DMG signed, submission 1c947081 Accepted and stapled; the script's own spctl
+  check said "accepted, source=Notarized Developer ID" and its website check passed (it printed the
+  gh release create command with the DMG, its .sha256 and all seven Linux files).
+- My checks afterwards: shasum -c OK (9da1de324b71df2e2f5f8ebca7af05066fbb36425aa39e0d5339286550bd3621);
+  spctl accepts the DMG (open, primary signature) and the mounted app (execute) as Notarized Developer ID;
+  stapler validate passes on both; codesign --verify --deep --strict passes; flags=runtime, TeamIdentifier
+  P564YR8496, no entitlements (get-task-allow gone); version 0.1.0; syspolicy_check distribution: "App passed
+  all pre-distribution checks and is ready for distribution."
+- Not done: opening the app from the DMG by hand (PLAN M9 exit check) and a .p12 backup; both listed for Deva.
+- Commit email: Deva chose GitHub's private address. The repository config now sets user.email
+  95619082+deva0x@users.noreply.github.com (this commit is the first with it). The rewrite of the older commits
+  is Deva's to run (repo guard); the command is in this session's reply.
+
+Next action: Deva runs the email rewrite in /Users/deva/opensource/knobs; then an agent verifies no old address
+remains on main, appends the old-to-new hash table here, and updates hashes in STATUS and BUGS.

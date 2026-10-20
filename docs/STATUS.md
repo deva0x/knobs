@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (Developer ID certificate created 21:22; publish steps checked 21:14; release files rebuilt 2026-10-19 08:36)
+Updated: 2026-10-20 IST (signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -42,12 +42,15 @@ Updated: 2026-10-20 IST (Developer ID certificate created 21:22; publish steps c
   home (an image opens the chooser, a PDF is refused), the About window, the quit-while-running dialog (Keep
   Running continues, Stop and Quit stops ffmpeg and quits), and BUG-009's fix.
 - Not checked by me (system settings I may not change): Reduce Motion and real VoiceOver.
-- Release files rebuilt from 78fbd9d (2026-10-19, 08:01-08:36 IST), so they include the review fixes and the
-  BUG-014 fix:
-  - `scripts/release.sh 0.1.0`: `scripts/ci.sh release` PASS (160 tests in 27 suites with every tool required,
-    Debug and Release app builds), then an unsigned `dist/Knobs-0.1.0.dmg` (hdiutil verify: valid; SHA-256 file
-    matches). Signing and notarizing need Deva's certificate and notary profile. An unsigned run stops before
-    the website link check, so it was run by hand: all eight files `#release` links to are in `dist/`.
+- Release files include the review fixes and the BUG-014 fix (the code is unchanged since 78fbd9d):
+  - Signed and notarized Mac DMG (2026-10-20, 21:34 IST): Deva ran `scripts/release.sh 0.1.0` in the main
+    checkout. `scripts/ci.sh release` PASS (160 tests in 27 suites, Debug and Release app builds); the app and
+    the DMG were each signed with "Developer ID Application: DEVAPRASAD T P (P564YR8496)", accepted by Apple's
+    notary service and stapled; the script's website check found every `#release` file in `dist/`. Checked
+    afterwards: `spctl` accepts the DMG and the app inside it as "Notarized Developer ID", `stapler validate`
+    passes on both, `codesign --verify --deep --strict` passes, the app has the hardened runtime and no
+    entitlements, `syspolicy_check distribution` says it is ready for distribution, and the SHA-256 file
+    matches (9da1de32...). Not yet done: opening it from the DMG on this Mac by hand (PLAN M9's exit check).
   - All seven Linux packages (`scripts/linux.sh package 0.1.0` arm64 and amd64), each installed in a clean
     container and run through Broadway: Shrink a video on the 36.3 MB 1080p sample gave a 10 s 1280x720
     H.264+AAC file and "Done in N s" every time. arm64 .deb (Ubuntu 26.04), .rpm (Fedora 44, GTK 4.22.5,
@@ -76,14 +79,11 @@ Updated: 2026-10-20 IST (Developer ID certificate created 21:22; publish steps c
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
 publish, or a system setting:
-1. Store the notary profile `knobs-notary` (WORKFLOW, "Releasing"); `scripts/release.sh` then signs and
-   notarizes instead of building an unsigned DMG. The certificate is done: on 2026-10-20 at 21:22 IST, with
-   Deva's approval, "Developer ID Application: DEVAPRASAD T P (P564YR8496)" was created through Xcode →
-   Settings → Apple Accounts → Manage Certificates, and `security find-identity -v -p codesigning` lists it.
-   Its private key is only in this Mac's login keychain, so export a .p12 backup. Nothing has been signed
-   with it yet; the first `codesign` use may ask for the login password (choose Always Allow). The release
-   script's signing half was read and tried on an ad-hoc copy: the app has one executable and nothing nested
-   to sign first, and re-signing drops the debug-only `get-task-allow` entitlement that notarization refuses.
+1. Rewrite the commit email before the first push. Deva chose GitHub's private address
+   95619082+deva0x@users.noreply.github.com (2026-10-20); this repository's git config uses it for new commits.
+   The existing commits still carry bitdeva@gmail.com (and a few admin@mantis.dev), and the repo guard leaves
+   the rewrite to Deva. Afterwards every commit hash changes: an agent then appends an old-to-new hash table to
+   WORKLOG and updates the hashes in STATUS and BUGS.
 2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
    Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
    command). The website's Download buttons link straight to that release's files (`#release` in
@@ -92,8 +92,7 @@ publish, or a system setting:
    before Actions is off), then `gh api -X PUT repos/deva0x/knobs/actions/permissions -F enabled=false`, then
    add the remote and push `main`. Before the release, date CHANGELOG's `[0.1.0] - not yet released`.
    Checked 2026-10-20: no token, key or `/Users/deva` path in any commit, no `.github` folder, the biggest file
-   is a 1 MB screenshot. All 105 commits name bitdeva@gmail.com as author, which becomes public; if GitHub's
-   "Block command line pushes that expose my email" is on, GitHub refuses the push.
+   is a 1 MB screenshot. Push only after step 1, so no commit carries a personal address.
 3. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
    site's address (website/README.md, "Link previews") and deploy again. Checked 2026-10-20: Wrangler is signed
    in to one Cloudflare account with Pages write access, and no Pages project exists yet, so the first deploy
@@ -102,6 +101,9 @@ publish, or a system setting:
 5. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), and click through Knobs on
    omarchy-1.
+6. Open `dist/Knobs-0.1.0.dmg`, drag Knobs to Applications and open it, to see it start without a Gatekeeper
+   warning (PLAN M9's exit check). Also export a .p12 backup of the Developer ID certificate (created
+   2026-10-20 21:22 IST through Xcode); its private key is only in this Mac's login keychain.
 
 ## Blocked
 - Nothing. BUG-009 is fixed (see BUGS).

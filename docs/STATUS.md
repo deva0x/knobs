@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-21 IST (Sparkle updates, waiting on the signing key; pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-21 IST (0.2.0 release files ready, waiting on the signing key; Sparkle updates; pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - 0.2.0 in progress (PLAN M13, Deva picked every item on 2026-10-21). Done: BUG-018; the Linux file chooser
@@ -46,7 +46,21 @@ Updated: 2026-10-21 IST (Sparkle updates, waiting on the signing key; pdftoppm e
   `xcrun notarytool log <submission id> --keychain-profile knobs-notary` names the file). Homebrew cask (DEC-025): template
   `scripts/homebrew/knobs.rb`, filled by `release.sh` into `dist/homebrew/knobs.rb`; filled with test values it
   parses (`ruby -c`), but `brew style` and `brew audit` take casks only from a tap, so they run once the tap exists
-  (waiting on Deva, item 4). Next: the release files, with `CFBundleVersion` 2.
+  (waiting on Deva, item 4). Release files (2026-10-21, 04:15 IST): `project.yml` says 0.2.0, build 2; CHANGELOG has
+  `[0.2.0] - 2026-10-21`; README lists all fourteen tools and mentions updates; the website's `#release` block
+  names the 0.2.0 files (deploy it only after the release). `scripts/linux.sh package 0.2.0` arm64 and amd64 wrote
+  all seven files, copied unchanged (same SHA-256) to the main checkout's `dist/linux/`, with the AUR PKGBUILD
+  and .SRCINFO for 0.2.0 (its checksum matches the x86_64 tarball). Each installed or unpacked in a clean
+  container (x86_64 under emulation): arm64 and amd64 .deb on ubuntu:26.04 (Recommends now include qpdf,
+  img2pdf and poppler-utils), arm64 and x86_64 .rpm on fedora:44, both tarballs, and `knobs-gui-bin` 0.2.0 on
+  archlinux; every one has the 14 manifests and `ldd` finds no missing library. Through Broadway the installed
+  arm64 .deb listed all fourteen tools and showed qpdf "Installed at /usr/bin/qpdf", but no task was run: mouse
+  clicks on rows mostly did nothing, one landed on the sidebar row at the same height, arrow keys moved the sidebar
+  selection, and Tab didn't reach the task list. Broadway or the app, not known; worth one look on omarchy-1
+  (item 5). Release notes: the main checkout's `dist/release-notes-0.2.0.md`. Next, once the key is in: Deva runs
+  `scripts/release.sh 0.2.0` in the main checkout, then the `gh release create` line it prints, with
+  `--notes-file dist/release-notes-0.2.0.md`; then an agent commits `website/appcast.xml`, deploys `website/`,
+  and publishes the cask and the AUR package.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it
@@ -181,8 +195,8 @@ system setting:
    news feed had no notice yet; updates come there and on aur-general. Try again by hand later, never by script.
    Until then Arch users install the release's `knobs-bin` package, as the website's Arch tab says. Then an agent publishes `knobs-gui-bin` (DEC-019, DEC-020): clone
    `ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, set that clone's user.email to the GitHub private address,
-   add the PKGBUILD and .SRCINFO, commit, push `master`. The files for 0.1.0 are in this worktree's
-   `dist/linux/aur/` (`.claude/worktrees/where-are-we-e513b3`); any checkout can write them again with the amd64
+   add the PKGBUILD and .SRCINFO, commit, push `master`. The files for 0.2.0 are in the main checkout's and this
+   worktree's `dist/linux/aur/`, to publish once the v0.2.0 release exists; any checkout can write them again with the amd64
    `scripts/linux.sh package` or `linux/packaging/package-arch.sh`. Tested 2026-10-20 in a fresh archlinux
    container given only the PKGBUILD: makepkg downloaded the tarball from the release and its checksum passed
    (it equals GitHub's digest), `makepkg --printsrcinfo` matches the .SRCINFO, namcap reports nothing on the
@@ -202,7 +216,7 @@ system setting:
 4. Homebrew tap (DEC-025): create the public GitHub repository `deva0x/homebrew-knobs` (empty is fine), and either
    push `dist/homebrew/knobs.rb` to it as `Casks/knobs.rb` after the release, or extend DEC-020 so an agent may.
    Then README's Download section and the website get `brew install --cask deva0x/knobs/knobs`.
-3. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
+5. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
    and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its
    private key is only in this Mac's login keychain).

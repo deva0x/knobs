@@ -4,6 +4,8 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-21
+
 ### Added
 - qpdf: rotate pages, pick and reorder pages, split a PDF into one file per page (or per few pages) in a new
   folder, protect a PDF with a password, remove a password, and repair a damaged PDF.

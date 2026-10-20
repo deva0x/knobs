@@ -830,3 +830,24 @@ Sparkle updates done for 0.2.0 (PLAN M13), committed as 84661f3; the signing key
   ignored). The installed app's defaults domain has no Sparkle keys. Scratch app copies unregistered and deleted.
 - Not checked: Apple notarizing an app with Sparkle inside (first at release time).
 - Next: Homebrew cask, then the release files with CFBundleVersion 2.
+
+## 2026-10-21 04:18 IST · Claude Code (Opus 5.5) · HEAD 222ca10
+
+Homebrew cask and 0.2.0 release files (PLAN M13). Pushed 84661f3 and 399154d (Sparkle) earlier; this run: 222ca10
+(cask) and the version commit that follows this entry.
+- Cask (DEC-025): template scripts/homebrew/knobs.rb (GitHub DMG with verified:, livecheck :sparkle on the feed,
+  auto_updates true, arm64, macOS :tahoe, zap of the five ~/Library places Knobs uses); release.sh writes
+  dist/homebrew/knobs.rb without the template comment. Filled with test values it parses (ruby -c). `brew style`
+  refused a cask outside a tap (it first installed Homebrew's own development gems into its vendor folder; no tool
+  versions changed), so style and audit wait for the tap Deva creates (STATUS item 4).
+- Release files: project.yml 0.2.0 build 2; CHANGELOG [0.2.0] - 2026-10-21; README all fourteen tools and a line on
+  updates; website #release names the 0.2.0 files (not deployed). Linux packages for 0.2.0, arm64 and amd64: all
+  seven installed or unpacked in clean containers (deb on ubuntu:26.04, rpm on fedora:44, tarballs, Arch
+  knobs-gui-bin on archlinux; x86_64 emulated), each with 14 manifests and no missing library; copied with the same
+  SHA-256 to the main checkout's dist/linux/ with the 0.2.0 AUR files. Release notes at the main checkout's
+  dist/release-notes-0.2.0.md (CHANGELOG section without decision numbers, plus 0.1.0 users' one manual update).
+- Broadway, installed arm64 .deb: 14 tools listed, qpdf shown installed; no task run. Clicks on rows mostly ignored
+  and one landed on the sidebar row at the same height; arrow keys work; Tab stayed in the sidebar. Stopped after
+  two approaches (CLAUDE.md); worth a look on omarchy-1.
+- Website tests pass (3). The full CI runs at the push.
+- Waiting on Deva: generate_keys (item 3), the tap repository (item 4). Then release.sh 0.2.0 and gh release create.

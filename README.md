@@ -30,7 +30,8 @@ so you learn the tool while you use it.
 Get Knobs from [knobs.pages.dev](https://knobs.pages.dev) or the
 [latest release](https://github.com/deva0x/knobs/releases/latest).
 
-- **Mac:** open the `.dmg` and drag Knobs to Applications. It's signed and notarized by Apple.
+- **Mac:** open the `.dmg` and drag Knobs to Applications. It's signed and notarized by Apple. From 0.2.0 on,
+  Knobs > Check for Updates… keeps it current; it asks before it checks on its own.
 - **Linux:** packages for Ubuntu, Fedora and Arch Linux, on x86_64 and ARM. See [Linux](#linux).
 
 What changed in each version is in [CHANGELOG.md](CHANGELOG.md).
@@ -49,7 +50,7 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md).
 - **Safe by design.** Tools run as an argument list, never through a shell, so a strange file name is just a
   file name. Knobs never overwrites an existing file; it adds " 2", " 3" instead.
 
-## Tools in the first release
+## Tools
 
 | Tool | Tasks |
 |---|---|
@@ -63,6 +64,9 @@ What changed in each version is in [CHANGELOG.md](CHANGELOG.md).
 | whisper.cpp | Transcribe to text, Make subtitles, Translate to English |
 | rsync | Copy a folder, Mirror a folder, Compare two folders, Back up a folder |
 | 7-Zip | Create an archive, Create a password-protected archive, Extract an archive, Check an archive |
+| qpdf | Rotate pages, Pick and reorder pages, Split a PDF, Protect with a password, Remove a password, Repair a damaged PDF |
+| img2pdf | Turn images into a PDF |
+| Poppler | Save a page as an image, Save every page as images (pdftoppm), Turn a PDF into text (pdftotext) |
 
 Knobs doesn't install tools. If one is missing, it shows the `brew install` command to copy.
 

@@ -50,18 +50,25 @@ public enum HelpParser {
         var seen: Set<String> = []
         // `hasGap` is false when the line had no column gap, so description words may be mixed into `spec`.
         var pending: (spec: [String], summary: String, indent: Int, hasGap: Bool)?
+        // The indent of the line before when it was prose, neither an option, its description nor a heading.
+        var proseIndent: Int?
 
         func flush() {
             guard let current = pending else { return }
             pending = nil
-            // A flag seen before means a table that repeats options (such as yt-dlp's preset aliases): skip it.
             guard
                 let option = makeOption(
-                    specTokens: current.spec, summary: current.summary, specIsSeparate: current.hasGap),
-                seen.isDisjoint(with: option.flags), options.count < maximumOptions
+                    specTokens: current.spec, summary: current.summary, specIsSeparate: current.hasGap)
             else { return }
-            seen.formUnion(option.flags)
-            options.append(option)
+            if seen.isDisjoint(with: option.flags) {
+                guard options.count < maximumOptions else { return }
+                seen.formUnion(option.flags)
+                options.append(option)
+            } else if let index = options.firstIndex(where: { $0.flags.contains(option.flags[0]) }),
+                let filled = filling(options[index], withValueOf: option)
+            {
+                options[index] = filled
+            }
         }
 
         for rawLine in helpText.components(separatedBy: .newlines) {
@@ -70,6 +77,7 @@ public enum HelpParser {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             if trimmed.isEmpty {
                 flush()
+                proseIndent = nil
                 continue
             }
             // A deeper-indented line with no column gap continues a description already under way, even when it
@@ -80,7 +88,17 @@ public enum HelpParser {
                 current.summary = current.summary.isEmpty ? trimmed : current.summary + " " + trimmed
                 pending = current
             } else if trimmed.hasPrefix("-"), isFlagStart(trimmed) {
+                // Prose can wrap onto a line that starts with a flag, as img2pdf's "--pagesize option is not given,
+                // then the page size ...". Such a line carries on the paragraph above at the same indent, and either
+                // has no column gap or reads as a sentence. An option right below a heading such as rsync's
+                // "Options" has a gap.
+                if indent == proseIndent,
+                    !hasColumnGap(trimmed) || endsASentence(splitSpecAndSummary(trimmed).spec)
+                {
+                    continue
+                }
                 flush()
+                proseIndent = nil
                 // Some tools print two options per line, separated by " | " (Ghostscript).
                 let columns = trimmed.components(separatedBy: " | ").filter { isFlagStart($0.trimmed) }
                 for (index, column) in (columns.isEmpty ? [trimmed] : columns).enumerated() {
@@ -93,10 +111,30 @@ public enum HelpParser {
                 pending = current
             } else {
                 flush()
+                // A heading such as "Options:" introduces a list rather than wrapping into it.
+                proseIndent = trimmed.hasSuffix(":") ? nil : indent
             }
         }
         flush()
         return options
+    }
+
+    /// A flag listed twice keeps its first entry, because a second listing is usually a table that repeats options
+    /// (yt-dlp's preset aliases). The exception is qpdf, which names an option in a list ("--rotate: rotate pages")
+    /// and spells it out further down ("--rotate=[+|-]angle[:page-range]"): a later spelling of the same option
+    /// with its value joined by `=` or glued on gives the earlier entry the value it left out.
+    private static func filling(_ earlier: HelpOption, withValueOf later: HelpOption) -> HelpOption? {
+        guard earlier.valueName == nil, let valueName = later.valueName, later.valueStyle != .separate,
+            Set(later.flags).isSubset(of: earlier.flags)
+        else { return nil }
+        return HelpOption(
+            flags: earlier.flags, valueName: valueName, valueStyle: later.valueStyle, summary: earlier.summary)
+    }
+
+    /// Whether spec words read as a sentence: one of them, the flag included, ends in a full stop (`--qdf.`,
+    /// `respectively.`). A placeholder such as `...` has no letters and doesn't count.
+    private static func endsASentence(_ specWords: [String]) -> Bool {
+        specWords.contains { $0.hasSuffix(".") && $0.contains(where: \.isLetter) }
     }
 
     /// Whether a line has the gap that separates an option from its description: two or more spaces, or " : ".
@@ -113,8 +151,12 @@ public enum HelpParser {
     }
 
     /// Splits `-o, --output TEMPLATE   Output filename` into spec words and the summary. Columns are separated by
-    /// two or more spaces or by ` : `; a column that starts with a dash still belongs to the spec.
+    /// two or more spaces or by ` : `; a column that starts with a dash still belongs to the spec. qpdf's lists put
+    /// a colon straight after the flag instead: `--linearize: linearize the file`.
     private static func splitSpecAndSummary(_ line: String) -> (spec: [String], summary: String) {
+        if let listed = line.wholeMatch(of: /(-{1,2}[^\s:]+):\s+(.+)/) {
+            return ([String(listed.1)], String(listed.2).trimmed)
+        }
         var columns = line.components(separatedBy: " : ")
         if columns.count == 1 {
             columns = line.split(separator: /\s{2,}/).map(String.init)

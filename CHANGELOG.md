@@ -11,6 +11,10 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
 - Poppler's pdftoppm and pdftotext: save a PDF page as a PNG or JPEG image, and copy a PDF's text into a text
   file.
 
+### Fixed
+- All options for qpdf lists each option as qpdf accepts it (`--linearize`, not `--linearize:`), and img2pdf's
+  page size, image size and border options are read from their own lines, not from the prose above them.
+
 ### Changed
 - The Arch Linux package is now `knobs-gui-bin`, because the AUR's `knobs` is a different program. It downloads
   its tarball from the GitHub release, and `scripts/linux.sh package` also writes its AUR PKGBUILD and .SRCINFO.

@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-21 IST (BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - PDF tools for the next release (PLAN M12, Deva's request 2026-10-20): qpdf added, with golden tests and an
@@ -15,8 +15,10 @@ Updated: 2026-10-20 IST (PDF tools: qpdf, img2pdf and Poppler added; AUR registr
   pages' text; Turn images into a PDF made a two-page PDF from a JPEG and a PNG. The website gallery was
   checked in a browser, light and dark, at 375 px and desktop width. Waiting on Deva: whether pdftoppm also gets "every page as images" (see Waiting on Deva). `website/` already lists them (its test keeps the gallery in
   step with the manifests), but the live site describes 0.1.0, so deploy `website/` with the next release, not
-  before. BUG-017 (open): qpdf's All options shows colon-suffixed flags qpdf rejects, and img2pdf's misreads
-  `--pagesize` and `--imgsize`; the tasks are fine.
+  before. BUG-017 fixed (2026-10-21): qpdf's All options now spells its options as qpdf accepts them (141
+  entries, none with a colon; `--linearize` and `--rotate=+90` run), and img2pdf's now has `-S, --pagesize`,
+  `-s, --imgsize` and `-b, --border`; every other tool's help parses as before. BUG-018 (open, small):
+  qpdf's list still has one `--json-output.` entry.
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
   screenshots in the README and on the website, and most of the Linux version (M11).
 - Website (2026-10-19), ready to deploy: the demo, safety example and manifest excerpt show the real Shrink a

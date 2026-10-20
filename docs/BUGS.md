@@ -245,7 +245,7 @@ Template:
   Linux failure as a known issue (`withKnownIssue`), so it fails, and asks for the marker to be removed, once
   this is fixed.
 
-## BUG-017: qpdf's All options lists flags with a colon that qpdf rejects (open)
+## BUG-017: qpdf's All options lists flags with a colon that qpdf rejects (fixed)
 - Found: 2026-10-20, Claude, reading the parse of qpdf's help while adding qpdf.
 - Steps: parse `Tests/KnobsCoreTests/Fixtures/help/qpdf.txt` (`qpdf --help=all`, qpdf 12) with
   `HelpParser.options(in:)`, or open qpdf's All options in the app and turn on `--linearize:`.
@@ -264,7 +264,40 @@ Template:
   both flags, and the real `-s, --imgsize` and `-b, --border` lines are dropped. The golden count pins 37.
 - Effect: qpdf's All options view has many entries that make a command qpdf refuses. qpdf's five tasks are not
   affected; they don't use the help.
-- Not fixed yet: the parser should read `--flag: summary` as a flag and its summary, and then keep the entry
-  that names a value when a flag is listed twice. That changes how duplicates are handled for every tool, so it
-  gets its own change, checked against all the help fixtures. The golden count pins today's parse (223) until
-  then.
+- Fix (2026-10-21, commit `help: spell qpdf's options as qpdf accepts them, and keep prose out of All
+  options`): three rules in `HelpParser.options(in:)`.
+  1. A colon straight after the flag ends it: `--linearize: linearize (web-optimize) output` is `--linearize`
+     with that summary.
+  2. A flag listed twice still keeps its first entry, but a later spelling of the same option with its value
+     joined by `=` or glued on gives the first entry the value it left out: `--rotate` keeps "rotate pages" and
+     takes the value from `--rotate=[+|-]angle[:page-range]`. A later separate value (`--overlay file [options]
+     --`) is not taken: those lines open qpdf's option groups that end in `--`, which All options can't express.
+  3. A line that starts with a flag but carries on a prose paragraph at the same indent (the line above is
+     prose, not a heading ending in ":") is prose when it has no column gap or a spec word ends in a full stop.
+     rsync's `Options` heading followed by `--verbose, -v   increase verbosity` stays an option (it has a gap).
+- Parse after the fix: qpdf 141 entries (was 223), none ending in a colon; img2pdf 38 (was 37), with
+  `-S, --pagesize LxL`, `-s, --imgsize LxL` and `-b, --border` as their own entries. The other 13 help fixtures
+  parse exactly as before, every flag, value name, style and summary compared line by line.
+- Checks: the new HelpParserTests (`aColonRightAfterTheFlagEndsTheFlag`,
+  `aLaterSpellingWithItsValueJoinedGivesAListedOptionItsValue`, `aLaterSpellingNeverReplacesAValueAlreadyNamed`,
+  `aLaterSpellingWithASeparateValueLeavesAListedOptionOnOff`,
+  `proseThatWrapsOntoALineStartingWithAFlagIsNotAnOption`, `optionsRightBelowAHeadingStayOptions`,
+  `qpdfOptionsAreSpelledAsQpdfAcceptsThem`, `img2pdfSizeAndBorderOptionsComeFromTheirOwnLines`) pass; run
+  against the old parser, all but two fail, and those two (`aLaterSpellingNeverReplaces...`,
+  `optionsRightBelowAHeading...`) pin how far the new rules reach. `scripts/ci.sh fast` passes. qpdf 12.4.2 on a three-page PDF:
+  `--linearize` and `--rotate=+90` exit 0 (`--check-linearization`: no errors), `--linearize:` and `--rotate:`
+  exit 2 with "unrecognized argument".
+- Left over: `--json-output.` (BUG-018).
+
+## BUG-018: qpdf's All options still lists `--json-output.` (open)
+- Found: 2026-10-21, Claude, reading the parse after the BUG-017 fix.
+- Steps: parse `Tests/KnobsCoreTests/Fixtures/help/qpdf.txt` with `HelpParser.options(in:)`.
+- Expected: no entry for prose; `--json-output` is already listed, from "Related options:".
+- Actual: the last entry is `--json-output.`, with no summary. It comes from a wrapped bullet in `--decode-level`'s
+  help: "- none: don't uncompress anything. This is the default with" then "  --json-output." two spaces deeper.
+  BUG-017's prose rule only covers lines at the same indent as the prose above. Turned on, it makes a command
+  qpdf refuses.
+- Also seen, cosmetic: value names lose brackets only at their ends, so `--rotate` shows the placeholder
+  `+|-]angle[:page-range` and img2pdf's `--border` shows `L[:L`. The value typed in goes in unchanged.
+- Not fixed yet: a flag that ends in a full stop is never a real spelling, but changing that touches every tool's
+  parse, so it gets its own change checked against all the fixtures.

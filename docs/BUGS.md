@@ -264,7 +264,7 @@ Template:
   both flags, and the real `-s, --imgsize` and `-b, --border` lines are dropped. The golden count pins 37.
 - Effect: qpdf's All options view has many entries that make a command qpdf refuses. qpdf's five tasks are not
   affected; they don't use the help.
-- Fix (2026-10-21, commit `help: spell qpdf's options as qpdf accepts them, and keep prose out of All
+- Fix (2026-10-21, 928c7bb `help: spell qpdf's options as qpdf accepts them, and keep prose out of All
   options`): three rules in `HelpParser.options(in:)`.
   1. A colon straight after the flag ends it: `--linearize: linearize (web-optimize) output` is `--linearize`
      with that summary.

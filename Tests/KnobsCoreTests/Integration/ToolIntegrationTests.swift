@@ -144,6 +144,63 @@ private func write(_ text: String, to url: URL) throws {
     }
 }
 
+/// A PDF with real text on three pages, made by Ghostscript, so page counts and extracted text can be checked.
+private func makeThreePagePDF(_ gs: URL, at path: String, in folder: URL) async throws {
+    let pages = ["Hello Knobs one", "Page two", "Page three"]
+        .map { "72 700 moveto (\($0)) show showpage" }.joined(separator: " ")
+    try await Integration.prepare(
+        gs,
+        ["-q", "-dSAFER", "-sDEVICE=pdfwrite", "-o", path, "-c", "/Helvetica findfont 24 scalefont setfont \(pages)"],
+        in: folder)
+}
+
+@Suite struct QpdfIntegrationTests {
+    @Test func everyTaskRunsOnARealPDF() async throws {
+        guard let qpdf = Integration.tool("qpdf"), let gs = Integration.tool("gs") else { return }
+        let folder = try Integration.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let pdf = folder.appending(path: "three pages.pdf").path
+        try await makeThreePagePDF(gs, at: pdf, in: folder)
+        let manifest = try loadRepositoryManifest("qpdf")
+        let input: [String: FieldValue] = ["input": .paths([pdf])]
+
+        expectSucceeded(
+            try await Integration.run("rotate-pages", of: manifest, executable: qpdf, values: input, in: folder),
+            "rotate-pages")
+
+        let picked = try await Integration.run(
+            "pick-pages", of: manifest, executable: qpdf, values: input.merging(["pages": .text("3,1")]) { $1 },
+            in: folder)
+        expectSucceeded(picked, "pick-pages")
+        let pickedPath = try #require(picked.outputPath)
+        #expect(try await Integration.prepare(qpdf, ["--show-npages", pickedPath], in: folder) == ["2"])
+
+        let locked = try await Integration.run(
+            "protect", of: manifest, executable: qpdf,
+            values: input.merging(["password": .text("s3cret pass")]) { $1 }, in: folder)
+        expectSucceeded(locked, "protect")
+        let lockedPath = try #require(locked.outputPath)
+        let wrongPassword = try await Integration.run(
+            "remove-password", of: manifest, executable: qpdf,
+            values: ["input": .paths([lockedPath]), "password": .text("nope")], in: folder)
+        #expect(wrongPassword.outcome != .succeeded)
+        expectSucceeded(
+            try await Integration.run(
+                "remove-password", of: manifest, executable: qpdf,
+                values: ["input": .paths([lockedPath]), "password": .text("s3cret pass")], in: folder),
+            "remove-password")
+
+        // Cut short, as by an interrupted download: qpdf rebuilds what it can and only warns.
+        let damaged = folder.appending(path: "cut short.pdf")
+        let whole = try Data(contentsOf: URL(filePath: pdf))
+        try whole.prefix(whole.count * 2 / 3).write(to: damaged)
+        expectSucceeded(
+            try await Integration.run(
+                "repair", of: manifest, executable: qpdf, values: ["input": .paths([damaged.path])], in: folder),
+            "repair")
+    }
+}
+
 @Suite struct WhisperIntegrationTests {
     /// The test model downloaded into .cache/models (docs/DECISIONS.md, DEC-009).
     private let model = manifestsDirectory.deletingLastPathComponent().appending(path: ".cache/models/ggml-tiny.en.bin")

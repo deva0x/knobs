@@ -38,7 +38,7 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
     /// not only in the one flag per tool checked below. Update a count only after reading the new parse.
     @Test(arguments: [
         ("7zz", 46), ("curl", 250), ("ffmpeg", 42), ("gs", 7), ("jq", 29), ("magick", 261), ("ocrmypdf", 59),
-        ("pandoc", 109), ("rsync", 151), ("whisper-cli", 66), ("yt-dlp", 246),
+        ("pandoc", 109), ("qpdf", 223), ("rsync", 151), ("whisper-cli", 66), ("yt-dlp", 246),
     ])
     func realHelpTextYieldsTheKnownNumberOfOptions(tool: String, count: Int) throws {
         #expect(HelpParser.options(in: try fixture(tool)).count == count)
@@ -120,7 +120,7 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
     @Test(arguments: [
         ("jq", "--null-input"), ("curl", "--append"), ("yt-dlp", "--output"), ("rsync", "--verbose"),
         ("ffmpeg", "-y"), ("7zz", "-bt"), ("magick", "-adjoin"), ("gs", "-dBATCH"), ("ocrmypdf", "--deskew"),
-        ("pandoc", "--standalone"), ("whisper-cli", "--output-file"),
+        ("pandoc", "--standalone"), ("whisper-cli", "--output-file"), ("qpdf", "--rotate"),
     ])
     func realHelpTextYieldsTheExpectedOption(tool: String, flag: String) throws {
         let options = HelpParser.options(in: try fixture(tool))

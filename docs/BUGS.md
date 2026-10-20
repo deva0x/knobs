@@ -244,3 +244,22 @@ Template:
 - Not fixed: Knobs can't reach that descriptor without replacing `Process` on Linux. The test records the
   Linux failure as a known issue (`withKnownIssue`), so it fails, and asks for the marker to be removed, once
   this is fixed.
+
+## BUG-017: qpdf's All options lists flags with a colon that qpdf rejects (open)
+- Found: 2026-10-20, Claude, reading the parse of qpdf's help while adding qpdf.
+- Steps: parse `Tests/KnobsCoreTests/Fixtures/help/qpdf.txt` (`qpdf --help=all`, qpdf 12) with
+  `HelpParser.options(in:)`, or open qpdf's All options in the app and turn on `--linearize:`.
+- Expected: one entry per qpdf option, spelled as qpdf accepts it (`--linearize`, `--rotate` with its value).
+- Actual: 223 entries, 130 of them spelled with a trailing colon (`--linearize:`, `--rotate:` with the value name
+  "rotate"). Run as `qpdf --linearize: in.pdf out.pdf`, qpdf answers "unrecognized argument --linearize:" and
+  exits 2.
+- Cause: each help topic ends with a "Related options:" list of `  --flag: summary` lines. The parser takes
+  `--flag:` as the flag and the summary's first word as the value name. The detailed `== --flag (...) ==`
+  sections further down add the right spelling (`--rotate` with `+|-]angle[:page-range`), so most options are
+  listed twice, once with the colon.
+- Effect: qpdf's All options view has many entries that make a command qpdf refuses. qpdf's five tasks are not
+  affected; they don't use the help.
+- Not fixed yet: the parser should read `--flag: summary` as a flag and its summary, and then keep the entry
+  that names a value when a flag is listed twice. That changes how duplicates are handled for every tool, so it
+  gets its own change, checked against all the help fixtures. The golden count pins today's parse (223) until
+  then.

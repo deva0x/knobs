@@ -42,6 +42,7 @@ installed on this Mac but isn't used, to keep one way of doing things.
 ## DEC-009: Allowed downloads for development (2026-10-18, approved by Deva; model location changed by DEC-013)
 - Homebrew formulas for the 10 tools: ffmpeg, yt-dlp, imagemagick, pandoc, exiftool, ocrmypdf,
   ghostscript, whisper-cpp, rsync, sevenzip.
+- Added 2026-10-20, when Deva asked for the PDF tools: qpdf, poppler (for pdftoppm and pdftotext) and img2pdf.
 - One whisper.cpp model for tests: `ggml-tiny.en.bin` (about 75 MB) from the whisper.cpp model repository
   on Hugging Face, stored outside the repo in `~/Library/Caches/knobs-dev/`.
 

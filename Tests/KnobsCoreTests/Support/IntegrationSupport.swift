@@ -50,8 +50,9 @@ enum Integration {
         return (outcome, draft.command.outputPath, events)
     }
 
-    /// Runs a helper command directly, for preparing fixtures.
-    static func prepare(_ executable: URL, _ arguments: [String], in folder: URL) async throws {
+    /// Runs a helper command directly, for preparing fixtures or checking a result, and returns what it printed.
+    @discardableResult
+    static func prepare(_ executable: URL, _ arguments: [String], in folder: URL) async throws -> [String] {
         let run = runner.start(executable: executable, arguments: arguments, workingDirectory: folder, progress: nil)
         var lines: [String] = []
         var outcome: RunOutcome?
@@ -62,6 +63,7 @@ enum Integration {
         guard outcome == .succeeded else {
             throw IntegrationError.preparationFailed(lines.suffix(5).joined(separator: "\n"))
         }
+        return lines
     }
 
     enum IntegrationError: Error {

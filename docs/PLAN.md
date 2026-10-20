@@ -139,6 +139,15 @@ that runs one real task on a tiny fixture, and try it once in the app.
 - Exit: the .deb installs and runs Shrink a video in a clean Ubuntu 26.04 container, the .rpm in a clean
   Fedora container, both checked through Broadway.
 
+### M12. PDF tools (2026-10-20, Deva's request)
+Same steps as M6 for each tool, plus a card in the website's tool gallery and the Linux package lists. The
+website and README describe them from the next release on.
+- [ ] qpdf (5): rotate pages, pick and reorder pages, protect with a password, remove a password, repair
+- [ ] img2pdf (1): turn images into a PDF
+- [ ] pdftoppm, from Poppler (2): a page as an image, every page as images
+- [ ] pdftotext, from Poppler (1): PDF to text
+- Exit: every manifest validates, golden and integration tests pass, and each tool was run once in the app.
+
 ## Order and dependencies
 
 M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M9 → M10. M8 (website) can run alongside M4 to M7 because it only

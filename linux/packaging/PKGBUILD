@@ -20,6 +20,7 @@ optdepends=(
     'pandoc-cli: document conversion'
     'perl-image-exiftool: photo details'
     'ghostscript: PDF tasks'
+    'qpdf: PDF pages and passwords'
     'rsync: folder copies'
     'yt-dlp: downloads'
     'ocrmypdf: searchable PDFs (AUR)'

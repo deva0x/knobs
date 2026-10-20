@@ -7,7 +7,7 @@ Summary:        Command-line tools, as simple windows
 License:        MIT
 URL:            https://github.com/deva0x/knobs
 # The tools Knobs drives; each is optional, and Knobs says when one is missing.
-Recommends:     ffmpeg-free yt-dlp ImageMagick pandoc perl-Image-ExifTool ocrmypdf ghostscript rsync 7zip
+Recommends:     ffmpeg-free yt-dlp ImageMagick pandoc perl-Image-ExifTool ocrmypdf ghostscript rsync 7zip qpdf
 
 %description
 Knobs puts the everyday jobs of ffmpeg, yt-dlp, ImageMagick, pandoc and other command-line tools behind

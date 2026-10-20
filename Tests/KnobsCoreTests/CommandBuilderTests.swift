@@ -190,6 +190,49 @@ import Testing
         }
     }
 
+    @Test func qpdfRotatesEveryPageUnlessPagesAreListed() throws {
+        let manifest = try loadRepositoryManifest("qpdf")
+        let task = try #require(manifest.task(withID: "rotate-pages"))
+
+        let everyPage = builder().build(
+            task, of: manifest, values: ["input": .paths(["/a/scan.pdf"])], extraArguments: "")
+        let somePages = builder().build(
+            task, of: manifest, values: ["input": .paths(["/a/scan.pdf"]), "pages": .text("1-2")], extraArguments: "")
+
+        #expect(everyPage.command.argv == ["--warning-exit-0", "--rotate=+90", "/a/scan.pdf", "/a/scan rotated.pdf"])
+        #expect(somePages.command.argv[1] == "--rotate=+90:1-2")
+    }
+
+    @Test func qpdfPicksPagesFromTheInputInTheGivenOrder() throws {
+        let manifest = try loadRepositoryManifest("qpdf")
+        let task = try #require(manifest.task(withID: "pick-pages"))
+
+        let draft = builder().build(
+            task, of: manifest, values: ["input": .paths(["/a/scan.pdf"]), "pages": .text("3,1-2")], extraArguments: "")
+
+        #expect(
+            draft.command.argv == [
+                "--warning-exit-0", "/a/scan.pdf", "--pages", ".", "3,1-2", "--", "/a/scan pages.pdf",
+            ])
+    }
+
+    @Test func qpdfProtectsWithTheSamePasswordForOpeningAndChanging() throws {
+        let manifest = try loadRepositoryManifest("qpdf")
+        let task = try #require(manifest.task(withID: "protect"))
+
+        let command = builder().build(
+            task, of: manifest, values: ["input": .paths(["/a/deed.pdf"]), "password": .text("hunter2")],
+            extraArguments: ""
+        ).command
+
+        #expect(
+            command.argv == [
+                "--warning-exit-0", "--encrypt", "--user-password=hunter2", "--owner-password=hunter2", "--bits=256",
+                "--", "/a/deed.pdf", "/a/deed locked.pdf",
+            ])
+        #expect(!command.displayString.contains("hunter2"))
+    }
+
     @Test func outputNameNeverEndsOrStartsWithADot() throws {
         let manifest = try load(
             minimalManifest(

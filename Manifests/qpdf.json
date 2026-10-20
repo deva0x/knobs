@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "id": "qpdf",
+  "name": "qpdf",
+  "summary": "Rotate, rearrange, lock, unlock and repair PDFs.",
+  "executable": "qpdf",
+  "install": { "brew": "qpdf" },
+  "homepage": "https://qpdf.sourceforge.io",
+  "symbol": "doc.badge.gearshape",
+  "helpArguments": ["--help=all"],
+  "tint": "mint",
+  "tasks": [
+    {
+      "id": "rotate-pages",
+      "title": "Rotate pages",
+      "summary": "Turn pages that are sideways or upside down.",
+      "symbol": "rotate.right",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "angle", "label": "Turn", "kind": "choice", "default": "+90",
+          "options": [
+            { "value": "+90", "label": "90° clockwise" },
+            { "value": "+180", "label": "Upside down" },
+            { "value": "-90", "label": "90° counterclockwise" }
+          ] },
+        { "id": "pages", "label": "Pages", "kind": "text", "placeholder": "All pages",
+          "help": "Leave empty for every page, or list pages such as 1-3,5. z is the last page." }
+      ],
+      "output": { "template": "{input.stem} rotated.pdf", "nextTo": "input" },
+      "arguments": [
+        "--warning-exit-0",
+        { "if": "pages", "then": ["--rotate={angle}:{pages}"], "else": ["--rotate={angle}"] },
+        "{extra}", "{input}", "{output}"
+      ]
+    },
+    {
+      "id": "pick-pages",
+      "title": "Pick and reorder pages",
+      "summary": "Keep only the pages you want, in the order you want.",
+      "symbol": "list.number",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "pages", "label": "Pages", "kind": "text", "required": true, "placeholder": "3,1-2,5-z",
+          "help": "Page numbers and ranges in the new order. z is the last page, so 2-z drops the first one." }
+      ],
+      "output": { "template": "{input.stem} pages.pdf", "nextTo": "input" },
+      "arguments": ["--warning-exit-0", "{extra}", "{input}", "--pages", ".", "{pages}", "--", "{output}"]
+    },
+    {
+      "id": "protect",
+      "title": "Protect with a password",
+      "summary": "Lock a PDF so it opens only with a password.",
+      "symbol": "lock.doc",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "password", "label": "Password", "kind": "secret", "required": true,
+          "help": "Keep it somewhere safe: without it, the locked copy can't be opened." }
+      ],
+      "output": { "template": "{input.stem} locked.pdf", "nextTo": "input" },
+      "arguments": [
+        "--warning-exit-0", "{extra}",
+        "--encrypt", "--user-password={password}", "--owner-password={password}", "--bits=256", "--",
+        "{input}", "{output}"
+      ]
+    },
+    {
+      "id": "remove-password",
+      "title": "Remove a password",
+      "summary": "Save an unlocked copy of a PDF whose password you know.",
+      "symbol": "lock.open",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "password", "label": "Password", "kind": "secret", "required": true }
+      ],
+      "output": { "template": "{input.stem} unlocked.pdf", "nextTo": "input" },
+      "arguments": ["--warning-exit-0", "{extra}", "--password={password}", "--decrypt", "{input}", "{output}"]
+    },
+    {
+      "id": "repair",
+      "title": "Repair a damaged PDF",
+      "summary": "Rebuild a PDF that won't open or shows errors.",
+      "symbol": "bandage",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] }
+      ],
+      "output": { "template": "{input.stem} repaired.pdf", "nextTo": "input" },
+      "arguments": ["--warning-exit-0", "{extra}", "{input}", "{output}"]
+    }
+  ]
+}

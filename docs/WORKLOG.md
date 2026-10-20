@@ -671,3 +671,18 @@ PDF tools done (PLAN M12), apart from Deva's choice on pdftoppm's "every page".
   from a tool page, and with two images on a result page, it did. Not reproduced further.
 - Next: ff main, push (pre-push runs full `scripts/ci.sh`), then report to Deva with the pdftoppm question,
   BUG-017 and the auto-update options.
+
+## 2026-10-21 00:26 IST · Claude Code (Opus 5.5) · HEAD 5b12285
+
+Follow-up sessions Deva started from this session's cards both finished, each on its own branch, not merged
+and not pushed (merging waits for Deva's say-so).
+- refs/heads/claude/optimistic-gauss-9d4f2a (928c7bb, 9909e70): BUG-017 fixed in HelpParser. qpdf's All
+  options 223 to 141 entries, none with a colon; img2pdf gets -S/-s/-b back. The other 13 fixtures parse
+  identically. Fast CI PASS (163 tests). Opened BUG-018 (qpdf `--json-output.` from a wrapped bullet).
+- refs/heads/claude/objective-chatelet-8857fe (2e2570c, 46a369b, 3b70ce6): `"newFolder": true` output key
+  (DEC-021) and pdftoppm's "Save every page as images" into "<PDF> pages". Fast CI PASS (158), Linux CI PASS
+  (164, BUG-016 known). Not clicked through in the app window (control of the Debug app was declined there);
+  the task was run through the app's own code instead.
+- Both branches edit STATUS, WORKLOG and CHANGELOG, so merging the second will need those resolved by hand.
+- Next: Deva decides whether to merge both into main and push, and whether the "every page" task gets its one
+  in-window check first.

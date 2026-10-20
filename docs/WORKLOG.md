@@ -714,3 +714,17 @@ and not pushed (merging waits for Deva's say-so).
 - Both branches edit STATUS, WORKLOG and CHANGELOG, so merging the second will need those resolved by hand.
 - Next: Deva decides whether to merge both into main and push, and whether the "every page" task gets its one
   in-window check first.
+
+## 2026-10-21 00:57 IST · Claude Code (Opus 5.5) · HEAD 218996f
+
+Merged both follow-up branches on Deva's request ("yes merge both, test it in the app first").
+- fb045e2 merges refs/heads/claude/optimistic-gauss-9d4f2a (BUG-017). Only WORKLOG conflicted; both entries
+  kept, in time order. 218996f merges refs/heads/claude/objective-chatelet-8857fe (new-folder output and
+  pdftoppm's every page). WORKLOG kept every entry from both sides, sorted by time, none edited; STATUS's
+  Updated line combines both. Fast CI PASS on both merge commits.
+- In the window (Debug build of the merged branch, `scripts/run-app.sh`): Save every page as images on a
+  three-page PDF made "Lease pages" (three 1275x1650 PNGs); a second run made "Lease pages 2" and left the
+  first folder untouched. qpdf's All options: 139 options, none with a colon, `--linearize` correct.
+- STATUS: the Waiting on Deva item for this window check is removed (done). Debug app quit afterwards; the
+  installed /Applications copy was not running before this check and was left as it was.
+- Next: ff main, push (pre-push runs full `scripts/ci.sh`).

@@ -15,7 +15,11 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   TaskSessionTests included; one known issue, BUG-016). The Debug app was built and opened, but access to control it
   was declined, so the task was not clicked through in the window; instead the app's own Toolbox and
   TaskSession ran it headlessly on a three-page PDF: "Lease pages" with three 1275x1650 PNGs, then "Lease
-  pages 2" on a second run.
+  pages 2" on a second run. Then tried in the window after both branches were merged (2026-10-21, 00:56 IST,
+  Debug app opened with Lease.pdf): the chooser lists "Save every page as images" after "Save a page as an
+  image"; Run made "Lease pages" with three 1275x1650 PNGs; a second Run made "Lease pages 2" and left the first
+  folder's files untouched (same modification times). qpdf's All options in the same build lists 139 options,
+  none with a colon, and `--linearize` as qpdf spells it.
 - PDF tools for the next release (PLAN M12, Deva's request 2026-10-20): qpdf added, with golden tests and an
   integration test that runs all five tasks on a real PDF; img2pdf added, its integration test turning a JPEG
   and a transparent PNG into a two-page A4 PDF; Poppler's pdftoppm (a page as a PNG or JPEG) and pdftotext
@@ -147,9 +151,7 @@ system setting:
    agent adds the link-preview image tags with that address (website/README.md, "Link previews"), deploys
    again, and changes the website link in the GitHub repository's About box and in README's Download section
    from https://knobs.pages.dev to the domain.
-3. Try "Save every page as images" once in the app window (open a PDF with Knobs, pick the task, Run): the
-   access to control the Debug app was declined on 2026-10-21, so only the headless check above was done.
-4. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
+3. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
    and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its
    private key is only in this Mac's login keychain).

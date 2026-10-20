@@ -13,3 +13,4 @@ CLAUDE.local.md
 *.cer
 App/Info.plist
 .cache/
+.wrangler/

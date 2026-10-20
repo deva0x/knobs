@@ -119,8 +119,9 @@ system setting:
    `knobs --help` runs, and its 16 files are byte-identical to the tested 0.1.0 `knobs-bin` apart from the
    license folder's name.
 2. Domain: Deva is buying one on Cloudflare for the site. Once it is attached to the Pages project `knobs`, an
-   agent adds the link-preview image tags with that address (website/README.md, "Link previews") and deploys
-   again.
+   agent adds the link-preview image tags with that address (website/README.md, "Link previews"), deploys
+   again, and changes the website link in the GitHub repository's About box and in README's Download section
+   from https://knobs.pages.dev to the domain.
 3. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
    and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its

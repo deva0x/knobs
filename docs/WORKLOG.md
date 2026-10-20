@@ -602,3 +602,18 @@ STATUS records the block; Arch users keep the release's knobs-bin package meanwh
 
 Next action: Deva retries registration by hand later; then an agent publishes knobs-gui-bin. Also waiting:
 the site's domain.
+
+## 2026-10-20 22:40 IST · Claude Code (Opus 5.5) · HEAD 4358a8d
+
+GitHub About box and README (Deva chose "Fill in GitHub's About", then pointed at README's stale Linux section).
+
+- gh repo edit deva0x/knobs: description (the website's og:description), homepage https://knobs.pages.dev,
+  13 topics (cli, desktop-app, ffmpeg, gtk4, gui, imagemagick, libadwaita, linux, macos, pandoc, swift, swiftui,
+  yt-dlp), Wiki and Projects off, Issues left on. Checked with gh repo view: all as set.
+- README: "Status: working toward v0.1.0" replaced by a Download section (website, latest release, Mac and
+  Linux in one line each); "Linux (in progress) ... isn't released yet" replaced by install commands per
+  distribution, matching the website's #release commands but with globs so they survive the next version,
+  the AUR package noted as waiting for AUR registration, and the container build kept as a subsection.
+- STATUS: the domain step now also changes the About box and README links.
+
+Next action: push; then wait for the domain and the AUR.

@@ -11,7 +11,10 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   dialog itself was not seen: through Broadway on 2026-10-21 clicks on sidebar rows did nothing and the
   selection jumped to other tools (Ghostscript, OCRmyPDF), so the check was stopped after a few tries. Not known
   whether that is Broadway or the app; worth a look on a real Linux desktop. qpdf's Split a PDF
-  (pages per file, into "<PDF> split"; integration test with real qpdf: 1 and 2 pages per file). Next: the result number, install-all, notifications, many files, Sparkle, the
+  (pages per file, into "<PDF> split"; integration test with real qpdf: 1 and 2 pages per file). The result
+  card's size change only for the same kind of file (KnobsSession's `RunResult.sizeChange`, three
+  TaskSessionTests). Tried in the app 2026-10-21 03:00 IST: Compress a PDF still shows its number, Turn a PDF
+  into text says Done, and Split a PDF made "Lease split" with Lease-1/2/3.pdf and says Done. Next: install-all, notifications, many files, Sparkle, the
   Homebrew cask and the release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps

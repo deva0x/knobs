@@ -98,4 +98,61 @@ import Testing
         #expect(session.phase == .finished(outcome))
         #expect(!FileManager.default.fileExists(atPath: folder.appending(path: "missing").path))
     }
+
+    /// A task that copies its input to an output with another extension, as a converting tool would.
+    private func makeCopySession(input: URL, outputExtension: String) throws -> TaskSession {
+        let json = """
+            {
+              "schemaVersion": 1, "id": "copy", "name": "Copy", "summary": "Copy.",
+              "executable": "cp", "install": { "brew": "coreutils" }, "symbol": "doc", "tint": "gray",
+              "tasks": [{
+                "id": "copy", "title": "Copy", "summary": "Copy.", "symbol": "doc",
+                "fields": [{ "id": "input", "label": "File", "kind": "inputFile" }],
+                "output": { "template": "{input.stem} out.\(outputExtension)", "nextTo": "input" },
+                "arguments": ["{extra}", "{input}", "{output}"]
+              }]
+            }
+            """
+        let manifest = try ManifestLoader.load(Data(json.utf8), source: "copy.json")
+        let task = try #require(manifest.tasks.first)
+        return TaskSession(manifest: manifest, task: task, initialValues: ["input": .paths([input.path])])
+    }
+
+    @Test func aVideoMadeIntoAnotherVideoHasComparableSizes() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let clip = folder.appending(path: "clip.mov")
+        try Data(count: 1000).write(to: clip)
+        let session = try makeCopySession(input: clip, outputExtension: "mp4")
+
+        let outcome = try await run(session, with: "/bin/cp")
+
+        #expect(outcome == .succeeded)
+        #expect(session.result?.sizesAreComparable == true)
+    }
+
+    @Test func aPDFTurnedIntoTextHasNoSizeChange() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let lease = folder.appending(path: "lease.pdf")
+        try Data(count: 1000).write(to: lease)
+        let session = try makeCopySession(input: lease, outputExtension: "txt")
+
+        let outcome = try await run(session, with: "/bin/cp")
+
+        #expect(outcome == .succeeded)
+        #expect(session.result?.sizesAreComparable == false)
+        #expect(session.result?.sizeChange == nil)
+    }
+
+    @Test func aNewFolderHasNoSizeChange() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let session = try makeSession(input: folder.appending(path: "doc.pdf"))
+
+        let outcome = try await run(session, with: "/usr/bin/touch")
+
+        #expect(outcome == .succeeded)
+        #expect(session.result?.sizesAreComparable == false)
+    }
 }

@@ -21,6 +21,8 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
   that ends a sentence, such as qpdf's `--json-output.`, is no longer listed.
 
 ### Changed
+- The result card shows the size change only when the output is the same kind of file as the input, such as a
+  video shrunk into a video; a PDF turned into text or images, or a folder of results, now just says Done.
 - The Arch Linux package is now `knobs-gui-bin`, because the AUR's `knobs` is a different program. It downloads
   its tarball from the GitHub release, and `scripts/linux.sh package` also writes its AUR PKGBUILD and .SRCINFO.
 

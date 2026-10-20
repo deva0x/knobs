@@ -568,11 +568,6 @@ private struct ResultStage: View {
 
     private var tint: Color { session.manifest.tint.color }
 
-    private var sizeChange: Double? {
-        guard let input = result.inputBytes, let output = result.outputBytes, input > 0 else { return nil }
-        return Double(output - input) / Double(input)
-    }
-
     var body: some View {
         VStack(spacing: 18) {
             if let url = result.outputURL {
@@ -582,7 +577,7 @@ private struct ResultStage: View {
                 FilePreview(url: folder, maximumSize: CGSize(width: 160, height: 160))
             }
             VStack(spacing: 6) {
-                if let sizeChange, abs(sizeChange) >= 0.01 {
+                if let sizeChange = result.sizeChange, abs(sizeChange) >= 0.01 {
                     Text(sizeChange.formatted(.percent.precision(.fractionLength(0)).sign(strategy: .always())))
                         .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
                         .foregroundStyle(tint)

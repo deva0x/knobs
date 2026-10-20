@@ -22,6 +22,16 @@ public final class TaskSession: Identifiable {
         public var inputBytes: Int64?
         public var outputBytes: Int64?
         public let duration: TimeInterval
+        /// Whether the output is the same kind of file as the one input, as when a video is shrunk into another
+        /// video. Only then does the change in size say something; a PDF turned into text is always smaller.
+        public let sizesAreComparable: Bool
+
+        /// How much larger (positive) or smaller (negative) the output is, as a fraction of the input's size, once
+        /// both are measured. Nil when the sizes aren't comparable.
+        public var sizeChange: Double? {
+            guard sizesAreComparable, let inputBytes, let outputBytes, inputBytes > 0 else { return nil }
+            return Double(outputBytes - inputBytes) / Double(inputBytes)
+        }
     }
 
     public let manifest: ToolManifest
@@ -208,12 +218,16 @@ public final class TaskSession: Identifiable {
                     .first { FileManager.default.fileExists(atPath: $0) }
                 let folderPath = outputFolderField.flatMap { value(of: $0)?.firstPath }
                     .map { ($0 as NSString).expandingTildeInPath }
+                let inputPaths = primaryInputField.flatMap { value(of: $0)?.pathList } ?? []
+                let inputKind = inputPaths.count == 1 ? FileKind(path: inputPaths[0]) : nil
+                let outputKind = outputPath.flatMap(FileKind.init(path:))
                 result = RunResult(
                     outputURL: outputPath.map { URL(filePath: $0) },
                     folderURL: folderPath.map { URL(filePath: $0) },
                     inputBytes: nil,
                     outputBytes: nil,
-                    duration: clock().timeIntervalSince(startedAt)
+                    duration: clock().timeIntervalSince(startedAt),
+                    sizesAreComparable: inputKind != nil && inputKind == outputKind
                 )
                 progress = 1
             } else {

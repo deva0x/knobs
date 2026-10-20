@@ -45,8 +45,7 @@ private struct ResultCard: View {
     @State private var appeared = false
 
     private var sizeChange: String? {
-        guard let input = result.inputBytes, let output = result.outputBytes, input > 0 else { return nil }
-        let change = Double(output - input) / Double(input)
+        guard let change = result.sizeChange else { return nil }
         guard abs(change) >= 0.01 else { return "same size" }
         return change.formatted(.percent.precision(.fractionLength(0)).sign(strategy: .always()))
     }

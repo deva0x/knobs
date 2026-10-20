@@ -19,7 +19,7 @@ Actions.
 | `scripts/ci.sh release` | Before a release | Everything above, plus a Release build, and a failure if any of the 10 tools is missing |
 | `scripts/ci.sh linux` | After changing KnobsCore, and before a Linux build | Format lint, then every library built and KnobsCore's unit tests run on Linux in a local container (OrbStack or Docker on this Mac; `swift:6.2-noble` unless `KNOBS_LINUX_IMAGE` names another). Never a hosted runner |
 | `scripts/linux.sh build` | After changing anything in `linux/` | Builds the Linux app with warnings as errors in the local `knobs-linux-dev` container. `scripts/linux.sh run` then shows it at `http://localhost:8085` through GTK's Broadway backend, and `stop` ends it |
-| `scripts/linux.sh package <version> [arm64\|amd64]` | Before handing out a Linux build | Builds release binaries in the Ubuntu 26.04 and Fedora 44 containers (the other architecture runs emulated) and writes `dist/linux/knobs_<version>_<arch>.deb`, `knobs-<version>-1.fc44.<arch>.rpm` and `knobs-<version>-linux-<arch>.tar.gz`; amd64 also writes `knobs-bin-<version>-1-x86_64.pkg.tar.zst` for Arch. Install-test each in a clean container of its distribution and run a task through Broadway before calling it done |
+| `scripts/linux.sh package <version> [arm64\|amd64]` | Before handing out a Linux build | Builds release binaries in the Ubuntu 26.04 and Fedora 44 containers (the other architecture runs emulated) and writes `dist/linux/knobs_<version>_<arch>.deb`, `knobs-<version>-1.fc44.<arch>.rpm` and `knobs-<version>-linux-<arch>.tar.gz`; amd64 also writes `knobs-gui-bin-<version>-1-x86_64.pkg.tar.zst` for Arch, and its AUR `PKGBUILD` and `.SRCINFO` to `dist/linux/aur/`. Install-test each in a clean container of its distribution and run a task through Broadway before calling it done |
 
 Test conventions the script relies on:
 - Any suite that launches a real tool must be named `...IntegrationTests` (for example `FFmpegIntegrationTests`). `fast` skips suites matching `IntegrationTests`.
@@ -94,6 +94,11 @@ Once the address is known, add the link-preview image tags listed in `website/RE
 
 Without the certificate it skips steps 2 to 4 and leaves an unsigned DMG, saying so. Without the notary
 profile it signs but doesn't notarize, and says so.
+
+After the release is on GitHub, Deva pushes `dist/linux/aur/PKGBUILD` and `.SRCINFO` to the AUR's
+`knobs-gui-bin` repository (`ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, branch `master`). Not before: that
+PKGBUILD downloads the release's x86_64 tarball and checks it against the checksum it carries. A change to the
+PKGBUILD alone, with the same tarball, raises `pkgrel` instead of the version.
 
 One-time setup only Deva can do:
 - Create a **Developer ID Application** certificate: Xcode → Settings → Accounts → your team → Manage

@@ -110,6 +110,7 @@ repositories, so `knobs-bin` follows the AUR "-bin" pattern: its PKGBUILD instal
 Ubuntu container (Swift's runtime linked in) and depends on Arch's own gtk4 and libadwaita. Arch publishes x86_64
 images only, so the package comes with `scripts/linux.sh package <version> amd64`. Publishing to the AUR is
 Deva's call (it needs an AUR account and a public download for the tarball).
+Its name became `knobs-gui-bin` in DEC-019.
 
 ## DEC-018: Release decisions taken on Deva's go-ahead (2026-10-19)
 Deva asked for everything to be finished and said I could make the decisions. Taken, with the reason:
@@ -129,3 +130,11 @@ Still Deva's, because they need Deva's accounts or publish something: the Develo
 profile, creating and pushing the GitHub repository, deploying the website, and publishing `knobs-bin` to
 the AUR.
 
+## DEC-019: On the AUR, the Arch package is `knobs-gui-bin` (2026-10-20, chosen by Deva)
+Deva said yes to publishing the Arch package on the AUR. The AUR already has `knobs`, an unrelated program by
+another maintainer (system clock frequencies and power limits) that also installs `/usr/bin/knobs`. There, a
+`knobs-bin` reads as a prebuilt build of that program, and its `provides=('knobs')` would claim to stand in for
+it. Deva chose `knobs-gui-bin`: it provides `knobs-gui` and conflicts with `knobs` (the same `/usr/bin/knobs`)
+and with 0.1.0's `knobs-bin`. Its PKGBUILD downloads the x86_64 tarball from the GitHub release, so the AUR
+files go up only after the release; a local build copies the tarball in first, so nothing is downloaded. The
+0.1.0 release keeps its `knobs-bin` file, which the website links to; the website changes with the next release.

@@ -2,6 +2,12 @@
 
 All notable changes to Knobs are listed here. The format follows Keep a Changelog, and versions follow SemVer.
 
+## [Unreleased]
+
+### Changed
+- The Arch Linux package is now `knobs-gui-bin`, because the AUR's `knobs` is a different program. It downloads
+  its tarball from the GitHub release, and `scripts/linux.sh package` also writes its AUR PKGBUILD and .SRCINFO.
+
 ## [0.1.0] - 2026-10-20
 
 The first release.

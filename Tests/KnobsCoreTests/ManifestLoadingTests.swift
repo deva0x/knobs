@@ -30,6 +30,17 @@ import Testing
         #expect(task.output == OutputRule(template: "{input.stem} small.mp4", location: .nextTo(fieldID: "input")))
     }
 
+    @Test func anOutputIsAFileUnlessItSaysItIsANewFolder() throws {
+        let file = try load(minimalManifest())
+        let folder = try load(
+            minimalManifest(
+                task: minimalTask(output: ["template": "{input.stem} pages", "nextTo": "input", "newFolder": true])))
+        #expect(file.tasks[0].output?.isNewFolder == false)
+        #expect(
+            folder.tasks[0].output
+                == OutputRule(template: "{input.stem} pages", location: .nextTo(fieldID: "input"), isNewFolder: true))
+    }
+
     @Test func conditionalsWithElseBranchesAreRead() throws {
         let manifest = try load(
             minimalManifest(

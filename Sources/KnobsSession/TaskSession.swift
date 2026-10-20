@@ -156,6 +156,11 @@ public final class TaskSession: Identifiable {
         progress = nil
         result = nil
         reportedOutputPath = nil
+        if let problem = makeNewOutputFolder(for: command) {
+            phase = .finished(.couldNotStart(problem))
+            onFinish?(.couldNotStart(problem), nil)
+            return
+        }
         let startedAt = clock()
         phase = .running(startedAt: startedAt)
         runNumber += 1
@@ -211,6 +216,8 @@ public final class TaskSession: Identifiable {
                     duration: clock().timeIntervalSince(startedAt)
                 )
                 progress = 1
+            } else {
+                removeNewOutputFolderIfEmpty(for: command)
             }
             phase = .finished(outcome)
             onFinish?(outcome, result?.outputURL)
@@ -231,6 +238,29 @@ public final class TaskSession: Identifiable {
 
     private func rebuildDraft() {
         draft = builder.build(task, of: manifest, values: values, extraArguments: extraArguments)
+    }
+
+    /// Makes the empty folder that a `newFolder` output names, for the tool to write into, and returns why it
+    /// couldn't in plain words. Intermediate folders are off, so this fails rather than reuse a folder that appeared
+    /// since the name was picked, or make a missing parent.
+    private func makeNewOutputFolder(for command: Command) -> String? {
+        guard task.output?.isNewFolder == true, let path = command.outputPath else { return nil }
+        do {
+            try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: false)
+            return nil
+        } catch {
+            let folder = URL(filePath: path)
+            return "Knobs couldn't make the folder “\(folder.lastPathComponent)” in "
+                + "\(folder.deletingLastPathComponent().path) for the results. (\(error.localizedDescription))"
+        }
+    }
+
+    /// Takes away the folder this run made when the tool left nothing in it, so a failed run leaves no litter and
+    /// the next run gets the same name. `rmdir` removes only an empty folder; one with anything in it, even a
+    /// half-finished file, is kept, and so is the folder when removing it fails for any other reason.
+    private func removeNewOutputFolderIfEmpty(for command: Command) {
+        guard task.output?.isNewFolder == true, let path = command.outputPath else { return }
+        _ = rmdir(path)
     }
 
     nonisolated private static let maximumItemsToMeasure = 5_000

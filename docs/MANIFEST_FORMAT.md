@@ -78,7 +78,7 @@ This document is the specification. `KnobsCore` implements it, and its tests use
 | `summary` | string | yes | One sentence |
 | `symbol` | string | yes | SF Symbol name for the task card |
 | `fields` | array | yes | The controls, in display order |
-| `output` | object | no | How to name the output file, see below |
+| `output` | object | no | How to name the output file or folder, see below |
 | `arguments` | array | yes | The argv template, see below |
 | `progress` | object | no | How to read progress from the tool's output, see below |
 | `outputPathPattern` | string | no | A regular expression with one group that captures the output file's path from the tool's own output, for tools that name their files themselves (yt-dlp, whisper.cpp). The app uses it for the result card. |
@@ -153,6 +153,21 @@ with no extension never gives a name ending in a dot and a hidden input never gi
 comes out empty blocks running. If the file already exists, Knobs adds " 2",
 " 3" and so on before the extension. It never overwrites a file it can see: the name is chosen when Run is
 pressed, so two runs started at the same moment on the same input could still pick the same name.
+
+`output.newFolder: true` (default `false`) says the output is a new folder that Knobs makes, empty, just before
+the tool starts, for tools that write several files into a folder but can't make one themselves. The name is
+picked like a file's, so an existing folder of that name gets " 2", " 3" and so on, and the tool writes into
+the new folder through `{output}`:
+
+```json
+"output": { "template": "{input.stem} pages", "nextTo": "input", "newFolder": true },
+"arguments": ["-png", "{extra}", "{input}", "{output}/page"]
+```
+
+Knobs never writes into a folder that was already there: if the folder's parent is missing, or a folder of
+that name has appeared since the name was picked, the run stops before the tool starts and says so. If a run
+fails or is cancelled and the folder is still empty, Knobs removes it again; a folder with anything in it is
+kept. A tool that makes its output folder itself (7-Zip's `x -o{output}`) doesn't need `newFolder`.
 
 ## Progress
 

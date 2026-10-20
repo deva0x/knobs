@@ -177,7 +177,7 @@ public struct ChoiceOption: Sendable, Hashable, Codable {
     }
 }
 
-/// How a task names its output file.
+/// How a task names its output file or folder.
 public struct OutputRule: Sendable, Hashable {
     public enum Location: Sendable, Hashable {
         /// Next to the file in this `inputFile` field.
@@ -189,10 +189,14 @@ public struct OutputRule: Sendable, Hashable {
     /// A file name template using the same placeholders as arguments, such as `{input.stem} small.mp4`.
     public let template: String
     public let location: Location
+    /// The output is a folder that Knobs makes, empty, just before the run, for tools that write several files
+    /// into a folder but can't make one themselves (pdftoppm).
+    public let isNewFolder: Bool
 
-    public init(template: String, location: Location) {
+    public init(template: String, location: Location, isNewFolder: Bool = false) {
         self.template = template
         self.location = location
+        self.isNewFolder = isNewFolder
     }
 }
 

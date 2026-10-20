@@ -42,6 +42,10 @@ enum Integration {
             homeDirectory: NSHomeDirectory())
         let draft = builder.build(task, of: manifest, values: values, extraArguments: extraArguments)
         #expect(draft.isRunnable, "\(draft.problems)")
+        // As the app's TaskSession does: a new-folder output is made, empty, just before the tool starts.
+        if task.output?.isNewFolder == true, let newFolder = draft.command.outputPath {
+            try FileManager.default.createDirectory(atPath: newFolder, withIntermediateDirectories: false)
+        }
         let toolRun = runner.start(
             executable: executable, arguments: draft.command.argv, workingDirectory: folder, progress: task.progress)
         var events: [RunEvent] = []

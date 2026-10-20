@@ -272,6 +272,13 @@ import Testing
         #expect(loadingError(minimalManifest(task: task))?.path == "tasks[0].output")
     }
 
+    @Test func newFolderMustBeTrueOrFalse() {
+        let task = minimalTask(output: ["template": "{input.stem} pages", "nextTo": "input", "newFolder": "yes"])
+        let error = loadingError(minimalManifest(task: task))
+        #expect(error?.path == "tasks[0].output.newFolder")
+        #expect(error?.problem == "should be true or false, not a string")
+    }
+
     @Test func equalsMustMatchAChoiceOption() {
         let fields: [[String: Any]] = [
             ["id": "input", "label": "File", "kind": "inputFile"],

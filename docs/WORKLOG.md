@@ -728,3 +728,17 @@ Merged both follow-up branches on Deva's request ("yes merge both, test it in th
 - STATUS: the Waiting on Deva item for this window check is removed (done). Debug app quit afterwards; the
   installed /Applications copy was not running before this check and was left as it was.
 - Next: ff main, push (pre-push runs full `scripts/ci.sh`).
+
+## 2026-10-21 01:00 IST · Claude Code (Opus 5.5) · HEAD bfea2ec
+
+Archived the two finished follow-up sessions (BUG-017, new-folder output) on Deva's yes; their branches are
+merged into main.
+Deva asked whether the .deb and other install files need updating. Answer given, nothing changed:
+- The packaging scripts need no edit: linux/packaging/stage.sh copies Manifests/*.json, so new manifests go in
+  at the next build, and the recommended-tool lists (deb, rpm, PKGBUILD) already name qpdf, poppler and img2pdf.
+- The files people have installed are 0.1.0, with ten tools. Manifests ship inside the app and there is no
+  updater, so the PDF tools reach people only through a new release (0.2.0, new features).
+- Release steps (WORKFLOW "Releasing"): version in project.yml, CHANGELOG and website's #release block, README
+  tool table; `scripts/linux.sh package` for arm64 and amd64 and a clean-container check of each; Deva runs
+  `scripts/release.sh 0.2.0` and `gh release create`; then deploy website/ and, once registration reopens, AUR.
+- Next: wait for Deva to say whether to prepare 0.2.0.

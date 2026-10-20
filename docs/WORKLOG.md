@@ -333,3 +333,17 @@ Results:
 - Test containers removed; the install script lives in my scratch folder, not the repo.
 
 Next action: none for an agent. Deva: certificate and notary profile, then GitHub repo, push and release upload.
+
+## 2026-10-20 21:06 IST · Claude Code (Opus 5.5) · HEAD fc2f295
+
+Status check (Deva: "where are we"). Read-only; no code or release files changed.
+
+- main and this worktree are both at fc2f295; nothing has been committed since the 08:37 entry on 2026-10-19.
+- dist/ still holds the 2026-10-19 08:01-08:36 build: unsigned Knobs-0.1.0.dmg with its SHA-256 file, and all
+  seven Linux packages.
+- swiftlang/swift-corelibs-foundation#5618 (BUG-014): open, no comments, last updated 2026-10-19 02:16 UTC.
+- Waiting-on-Deva items 1 and 2 are still open: `security find-identity -v -p codesigning` lists no
+  Developer ID Application identity, `notarytool history --keychain-profile knobs-notary` finds no profile,
+  and `gh repo view deva0x/knobs` finds no repository (there is no git remote either).
+
+Next action: none for an agent. Deva: certificate and notary profile, then the GitHub repo, push and release.

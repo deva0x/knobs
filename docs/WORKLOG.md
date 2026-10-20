@@ -617,3 +617,19 @@ GitHub About box and README (Deva chose "Fill in GitHub's About", then pointed a
 - STATUS: the domain step now also changes the About box and README links.
 
 Next action: push; then wait for the domain and the AUR.
+
+## 2026-10-20 23:18 IST · Claude Code (Opus 5.5) · HEAD bdbe6d9
+
+Research only (Deva asked which command-line tools could give Knobs iLovePDF-style PDF tasks). No code changed.
+
+- Already in Knobs: Ghostscript (compress, merge, black and white, extract pages), OCRmyPDF (searchable PDF,
+  clean a scan), ExifTool (remove details).
+- Homebrew candidates (brew info, 2026-10-20): qpdf 12.4.2 (Apache-2.0), poppler 26.10.0 (GPL), img2pdf 0.6.3
+  (LGPL-3.0+) are already installed here as OCRmyPDF dependencies; pdfcpu 0.16.3 (Apache-2.0), mupdf-tools
+  1.28.5 (AGPL-3.0+), diff-pdf 0.5.3 (GPL-2.0+) are not. LibreOffice 26.8.1 is a cask whose binaries do not
+  include soffice in /opt/homebrew/bin, so ToolLocator would not find it without a format change.
+- Fit with MANIFEST_FORMAT: single-output tasks fit as-is; passwords fit as secret fields (as 7-Zip's);
+  split-into-pages writes several files, which needs checking against the result card.
+- Poor fits: PDF to Word/Excel (no good Homebrew CLI), digital signing, true redaction, editing, translation.
+
+Next action: Deva decides whether to add PDF tools; the suggestion is qpdf, poppler and img2pdf first.

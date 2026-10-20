@@ -24,7 +24,7 @@ Version: $version
 Architecture: $arch
 Maintainer: Devaprasad T P
 Depends: $depends
-Recommends: ffmpeg, yt-dlp, imagemagick, pandoc, libimage-exiftool-perl, ocrmypdf, ghostscript, rsync, 7zip, whisper.cpp, qpdf, img2pdf
+Recommends: ffmpeg, yt-dlp, imagemagick, pandoc, libimage-exiftool-perl, ocrmypdf, ghostscript, rsync, 7zip, whisper.cpp, qpdf, img2pdf, poppler-utils
 Section: utils
 Priority: optional
 Homepage: https://github.com/deva0x/knobs

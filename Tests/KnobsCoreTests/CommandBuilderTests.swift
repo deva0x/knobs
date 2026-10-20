@@ -250,6 +250,41 @@ import Testing
         #expect(onA4.argv.prefix(3) == ["--pagesize", "A4", "--rotation=ifvalid"])
     }
 
+    /// pdftoppm adds the extension itself, so it gets the output path without one.
+    @Test func pdftoppmGetsTheOutputNameWithoutItsExtension() throws {
+        let manifest = try loadRepositoryManifest("pdftoppm")
+        let task = try #require(manifest.task(withID: "page-to-image"))
+        let page: [String: FieldValue] = ["input": .paths(["/a/slides.pdf"]), "page": .integer(3)]
+
+        let png = builder().build(task, of: manifest, values: page, extraArguments: "").command
+        let jpeg = builder().build(
+            task, of: manifest, values: page.merging(["format": .text("jpg")]) { $1 }, extraArguments: ""
+        ).command
+
+        #expect(
+            png.argv == [
+                "-png", "-r", "150", "-f", "3", "-l", "3", "-singlefile", "/a/slides.pdf", "/a/slides page 3",
+            ])
+        #expect(png.outputPath == "/a/slides page 3.png")
+        #expect(jpeg.argv.first == "-jpeg")
+        #expect(jpeg.argv.last == "/a/slides page 3")
+        #expect(jpeg.outputPath == "/a/slides page 3.jpg")
+    }
+
+    @Test func pdftotextKeepsTheLayoutUnlessTurnedOff() throws {
+        let manifest = try loadRepositoryManifest("pdftotext")
+        let task = try #require(manifest.task(withID: "pdf-to-text"))
+        let input: [String: FieldValue] = ["input": .paths(["/a/lease.pdf"])]
+
+        let laidOut = builder().build(task, of: manifest, values: input, extraArguments: "").command
+        let flowing = builder().build(
+            task, of: manifest, values: input.merging(["layout": .toggle(false)]) { $1 }, extraArguments: ""
+        ).command
+
+        #expect(laidOut.argv == ["-layout", "-enc", "UTF-8", "/a/lease.pdf", "/a/lease.txt"])
+        #expect(flowing.argv == ["-enc", "UTF-8", "/a/lease.pdf", "/a/lease.txt"])
+    }
+
     @Test func outputNameNeverEndsOrStartsWithADot() throws {
         let manifest = try load(
             minimalManifest(

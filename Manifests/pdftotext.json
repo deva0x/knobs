@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "pdftotext",
+  "name": "pdftotext",
+  "summary": "Copy the text out of a PDF into a plain text file. Part of Poppler.",
+  "executable": "pdftotext",
+  "install": { "brew": "poppler" },
+  "homepage": "https://poppler.freedesktop.org",
+  "symbol": "doc.plaintext",
+  "helpArguments": ["-h"],
+  "tint": "yellow",
+  "tasks": [
+    {
+      "id": "pdf-to-text",
+      "title": "Turn a PDF into text",
+      "summary": "Save the text of a PDF as a .txt file you can edit or search.",
+      "symbol": "text.alignleft",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"],
+          "help": "Scans have no text to copy; make them searchable with OCRmyPDF first." },
+        { "id": "layout", "label": "Keep the layout", "kind": "toggle", "default": true,
+          "help": "Keeps columns and tables lined up. Turn it off for text that flows as one column." }
+      ],
+      "output": { "template": "{input.stem}.txt", "nextTo": "input" },
+      "arguments": [
+        { "if": "layout", "then": ["-layout"] },
+        "-enc", "UTF-8", "{extra}", "{input}", "{output}"
+      ]
+    }
+  ]
+}

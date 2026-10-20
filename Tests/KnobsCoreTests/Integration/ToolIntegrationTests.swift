@@ -225,6 +225,41 @@ private func makeThreePagePDF(_ gs: URL, at path: String, in folder: URL) async 
     }
 }
 
+@Suite struct PopplerIntegrationTests {
+    @Test func aPageBecomesAPNGAndAJPEG() async throws {
+        guard let pdftoppm = Integration.tool("pdftoppm"), let gs = Integration.tool("gs") else { return }
+        let folder = try Integration.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let pdf = folder.appending(path: "three pages.pdf").path
+        try await makeThreePagePDF(gs, at: pdf, in: folder)
+        let manifest = try loadRepositoryManifest("pdftoppm")
+
+        for format in ["png", "jpg"] {
+            let result = try await Integration.run(
+                "page-to-image", of: manifest, executable: pdftoppm,
+                values: ["input": .paths([pdf]), "page": .integer(2), "format": .text(format)], in: folder)
+            expectSucceeded(result, "page-to-image as \(format)")
+        }
+    }
+
+    @Test func aPDFsTextBecomesATextFile() async throws {
+        guard let pdftotext = Integration.tool("pdftotext"), let gs = Integration.tool("gs") else { return }
+        let folder = try Integration.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let pdf = folder.appending(path: "three pages.pdf").path
+        try await makeThreePagePDF(gs, at: pdf, in: folder)
+        let manifest = try loadRepositoryManifest("pdftotext")
+
+        let result = try await Integration.run(
+            "pdf-to-text", of: manifest, executable: pdftotext, values: ["input": .paths([pdf])], in: folder)
+
+        expectSucceeded(result, "pdf-to-text")
+        let text = try String(contentsOfFile: try #require(result.outputPath), encoding: .utf8)
+        #expect(text.contains("Hello Knobs one"))
+        #expect(text.contains("Page three"))
+    }
+}
+
 @Suite struct WhisperIntegrationTests {
     /// The test model downloaded into .cache/models (docs/DECISIONS.md, DEC-009).
     private let model = manifestsDirectory.deletingLastPathComponent().appending(path: ".cache/models/ggml-tiny.en.bin")

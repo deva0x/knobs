@@ -22,6 +22,7 @@ optdepends=(
     'ghostscript: PDF tasks'
     'qpdf: PDF pages and passwords'
     'img2pdf: images to PDF'
+    'poppler: PDF to images and text'
     'rsync: folder copies'
     'yt-dlp: downloads'
     'ocrmypdf: searchable PDFs (AUR)'

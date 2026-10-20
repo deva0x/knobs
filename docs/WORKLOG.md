@@ -347,3 +347,34 @@ Status check (Deva: "where are we"). Read-only; no code or release files changed
   and `gh repo view deva0x/knobs` finds no repository (there is no git remote either).
 
 Next action: none for an agent. Deva: certificate and notary profile, then the GitHub repo, push and release.
+
+## 2026-10-20 21:14 IST · Claude Code (Opus 5.5) · HEAD 3952940
+
+Publish preparation (Deva: "okay you start", after the status check). Everything left needs Deva's accounts,
+so this turn checked what an agent can check and wrote the exact order of Deva's steps into STATUS.
+
+- Outcome: STATUS "Waiting on Deva" says exactly what to run, in which order, and what was found.
+- Evidence: the read-only checks below; scripts/ci.sh fast on each commit.
+- Boundaries: no certificate, repository, push, release upload or deploy; no system settings.
+- Stop condition: Deva has the ordered steps; the next agent step is scripts/release.sh once the certificate exists.
+
+Findings:
+- Signing: Xcode is signed in to team P564YR8496 (Apple Development and Apple Distribution identities only). No
+  Developer ID Application identity, no knobs-notary profile. scripts/release.sh's signing branch read end to
+  end: the Release app has one executable and no nested code, and a re-sign of a copy (ad-hoc, scratch folder)
+  drops the get-task-allow entitlement the Release build carries, as notarization needs. Not tried: a real
+  Developer ID signature or a notary submission. notarytool submit --wait has no --timeout in the script.
+- Repository audit for the first push: no token or key pattern and no /Users/deva path in any commit diff;
+  no .github folder; largest blob 1.08 MB (a website screenshot); pack 6.7 MB; versions agree (project.yml,
+  CHANGELOG, website #release all 0.1.0; CHANGELOG still says "not yet released"). All 105 commits have
+  author email bitdeva@gmail.com. Docs mention omarchy-1 and Tailscale by name.
+- Cloudflare: wrangler 4.135.0 signed in to one account with Pages write; `wrangler pages project list --json`
+  returns [], so the first deploy creates the knobs project. wrangler whoami wrote a .wrangler/ cache into the
+  worktree (removed); .gitignore now ignores .wrangler/ (3952940).
+- dist/ is still current: only docs changed since 78fbd9d, the commit the files were built from.
+- Accessibility (PLAN M9): Keyboard navigation (AppleKeyboardUIMode) is off on this Mac, so a Tab-through check,
+  like VoiceOver and Reduce Motion, needs a system setting; left with Deva.
+
+Next action: Deva creates the Developer ID Application certificate (Xcode → Settings → Accounts → Manage
+Certificates → + → Developer ID Application). Then an agent runs scripts/release.sh 0.1.0 and checks the
+signature, even before the notary profile exists.

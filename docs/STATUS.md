@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-19 IST (release files rebuilt 08:36)
+Updated: 2026-10-20 IST (publish steps checked 21:14; release files rebuilt 2026-10-19 08:36)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -78,14 +78,30 @@ Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is 
 publish, or a system setting:
 1. Create the Developer ID Application certificate and store the notary profile `knobs-notary` (WORKFLOW,
    "Releasing"); `scripts/release.sh` then signs and notarizes instead of building an unsigned DMG.
+   Checked 2026-10-20: Xcode is signed in to team P564YR8496 and has its Apple Development and Apple
+   Distribution certificates, but there is no Developer ID Application certificate and no `knobs-notary`
+   profile. Only the team's Account Holder sees Developer ID Application under Manage Certificates → +, and
+   Apple allows only a few per team, so export a .p12 backup of it. The release script's signing half was
+   read and tried on an ad-hoc copy: the app has one executable and nothing nested to sign first, and
+   re-signing drops the debug-only `get-task-allow` entitlement that notarization refuses.
 2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
    Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
    command). The website's Download buttons link straight to that release's files (`#release` in
    website/index.html); only "Every file of this release" goes to the latest-release page.
+   In that order: `gh repo create deva0x/knobs --public` without `--source` or `--push` (either would push
+   before Actions is off), then `gh api -X PUT repos/deva0x/knobs/actions/permissions -F enabled=false`, then
+   add the remote and push `main`. Before the release, date CHANGELOG's `[0.1.0] - not yet released`.
+   Checked 2026-10-20: no token, key or `/Users/deva` path in any commit, no `.github` folder, the biggest file
+   is a 1 MB screenshot. All 105 commits name bitdeva@gmail.com as author, which becomes public; if GitHub's
+   "Block command line pushes that expose my email" is on, GitHub refuses the push.
 3. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
-   site's address (website/README.md, "Link previews") and deploy again.
+   site's address (website/README.md, "Link previews") and deploy again. Checked 2026-10-20: Wrangler is signed
+   in to one Cloudflare account with Pages write access, and no Pages project exists yet, so the first deploy
+   creates `knobs`. Wrangler leaves a `.wrangler/` cache in the repo, now ignored.
 4. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).
-5. Optional: try Reduce Motion and VoiceOver once on the Mac, and click through Knobs on omarchy-1.
+5. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
+   each needs a system setting, and Keyboard navigation is off on this Mac), and click through Knobs on
+   omarchy-1.
 
 ## Blocked
 - Nothing. BUG-009 is fixed (see BUGS).

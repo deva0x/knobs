@@ -40,8 +40,11 @@ Updated: 2026-10-21 IST (Sparkle updates, waiting on the signing key; pdftoppm e
   Check for Updates… showed 0.2.0 with the CHANGELOG as notes; Install Update logged "EdDSA signature is correct",
   replaced the copy with build 2 and relaunched it to its window. The first run of that check found a bug, fixed
   before commit: started with the app, Sparkle's question kept SwiftUI from opening the main window, and answering
-  it quit Knobs. The installed app's settings have no Sparkle keys. Next: the Homebrew cask and the release
-  files.
+  it quit Knobs. The installed app's settings have no Sparkle keys. Also checked: the build setting is a real
+  boolean in the built Info.plist, and adding a build-3 DMG to that feed kept build 2's signed entry. Not yet
+  checked: Apple notarizing an app with Sparkle inside (first at `scripts/release.sh 0.2.0`; if it is rejected,
+  `xcrun notarytool log <submission id> --keychain-profile knobs-notary` names the file). Next: the Homebrew cask
+  and the release files, with `CFBundleVersion` 2.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it

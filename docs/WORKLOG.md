@@ -802,3 +802,31 @@ Starting Sparkle updates (PLAN M13, Deva chose "Sparkle, asks first" on 2026-10-
 Read Sparkle's docs first: setup, programmatic (SwiftUI) setup, customization keys, sandboxing (signing order),
 publishing. Sparkle's source (2.10.0, SPUUpdater.m) confirms a `defaults write <bundle> SUFeedURL` overrides the
 Info.plist feed (meant for testing), and that the updater refuses to start over http without an EdDSA key.
+
+## 2026-10-21 03:46 IST · Claude Code (Opus 5.5) · HEAD 84661f3
+
+Sparkle updates done for 0.2.0 (PLAN M13), committed as 84661f3; the signing key waits on Deva (STATUS item 3).
+- What: Sparkle 2.10.0 pinned in project.yml; feed https://knobs.pages.dev/appcast.xml; SUVerifyUpdateBeforeExtraction
+  on; Knobs menu items Check for Updates… and Check for Updates Automatically (UpdateMenuItems.swift); the updater
+  lives in AppDelegate and starts in connect(), once the window is up; Debug builds have none (shared bundle id).
+  release.sh: refuses without SUPublicEDKey or with a CFBundleVersion not above the feed's newest, signs Sparkle's
+  helpers in Sparkle's documented order with --timestamp, and after the stapled DMG runs generate_appcast (account
+  `knobs`, CHANGELOG section as markdown notes, GitHub release URL) in its own folder, failing if the new entry is
+  unsigned (a key mismatch is only a warning there). Sparkle's license ships in the app. DEC-024; SECURITY, README,
+  WORKFLOW (key setup, release steps, first package fetch), CHANGELOG, PLAN, STATUS updated.
+- Checked end to end with a throwaway openssl Ed25519 key in the scratchpad (never the keychain), a test defaults
+  domain (io.github.deva0x.Knobs.sparkle-test, deleted after) and a feed on 127.0.0.1:8766: old 0.1.9 build 1 and new
+  0.2.0 build 2, both Developer ID-signed like release.sh (not notarized). Update window showed 0.2.0 with markdown
+  notes; Autoupdate logged "OK: EdDSA signature is correct for update"; the copy became build 2 and relaunched.
+- Bug found and fixed before commit: Deva pressed the buttons on the relaunched copy, which had shown only Sparkle's
+  "Check for updates automatically?" with no main window; answering closed the last window and Knobs quit. Cause:
+  started with the app, Sparkle's window existed before SwiftUI opened its own, so SwiftUI opened none. After the
+  fix: first launch window only; second launch window plus question; "Don't Check" kept Knobs open (stored 0, no
+  request); the toggle stored 1 (one feed request, which found the update) and 0; install and relaunch opened the
+  window. Also: the plist value is a boolean (plutil); a build-3 DMG added to that feed kept build 2's signed entry.
+- `scripts/release.sh 0.1.0` stops at "project.yml has no SUPublicEDKey". Full `scripts/ci.sh` PASS (185 tests in
+  30 suites, 17 session tests, Debug app build) once the worktree had the whisper model: `.cache` is per checkout,
+  so a worktree needs a link to the main checkout's (now in WORKFLOW; .gitignore says `.cache` so the link is
+  ignored). The installed app's defaults domain has no Sparkle keys. Scratch app copies unregistered and deleted.
+- Not checked: Apple notarizing an app with Sparkle inside (first at release time).
+- Next: Homebrew cask, then the release files with CFBundleVersion 2.

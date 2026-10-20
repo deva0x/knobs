@@ -24,6 +24,8 @@ Actions.
 Test conventions the script relies on:
 - Any suite that launches a real tool must be named `...IntegrationTests` (for example `FFmpegIntegrationTests`). `fast` skips suites matching `IntegrationTests`.
 - Integration tests skip, with a message, when their tool isn't installed. With `KNOBS_REQUIRE_TOOLS=1` (set by `release` mode) they fail instead.
+- The whisper test needs `.cache/models/ggml-tiny.en.bin`, which is per checkout and not in git. In an agent's
+  worktree, link the main checkout's: `ln -s /Users/deva/opensource/knobs/.cache .cache` (ignored like the folder).
 
 The app build fetches Sparkle (DEC-024) into `build/DerivedData/SourcePackages` the first time. On 2026-10-21 that
 first fetch stalled for ten minutes with no network activity; a second try finished in five. If a first build hangs

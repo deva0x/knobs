@@ -25,7 +25,15 @@ ffmpeg, yt-dlp, ImageMagick and their friends can do almost anything, if you rem
 the everyday jobs behind plain controls, and shows you the real command as you change them. Nothing is hidden,
 so you learn the tool while you use it.
 
-Status: working toward v0.1.0. See [docs/PLAN.md](docs/PLAN.md) and [CHANGELOG.md](CHANGELOG.md).
+## Download
+
+Get Knobs from [knobs.pages.dev](https://knobs.pages.dev) or the
+[latest release](https://github.com/deva0x/knobs/releases/latest).
+
+- **Mac:** open the `.dmg` and drag Knobs to Applications. It's signed and notarized by Apple.
+- **Linux:** packages for Ubuntu, Fedora and Arch Linux, on x86_64 and ARM. See [Linux](#linux).
+
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md).
 
 ## What it does
 
@@ -78,12 +86,28 @@ scripts/run-app.sh
 
 All checks run locally on your Mac. This project uses no hosted CI.
 
-## Linux (in progress)
+## Linux
 
-A Linux version in GTK 4 and libadwaita lives in [`linux/`](linux/). It shares the manifests and the core with
-the Mac app, so tasks, commands and remembered settings behave the same. It needs GTK 4.20 or later, which
-means Ubuntu 26.04, Fedora 43, current Arch Linux or newer, and it isn't released yet. To build and try it in a container on a Mac
-with OrbStack or Docker:
+The Linux version, in GTK 4 and libadwaita, shares the manifests and the core with the Mac app, so tasks,
+commands and remembered settings behave the same. It needs GTK 4.20 or later: Ubuntu 26.04, Fedora 43, current
+Arch Linux or newer. Download the package for your distribution and processor from the
+[latest release](https://github.com/deva0x/knobs/releases/latest), then install it from the folder it's in:
+
+- **Ubuntu:** `sudo apt install ./knobs_*.deb`
+- **Fedora:** `sudo dnf install ./knobs-*.rpm`
+- **Arch Linux** (x86_64): `sudo pacman -U ./knobs-*.pkg.tar.zst`. An AUR package, `knobs-gui-bin`, will
+  follow once the AUR opens registration again.
+- **Other distributions:** `tar -xzf knobs-*-linux-*.tar.gz && knobs/usr/bin/knobs`. GTK 4.20 or later and
+  libadwaita must already be installed.
+
+apt, dnf and pacman install GTK and libadwaita if they're missing. Then open Knobs from your apps.
+
+On Fedora, Shrink a video works with Fedora's own `ffmpeg-free`, but its Quality setting only takes effect with
+the full `ffmpeg` from RPM Fusion, which has the x264 encoder.
+
+### Building the Linux version
+
+The source is in [`linux/`](linux/). To build and try it in a container on a Mac with OrbStack or Docker:
 
 ```bash
 scripts/linux.sh build
@@ -91,9 +115,6 @@ scripts/linux.sh run
 ```
 
 Then open http://localhost:8085. `scripts/linux.sh package <version> [arm64|amd64]` writes a .deb, an .rpm and a .tar.gz to `dist/linux/`; the amd64 run also writes an Arch Linux package (`knobs-gui-bin`) and its AUR files.
-
-On Fedora, Shrink a video works with Fedora's own `ffmpeg-free`, but its Quality setting only takes effect with
-the full `ffmpeg` from RPM Fusion, which has the x264 encoder.
 
 ## Security
 

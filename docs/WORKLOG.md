@@ -756,3 +756,20 @@ missing tools, BUG-018, run on many files, done notification, Homebrew cask, and
 - Stop condition: release files ready and handed to Deva, or a blocker logged in BUGS and STATUS.
 - `scripts/ci.sh linux` on merged main (bfea2ec plus logs): PASS, 172 tests in 19 suites, one known issue
   (BUG-016).
+
+## 2026-10-21 02:36 IST · Claude Code (Opus 5.5) · HEAD e28a9c5
+
+0.2.0 progress (PLAN M13), five of ten items done:
+- be79e66 BUG-018: a flag ending in a full stop is prose. Parse of all 15 fixtures compared; only qpdf's
+  `--json-output.` changed (141 to 140).
+- 5a85cd9 Linux file dialog: img2pdf's six image types mapped, and a field with several types starts on an
+  "All supported files" filter. Built with warnings as errors; the dialog was not seen, because Broadway input
+  went out of step (sidebar clicks ignored, selection jumping to Ghostscript and OCRmyPDF). Stopped after a few
+  tries; recorded in STATUS for a real Linux desktop.
+- qpdf Split a PDF (pages per file, new "<PDF> split" folder); integration test with real qpdf, tried in app.
+- Size change only between files of the same kind (RunResult.sizeChange, FileKind by extension); tried in the
+  app: Compress a PDF +2%, PDF to text and Split say Done.
+- Install-all panel line (Toolbox.missingFormulas, isHomebrewInstalled); seen in the app with two temporary
+  fake manifests, removed before the commit.
+- Pushed through 4ef59d7: full `scripts/ci.sh` PASS (184 tests in 30 suites, 9 session tests, app build).
+- Next: notification and Dock progress, then many files, Sparkle, cask, release files.

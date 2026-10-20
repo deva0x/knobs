@@ -633,3 +633,41 @@ Research only (Deva asked which command-line tools could give Knobs iLovePDF-sty
 - Poor fits: PDF to Word/Excel (no good Homebrew CLI), digital signing, true redaction, editing, translation.
 
 Next action: Deva decides whether to add PDF tools; the suggestion is qpdf, poppler and img2pdf first.
+
+## 2026-10-20 23:46 IST · Claude Code (Opus 5.5) · HEAD 062036d
+
+PDF tools, checkpoint (PLAN M12, Deva asked for qpdf, Poppler and img2pdf).
+- Outcome: the three tools as manifests with golden and integration tests, gallery cards and package lists.
+  Evidence: `scripts/ci.sh fast` on each commit, full `scripts/ci.sh` on push, one run of each in the app.
+  Boundaries: no HelpParser change, no website deploy, README tool table waits for the next release.
+  Stop condition: all four manifests committed and pushed, checked in the app, or a blocker logged.
+- e37aed2 qpdf: five tasks, all with --warning-exit-0 (qpdf exits 3 on warnings). Fast CI PASS, 152 tests.
+- 062036d img2pdf: one task, --rotation=ifvalid. Checked by hand first: JPEG, PNG with alpha, GIF, WebP, BMP
+  and 8-bit TIFF all convert. Fast CI PASS.
+- BUG-017 (open): qpdf's `--help=all` parses into 130 colon-suffixed flags qpdf rejects ("unrecognized
+  argument --linearize:", exit 2), and img2pdf's prose lines take `--pagesize`, `--imgsize`, `--border`.
+  Golden counts pin 223 and 37 until a parser change of its own.
+- The website test keeps the gallery in step with the manifests, so `website/` gets a card per tool now. Do
+  not deploy `website/` before the next release: the live site describes 0.1.0.
+- Design question for Deva: pdftoppm's "every page as images" can only write `<name>-1.png` and so on into a
+  folder, replacing same-named files on a rerun, which breaks the "Nothing is overwritten" promise in
+  SECURITY.md. Shipping only "a page as an image" (goes through the namer) for now.
+- Next: pdftoppm and pdftotext commits, push, website check in a browser, app check.
+
+## 2026-10-20 23:53 IST · Claude Code (Opus 5.5) · HEAD abeeef3
+
+PDF tools done (PLAN M12), apart from Deva's choice on pdftoppm's "every page".
+- abeeef3 poppler: pdftoppm (Save a page as an image, PNG or JPEG, 72/150/300 dpi) and pdftotext (Turn a PDF
+  into text, layout on by default, UTF-8). Golden tests pin that pdftoppm gets the output path without its
+  extension. Integration tests: page 2 as PNG and JPEG, and the text of all three pages. Fast CI PASS.
+- Website gallery: cards for all four, heading "Fourteen tools", tints mint, pink and yellow added to the
+  site's palette (Apple's light and dark values). Checked in the preview browser, dark and light, 375 px and
+  desktop, no sideways scroll, no console errors. The browser had a stale styles.css from another page served
+  on port 8765 earlier; a reload with the cache bypassed fixed it, the repo file was right all along.
+- App check: Debug build from `scripts/run-app.sh`, each new task run once through Open With (details in
+  STATUS). To reach the Debug window I quit Deva's idle installed 0.1.0 copy (same bundle id, so the control
+  tools can only see one) and reopened /Applications/Knobs.app afterwards.
+- Noticed, not changed: opening the same PDF with Knobs while a task's result was showing brought no chooser;
+  from a tool page, and with two images on a result page, it did. Not reproduced further.
+- Next: ff main, push (pre-push runs full `scripts/ci.sh`), then report to Deva with the pdftoppm question,
+  BUG-017 and the auto-update options.

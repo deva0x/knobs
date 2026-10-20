@@ -8,8 +8,12 @@ Updated: 2026-10-20 IST (PDF tools: qpdf, img2pdf and Poppler added; AUR registr
 - PDF tools for the next release (PLAN M12, Deva's request 2026-10-20): qpdf added, with golden tests and an
   integration test that runs all five tasks on a real PDF; img2pdf added, its integration test turning a JPEG
   and a transparent PNG into a two-page A4 PDF; Poppler's pdftoppm (a page as a PNG or JPEG) and pdftotext
-  (a PDF's text into a .txt file) added, each run on a real PDF by its integration test. Still to do: a check
-  of each in the app. Waiting on Deva: whether pdftoppm also gets "every page as images" (see Waiting on Deva). `website/` already lists them (its test keeps the gallery in
+  (a PDF's text into a .txt file) added, each run on a real PDF by its integration test. Tried once each in the
+  Debug app (2026-10-20, 23:51 IST), opening files with Knobs: the PDF chooser lists the new tasks after
+  Ghostscript's and OCRmyPDF's; Rotate pages turned only page 1 (pdfinfo: 90, 0, 0); Save a page as an image
+  wrote a 1275x1650 PNG of page 2 and offered "Lease page 2 2.png" next; Turn a PDF into text wrote all three
+  pages' text; Turn images into a PDF made a two-page PDF from a JPEG and a PNG. The website gallery was
+  checked in a browser, light and dark, at 375 px and desktop width. Waiting on Deva: whether pdftoppm also gets "every page as images" (see Waiting on Deva). `website/` already lists them (its test keeps the gallery in
   step with the manifests), but the live site describes 0.1.0, so deploy `website/` with the next release, not
   before. BUG-017 (open): qpdf's All options shows colon-suffixed flags qpdf rejects, and img2pdf's misreads
   `--pagesize` and `--imgsize`; the tasks are fine.

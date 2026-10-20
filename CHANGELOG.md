@@ -14,6 +14,8 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
   that write several files but can't make a folder.
 
 ### Fixed
+- Linux: the file dialog shows all the types a task takes at once (it opened showing only videos for tasks that
+  also take audio), and img2pdf's dialog lists images only.
 - All options for qpdf lists each option as qpdf accepts it (`--linearize`, not `--linearize:`), and img2pdf's
   page size, image size and border options are read from their own lines, not from the prose above them. A flag
   that ends a sentence, such as qpdf's `--json-output.`, is no longer listed.

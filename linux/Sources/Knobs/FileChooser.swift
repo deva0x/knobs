@@ -12,9 +12,9 @@ enum FileChooser {
         case file, folder
     }
 
-    /// Files of one MIME type, listed by `name` in the dialog's type menu.
+    /// Files of any of these MIME types, listed by `name` in the dialog's type menu.
     struct Filter {
-        let mimeType: String
+        let mimeTypes: [String]
         let name: String?
     }
 
@@ -27,7 +27,7 @@ enum FileChooser {
             let store = g_list_store_new(gtk_file_filter_get_type())
             for filter in filters {
                 let fileFilter = gtk_file_filter_new()
-                gtk_file_filter_add_mime_type(fileFilter, filter.mimeType)
+                for mimeType in filter.mimeTypes { gtk_file_filter_add_mime_type(fileFilter, mimeType) }
                 if let name = filter.name {
                     gtk_file_filter_set_name(fileFilter, name)
                 }

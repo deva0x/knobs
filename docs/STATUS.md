@@ -5,8 +5,12 @@ Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
-- 0.2.0 in progress (PLAN M13, Deva picked every item on 2026-10-21). Done: BUG-018. Next: the Linux file
-  filter for img2pdf, then Split a PDF, the result number, install-all, notifications, many files, Sparkle, the
+- 0.2.0 in progress (PLAN M13, Deva picked every item on 2026-10-21). Done: BUG-018; the Linux file chooser
+  knows img2pdf's six image types and, for any field with several types, starts on an "All supported files"
+  filter (before, a task taking video or audio opened showing only videos). Built with warnings as errors; the
+  dialog itself was not seen: through Broadway on 2026-10-21 clicks on sidebar rows did nothing and the
+  selection jumped to other tools (Ghostscript, OCRmyPDF), so the check was stopped after a few tries. Not known
+  whether that is Broadway or the app; worth a look on a real Linux desktop. Next: Split a PDF, the result number, install-all, notifications, many files, Sparkle, the
   Homebrew cask and the release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps

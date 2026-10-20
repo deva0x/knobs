@@ -36,6 +36,31 @@
         "-r", "{resolution}", "-f", "{page}", "-l", "{page}", "-singlefile",
         "{extra}", "{input}", "{output.base}"
       ]
+    },
+    {
+      "id": "every-page-to-images",
+      "title": "Save every page as images",
+      "summary": "Turn each page of a PDF into its own PNG or JPEG picture, in a new folder.",
+      "symbol": "photo.stack",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "format", "label": "Format", "kind": "choice", "default": "png",
+          "options": [
+            { "value": "png", "label": "PNG" },
+            { "value": "jpg", "label": "JPEG" }
+          ] },
+        { "id": "resolution", "label": "Sharpness", "kind": "choice", "default": "150",
+          "options": [
+            { "value": "72", "label": "Screen (72 dpi)" },
+            { "value": "150", "label": "Standard (150 dpi)" },
+            { "value": "300", "label": "Print (300 dpi)" }
+          ] }
+      ],
+      "output": { "template": "{input.stem} pages", "nextTo": "input", "newFolder": true },
+      "arguments": [
+        { "if": "format", "equals": "jpg", "then": ["-jpeg"], "else": ["-png"] },
+        "-r", "{resolution}", "{extra}", "{input}", "{output}/page"
+      ]
     }
   ]
 }

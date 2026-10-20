@@ -144,8 +144,8 @@ Same steps as M6 for each tool, plus a card in the website's tool gallery and th
 website and README describe them from the next release on.
 - [x] qpdf (5): rotate pages, pick and reorder pages, protect with a password, remove a password, repair
 - [x] img2pdf (1): turn images into a PDF
-- [x] pdftoppm, from Poppler (1): a page as an image. Every page as images waits for Deva: pdftoppm writes
-  `<name>-1.png` and so on and replaces same-named files, which the "Nothing is overwritten" promise forbids
+- [x] pdftoppm, from Poppler (2): a page as an image, and every page as images into a new folder that Knobs
+  makes first (`output.newFolder`, DEC-021), since pdftoppm can't make one and would replace same-named files
 - [x] pdftotext, from Poppler (1): PDF to text
 - Exit: every manifest validates, golden and integration tests pass, and each tool was run once in the app.
 

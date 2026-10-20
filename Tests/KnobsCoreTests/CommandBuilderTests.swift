@@ -271,6 +271,25 @@ import Testing
         #expect(jpeg.outputPath == "/a/slides page 3.jpg")
     }
 
+    /// pdftoppm names every page itself, `page-1.png` and on, inside the new folder that Knobs makes.
+    @Test func pdftoppmWritesEveryPageIntoANewFolder() throws {
+        let manifest = try loadRepositoryManifest("pdftoppm")
+        let task = try #require(manifest.task(withID: "every-page-to-images"))
+        let input: [String: FieldValue] = ["input": .paths(["/a/slides.pdf"])]
+
+        let png = builder().build(task, of: manifest, values: input, extraArguments: "").command
+        let jpeg = builder(existingFiles: ["/a/slides pages"]).build(
+            task, of: manifest, values: input.merging(["format": .text("jpg"), "resolution": .text("300")]) { $1 },
+            extraArguments: ""
+        ).command
+
+        #expect(task.output?.isNewFolder == true)
+        #expect(png.argv == ["-png", "-r", "150", "/a/slides.pdf", "/a/slides pages/page"])
+        #expect(png.outputPath == "/a/slides pages")
+        #expect(jpeg.argv == ["-jpeg", "-r", "300", "/a/slides.pdf", "/a/slides pages 2/page"])
+        #expect(jpeg.outputPath == "/a/slides pages 2")
+    }
+
     @Test func pdftotextKeepsTheLayoutUnlessTurnedOff() throws {
         let manifest = try loadRepositoryManifest("pdftotext")
         let task = try #require(manifest.task(withID: "pdf-to-text"))

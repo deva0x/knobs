@@ -12,7 +12,8 @@ Knobs showed. You'll get a reply within a week.
   `$(rm -rf ~).mov` is just a file name: it reaches the tool as one argument and nothing interprets it.
   Extra arguments are split into words by Knobs itself, following shell quoting rules, and are never passed
   to a shell either.
-- **Nothing is overwritten.** Output names that already exist get " 2", " 3" and so on.
+- **Nothing is overwritten.** Output names that already exist get " 2", " 3" and so on. A task that writes
+  several files, such as every page of a PDF, gets a new folder that Knobs makes for it first.
 - **What you see is what runs.** The command bar is built from the same argument list that runs.
 - **Help text and manifests are data.** "All options" turns a tool's help text into labels and arguments
   only; nothing in it is executed. Manifests are validated strictly, and only web addresses are opened as

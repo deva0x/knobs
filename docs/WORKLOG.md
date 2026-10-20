@@ -411,3 +411,22 @@ Commit email, follow-up (Deva: "is it even necessary to add the email?").
   at 21:17), or no address. Whichever is chosen, the existing commits still need the one-time rewrite.
 
 Next action: Deva picks the address; then the repo config and the rewrite command use it.
+
+## 2026-10-20 21:23 IST · Claude Code (Opus 5.5) · HEAD 928f8b6
+
+Developer ID certificate created (Deva approved "You click it, I approve" and, at 21:20, "certificate saying
+that is okay" for the legal name in it).
+
+- Through screen control of Xcode (click tier only): Xcode → Settings → Apple Accounts → Deva Prasad → team
+  DEVAPRASAD T P (role Admin, with Certificates, Identifiers & Profiles access) → Manage Certificates → + →
+  Developer ID Application. Before, the team had one Apple Development and one Apple Distribution certificate.
+  After: a Developer ID Application certificate, creator DEVAPRASAD T P, dated 10/20/26.
+- Evidence: `security find-identity -v -p codesigning` now lists "Developer ID Application: DEVAPRASAD T P
+  (P564YR8496)" as a valid identity, so its private key is in the login keychain.
+- Not done: a test signature. My codesign run on a scratch copy of the app was denied permission in this
+  session, so nothing has been signed with the certificate yet. No .p12 backup made (needs Deva's password).
+- Still open from earlier: Deva's choice of commit email (GitHub private address, admin@mantis.dev, or none)
+  and the one-time history rewrite Deva runs.
+
+Next action: Deva stores the knobs-notary profile, then scripts/release.sh 0.1.0 signs and notarizes (run by
+Deva, or by an agent once Deva allows codesign here). Deva also picks the commit email.

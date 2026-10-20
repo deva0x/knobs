@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (publish steps checked 21:14; release files rebuilt 2026-10-19 08:36)
+Updated: 2026-10-20 IST (Developer ID certificate created 21:22; publish steps checked 21:14; release files rebuilt 2026-10-19 08:36)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -76,14 +76,14 @@ Updated: 2026-10-20 IST (publish steps checked 21:14; release files rebuilt 2026
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
 publish, or a system setting:
-1. Create the Developer ID Application certificate and store the notary profile `knobs-notary` (WORKFLOW,
-   "Releasing"); `scripts/release.sh` then signs and notarizes instead of building an unsigned DMG.
-   Checked 2026-10-20: Xcode is signed in to team P564YR8496 and has its Apple Development and Apple
-   Distribution certificates, but there is no Developer ID Application certificate and no `knobs-notary`
-   profile. Only the team's Account Holder sees Developer ID Application under Manage Certificates → +, and
-   Apple allows only a few per team, so export a .p12 backup of it. The release script's signing half was
-   read and tried on an ad-hoc copy: the app has one executable and nothing nested to sign first, and
-   re-signing drops the debug-only `get-task-allow` entitlement that notarization refuses.
+1. Store the notary profile `knobs-notary` (WORKFLOW, "Releasing"); `scripts/release.sh` then signs and
+   notarizes instead of building an unsigned DMG. The certificate is done: on 2026-10-20 at 21:22 IST, with
+   Deva's approval, "Developer ID Application: DEVAPRASAD T P (P564YR8496)" was created through Xcode →
+   Settings → Apple Accounts → Manage Certificates, and `security find-identity -v -p codesigning` lists it.
+   Its private key is only in this Mac's login keychain, so export a .p12 backup. Nothing has been signed
+   with it yet; the first `codesign` use may ask for the login password (choose Always Allow). The release
+   script's signing half was read and tried on an ad-hoc copy: the app has one executable and nothing nested
+   to sign first, and re-signing drops the debug-only `get-task-allow` entitlement that notarization refuses.
 2. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
    Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
    command). The website's Download buttons link straight to that release's files (`#release` in

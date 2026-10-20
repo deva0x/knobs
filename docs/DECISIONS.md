@@ -156,3 +156,11 @@ tool starts. Intermediate folders are off, so a missing parent or a folder that 
 picked stops the run with a message instead of mixing files in. After a failed or cancelled run Knobs removes the
 folder only if it is still empty (`rmdir`, which can't remove anything inside); pages a tool already wrote are
 kept. The result card shows the folder as it shows 7-Zip's extracted folder.
+
+## DEC-022: Tell the user when a run ends while they're elsewhere (2026-10-21, chosen by Deva)
+Deva picked "Done notification" for 0.2.0. On the Mac, when a run ends and Knobs isn't the active app, Knobs posts
+a notification with the task's title and the result's name, or says the tool stopped with an error; clicking it
+brings Knobs forward on that task. Cancelled runs aren't announced. Knobs asks macOS for permission the first time
+a run ends in the background, the first moment a notification is useful, rather than at launch. A denied or
+withdrawn permission is respected and only logged. While a running task reports progress, the Dock icon shows a bar
+(the mean of the running tasks that report one); that needs no permission. The Linux app gets neither for now.

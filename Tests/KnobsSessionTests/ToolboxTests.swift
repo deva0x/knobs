@@ -103,6 +103,30 @@ private final class InstalledPrograms: Sendable {
         #expect(toolbox.isHomebrewInstalled)
     }
 
+    @Test func aFinishedRunIsReportedWithItsSessionAndOutcome() async throws {
+        let installed = InstalledPrograms(["/usr/bin/true"])
+        let (_, folder) = try makeToolbox(installed: installed)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let manifests = folder.appending(path: "Manifests")
+        try Data(Self.manifest(id: "yes", executable: "true", formula: "coreutils").utf8)
+            .write(to: manifests.appending(path: "yes.json"))
+        let toolbox = Toolbox(
+            manifestsDirectory: manifests, dataDirectory: folder.appending(path: "Data"), environment: [:],
+            isExecutableFile: installed.contains)
+        let manifest = try #require(toolbox.manifest(withID: "yes"))
+        let session = toolbox.session(for: try #require(manifest.tasks.first), of: manifest)
+        session.values["input"] = .paths([folder.appending(path: "file.txt").path])
+
+        let (finished, outcome) = await withCheckedContinuation { continuation in
+            toolbox.onRunFinished = { session, outcome in continuation.resume(returning: (session, outcome)) }
+            toolbox.run(session)
+        }
+
+        #expect(finished === session)
+        #expect(outcome == .succeeded)
+        #expect(toolbox.runningSessions.isEmpty)
+    }
+
     @Test func checkAgainFindsAToolInstalledUnderAnotherNameAfterLaunch() throws {
         let installed = InstalledPrograms()
         let (toolbox, folder) = try makeToolbox(installed: installed)

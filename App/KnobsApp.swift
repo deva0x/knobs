@@ -88,9 +88,11 @@ struct KnobsCommands: Commands {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private weak var model: AppModel?
     private var pendingURLs: [URL] = []
+    private var runNotifier: RunNotifier?
 
     func connect(_ model: AppModel) {
         self.model = model
+        if runNotifier == nil { runNotifier = RunNotifier(model: model) }
         if !pendingURLs.isEmpty {
             model.openFiles(pendingURLs)
             pendingURLs = []

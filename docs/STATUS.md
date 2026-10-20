@@ -13,13 +13,18 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   whether that is Broadway or the app; worth a look on a real Linux desktop. qpdf's Split a PDF
   (pages per file, into "<PDF> split"; integration test with real qpdf: 1 and 2 pages per file). The result
   card's size change only for the same kind of file (KnobsSession's `RunResult.sizeChange`, three
-  TaskSessionTests). Tried in the app 2026-10-21 03:00 IST: Compress a PDF still shows its number, Turn a PDF
+  TaskSessionTests). Tried in the app 2026-10-21, about 02:30 IST: Compress a PDF still shows its number, Turn a PDF
   into text says Done, and Split a PDF made "Lease split" with Lease-1/2/3.pdf and says Done. Install-all
   on the Mac: the not-installed panel adds one `brew install` line for every missing tool (Toolbox's
   `missingFormulas`, poppler once) and a brew.sh link when Homebrew is missing; seen in the app with two
   temporary fake tools (removed again); the Homebrew-missing line is covered by ToolboxTests only. The Linux
-  app keeps its "use your distribution's package manager" line. Next: notifications, many files, Sparkle, the
-  Homebrew cask and the release files.
+  app keeps its "use your distribution's package manager" line. Notifications and Dock progress (Mac,
+  DEC-022): Toolbox's `onRunFinished` and `runningSessions` (ToolboxTests), the app's RunNotifier. Checked on
+  2026-10-21: a Shrink a video run that ended while Finder was in front made macOS show Knobs' permission request
+  (usernoted log, 02:39:52); at 02:45:50 the setting changed to off (answered "Don't Allow" or closed), and later
+  runs log "Notifications are turned off for Knobs" and post nothing, as intended. A posted notification and the
+  Dock bar were not seen (both are outside the window). To try: System Settings > Notifications > Knobs > Allow.
+  Next: many files, Sparkle, the Homebrew cask and the release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it

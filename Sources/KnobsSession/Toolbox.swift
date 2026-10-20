@@ -22,6 +22,8 @@ public final class Toolbox {
     public private(set) var library: KnobsLibrary
     /// A problem reading or writing the saved settings, in plain words, for the app to show.
     public var libraryProblem: String?
+    /// Called after every run ends, with its session, for an app that tells the user when they're elsewhere.
+    @ObservationIgnored public var onRunFinished: ((TaskSession, RunOutcome) -> Void)?
     /// Whether Homebrew's `brew` is installed, so the app can point to brew.sh before showing `brew install` lines.
     public private(set) var isHomebrewInstalled = false
     private static let homebrewExecutable = "brew"
@@ -183,8 +185,9 @@ public final class Toolbox {
         let key = KnobsLibrary.key(toolID: manifest.id, taskID: task.id)
         if let session = sessions[key] { return session }
         let session = TaskSession(manifest: manifest, task: task, initialValues: library.lastValues(forTask: key))
-        session.onFinish = { [weak self] outcome, outputURL in
+        session.onFinish = { [weak self, weak session] outcome, outputURL in
             self?.recordRun(of: manifest, task, outcome: outcome, outputURL: outputURL)
+            if let session { self?.onRunFinished?(session, outcome) }
         }
         sessions[key] = session
         return session
@@ -198,6 +201,11 @@ public final class Toolbox {
 
     public var hasRunningTasks: Bool {
         sessions.values.contains(where: \.isRunning)
+    }
+
+    /// Every task running now, for showing their progress outside the window, such as on the Dock.
+    public var runningSessions: [TaskSession] {
+        sessions.values.filter(\.isRunning)
     }
 
     /// True while any task of this tool is running, for the sidebar's activity dot.

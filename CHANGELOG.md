@@ -10,6 +10,8 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
 - img2pdf: turn photos and scans into one PDF, a page each, without re-compressing them.
 - Poppler's pdftoppm and pdftotext: save a PDF page, or every page, as PNG or JPEG images, and copy a PDF's text
   into a text file. Every page goes into a new folder next to the PDF, so no existing image is replaced.
+- Mac: a notification when a run ends while you're in another app (clicking it opens the task), and a progress bar
+  on the Dock icon while a task runs. macOS asks for permission the first time (DEC-022).
 - Mac: when several tools aren't installed, their panel also shows one `brew install` line for all of them, and
   says when Homebrew itself is missing, with a link to brew.sh.
 - Manifests: an output can be a new folder that Knobs makes just before the run (`"newFolder": true`), for tools

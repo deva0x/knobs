@@ -174,3 +174,25 @@ stop the others; the result names the ones that didn't work, and the run counts 
 failed. Cancel stops the current file and starts no more. History gets one entry and the notification (DEC-022)
 fires once per run, not per file. Tasks whose input takes several files at once (Merge PDFs) are unchanged. The
 Linux window still takes one file per run; its shared code supports several.
+
+## DEC-024: Updates through Sparkle, asking first (2026-10-21, chosen by Deva)
+Deva picked "Sparkle, asks first" for 0.2.0. The Mac app embeds Sparkle 2.10.0 (pinned in `project.yml`; MIT, and
+its license ships in the app). Nothing is checked on the first launch; on the second, Sparkle asks whether to check
+automatically, and nothing goes over the network before that answer or a press of Check for Updates…. The Knobs menu
+has Check for Updates… and a Check for Updates Automatically toggle, so the answer can be changed later. System
+profiling stays off, Sparkle's default, so a check is one HTTPS request for the feed whose only detail is the
+User-Agent "Knobs/<version> Sparkle/<version>".
+- The feed is `https://knobs.pages.dev/appcast.xml`, made by `scripts/release.sh` and listing DMGs on the GitHub
+  release, so the website carrying a new feed is deployed only after `gh release create`, like the download
+  buttons. Every copy from 0.2.0 on asks that address, so the pages.dev name must keep working, or redirect, after
+  the domain arrives.
+- Updates are signed with an EdDSA key that only Deva holds, in the login keychain under the account `knobs`
+  (`generate_keys --account knobs`). The app carries the public half and checks the signature before it opens the
+  DMG (`SUVerifyUpdateBeforeExtraction`). `release.sh` refuses to release without the public key in `project.yml`,
+  and fails when the new feed entry isn't signed. Sparkle orders updates by `CFBundleVersion`, which goes up by one
+  every release; `release.sh` checks it against the feed.
+- Sparkle starts once the main window is up. Started with the app, its question appeared before SwiftUI opened the
+  window, SwiftUI then opened none, and answering the question closed the last window and quit Knobs.
+- Debug builds have no updater: they share the installed app's bundle id, and so its Sparkle settings.
+- 0.1.0 has no updater, so its users hear about 0.2.0 from the website or GitHub only. The Linux app doesn't update
+  itself; the AUR package updates through the AUR, and a .deb or .rpm by installing the newer one.

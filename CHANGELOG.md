@@ -19,6 +19,9 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
   says when Homebrew itself is missing, with a link to brew.sh.
 - Manifests: an output can be a new folder that Knobs makes just before the run (`"newFolder": true`), for tools
   that write several files but can't make a folder.
+- Mac: updates. Knobs > Check for Updates… finds, downloads and installs a new version, signed by the Knobs
+  project. On its second launch Knobs asks whether to check automatically, once a day; nothing is checked on its own
+  before you answer, and Knobs > Check for Updates Automatically changes the answer (DEC-024).
 
 ### Fixed
 - Linux: the file dialog shows all the types a task takes at once (it opened showing only videos for tasks that

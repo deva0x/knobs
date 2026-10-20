@@ -788,3 +788,17 @@ missing tools, BUG-018, run on many files, done notification, Homebrew cask, and
   (186 tests in 19 suites, known BUG-016).
 - Noticed: Quit does nothing while the Open With sheet is open (left alone).
 - Next: Sparkle (read its docs first; Deva makes the EdDSA key), Homebrew cask, release files.
+
+## 2026-10-21 03:06 IST · Claude Code (Opus 5.5) · HEAD d0b6e4e
+
+Starting Sparkle updates (PLAN M13, Deva chose "Sparkle, asks first" on 2026-10-21).
+- Outcome: Knobs 0.2.0 has Check for Updates… and a Check Automatically toggle in the Knobs menu; Sparkle asks on
+  the second launch before any automatic check; release.sh signs Sparkle's nested code, refuses to release
+  without the EdDSA public key or with an unbumped CFBundleVersion, and writes a signed appcast.
+- Evidence: the Debug app launches with Sparkle loaded; an older test build updates itself from a locally served
+  appcast; `scripts/ci.sh` passes.
+- Boundaries: no key in Deva's keychain made by me (Deva runs generate_keys), no website deploy, no release.
+- Stop condition: done when the above passes, or blocked on the key, reported with the exact command.
+Read Sparkle's docs first: setup, programmatic (SwiftUI) setup, customization keys, sandboxing (signing order),
+publishing. Sparkle's source (2.10.0, SPUUpdater.m) confirms a `defaults write <bundle> SUFeedURL` overrides the
+Info.plist feed (meant for testing), and that the updater refuses to start over http without an EdDSA key.

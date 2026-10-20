@@ -22,6 +22,12 @@ Knobs showed. You'll get a reply within a week.
   settings or presets, and can't be part of an output file name.
 - **Quitting stops tools.** Knobs asks before quitting during a run, then stops the tool and any helpers it
   started.
+- **Updates are signed, and checking asks first (Mac).** Knobs never goes online on its own until you say so: on
+  its second launch it asks whether to check for updates automatically. A check is one request to
+  `knobs.pages.dev/appcast.xml`; it sends nothing about you or your Mac beyond the User-Agent
+  "Knobs/<version> Sparkle/<version>". An update downloads from the GitHub release and is installed only if its
+  EdDSA signature matches the key built into Knobs, checked before the download is opened. Turn automatic checks
+  on or off any time with Knobs > Check for Updates Automatically.
 
 ## Known limits
 

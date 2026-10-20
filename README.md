@@ -122,4 +122,6 @@ See [SECURITY.md](SECURITY.md) for how Knobs runs tools safely, its known limits
 
 ## License
 
-MIT. See [LICENSE](LICENSE). The tools Knobs runs belong to their authors and keep their own licenses.
+MIT. See [LICENSE](LICENSE). The tools Knobs runs belong to their authors and keep their own licenses. The Mac app
+includes [Sparkle](https://sparkle-project.org) for updates; its license is in
+[App/Acknowledgements/Sparkle-LICENSE.txt](App/Acknowledgements/Sparkle-LICENSE.txt) and inside the app.

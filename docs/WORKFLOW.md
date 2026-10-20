@@ -25,6 +25,12 @@ Test conventions the script relies on:
 - Any suite that launches a real tool must be named `...IntegrationTests` (for example `FFmpegIntegrationTests`). `fast` skips suites matching `IntegrationTests`.
 - Integration tests skip, with a message, when their tool isn't installed. With `KNOBS_REQUIRE_TOOLS=1` (set by `release` mode) they fail instead.
 
+The app build fetches Sparkle (DEC-024) into `build/DerivedData/SourcePackages` the first time. On 2026-10-21 that
+first fetch stalled for ten minutes with no network activity; a second try finished in five. If a first build hangs
+there, stop it and run
+`xcodebuild -project Knobs.xcodeproj -scheme Knobs -resolvePackageDependencies -derivedDataPath build/DerivedData`,
+then build again.
+
 Hooks live in `scripts/hooks/` and are turned on with `scripts/install-hooks.sh`. That script sets
 `core.hooksPath`, so the hooks are versioned files, not copies. Never skip them with `--no-verify`.
 
@@ -86,16 +92,26 @@ that address and deploy again.
 
 ## Releasing (from M9 on)
 
-`scripts/release.sh 0.1.0` does the following on this Mac. It checks first that `project.yml` and
-`CHANGELOG.md` both name the version.
+`scripts/release.sh 0.2.0` does the following on this Mac. It checks first that `project.yml` and
+`CHANGELOG.md` both name the version, that `project.yml` has Sparkle's `SUPublicEDKey`, and that its
+`CFBundleVersion` is higher than every build in `website/appcast.xml` (Sparkle compares that number, not the
+version; raise it by one each release).
 1. Runs `scripts/ci.sh release`, which also builds the Release app.
-2. Signs the app with the Developer ID Application certificate and the hardened runtime.
+2. Signs Sparkle's helpers, Sparkle and then the app with the Developer ID Application certificate and the
+   hardened runtime.
 3. Submits it with `xcrun notarytool submit --keychain-profile knobs-notary --wait`, then staples it.
 4. Builds the DMG with `diskutil image create`, then signs, notarizes and staples the DMG too.
-5. Writes `dist/Knobs-0.1.0.dmg` and its SHA-256.
-6. Prints the `gh release create` command for Deva to run, with the DMG and the same version's Linux packages
-   from `dist/linux/`. It doesn't run it. Before that it checks the website: the version in
-   `website/index.html`'s `#release` block must match, and every file it links to must be in `dist/`.
+5. Writes `dist/Knobs-0.2.0.dmg` and its SHA-256.
+6. Checks the website: the version in `website/index.html`'s `#release` block must match, and every file it links
+   to must be in `dist/`.
+7. Adds the stapled DMG to Sparkle's feed, `website/appcast.xml`, with Sparkle's `generate_appcast`: signed with
+   the `knobs` key from the login keychain (the keychain may ask to allow it), the version's CHANGELOG section as
+   the notes, and a download address on the GitHub release. It fails if the new entry isn't signed.
+8. Prints the `gh release create` command for Deva to run, with the DMG and the same version's Linux packages
+   from `dist/linux/`. It doesn't run it.
+
+Only after the release exists: commit `website/appcast.xml` and deploy `website/` (see Website above). Before
+that, the feed and the download buttons would point at files that aren't there.
 
 Without the certificate it skips steps 2 to 4 and leaves an unsigned DMG, saying so. Without the notary
 profile it signs but doesn't notarize, and says so.
@@ -111,6 +127,12 @@ One-time setup only Deva can do:
 - Store notarization credentials:
   `xcrun notarytool store-credentials knobs-notary --apple-id <your Apple ID> --team-id P564YR8496`
   It prompts for an app-specific password, which you create at account.apple.com.
+- Make the update signing key (DEC-024), once, after any build has fetched Sparkle:
+  `build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account knobs`
+  It keeps the private key in the login keychain and prints the public key. Put that public key in
+  `project.yml`, under the app's `info` properties, as `SUPublicEDKey: "<key>"`. Back up the private key
+  (`generate_keys --account knobs -x <file>`, kept somewhere safe and never in the repo): without it no copy of
+  Knobs can be updated again.
 
 ## Manual app check (until UI tests exist)
 

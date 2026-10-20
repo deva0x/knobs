@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-21 IST (Sparkle updates, waiting on the signing key; pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - 0.2.0 in progress (PLAN M13, Deva picked every item on 2026-10-21). Done: BUG-018; the Linux file chooser
@@ -29,8 +29,19 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   "ImageMagick · one file at a time"; Compress an image showed "3 files · one after another", made three
   compressed copies and "3 files done, Saved in batch"; Shrink a video on three clips showed "File 2 of 3" at 54%,
   and Cancel during file 1 of a second run stopped it there (clips 2 and 3 not started, ffmpeg gone). The Linux
-  app builds with the shared change; its window still takes one file. Next: Sparkle, the Homebrew cask and the
-  release files.
+  app builds with the shared change; its window still takes one file. Sparkle updates (DEC-024): Knobs menu
+  items Check for Updates… and Check for Updates Automatically; Sparkle starts once the window is up; Debug builds
+  have none; `release.sh` signs Sparkle's helpers, needs `SUPublicEDKey` (not there yet: waiting on Deva, item 3)
+  and a higher `CFBundleVersion`, and writes a signed `website/appcast.xml`. Checked 2026-10-21 end to end with a
+  throwaway key in a scratch folder (never the keychain) and a test settings domain (never the installed app's):
+  two Developer ID-signed copies of the Release build, an old 0.1.9 (build 1) and a new 0.2.0 in a DMG with a
+  signed feed served on 127.0.0.1. First launch: window, no question. Second launch: window plus Sparkle's
+  question; "Don't Check" kept Knobs open and stored off; the menu toggle turned it on (one feed request) and off.
+  Check for Updates… showed 0.2.0 with the CHANGELOG as notes; Install Update logged "EdDSA signature is correct",
+  replaced the copy with build 2 and relaunched it to its window. The first run of that check found a bug, fixed
+  before commit: started with the app, Sparkle's question kept SwiftUI from opening the main window, and answering
+  it quit Knobs. The installed app's settings have no Sparkle keys. Next: the Homebrew cask and the release
+  files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it
@@ -176,7 +187,13 @@ system setting:
 2. Domain: Deva is buying one on Cloudflare for the site. Once it is attached to the Pages project `knobs`, an
    agent adds the link-preview image tags with that address (website/README.md, "Link previews"), deploys
    again, and changes the website link in the GitHub repository's About box and in README's Download section
-   from https://knobs.pages.dev to the domain.
+   from https://knobs.pages.dev to the domain. Keep knobs.pages.dev serving too (or redirecting): every Knobs
+   from 0.2.0 on asks it for updates, at https://knobs.pages.dev/appcast.xml (DEC-024).
+3. Update signing key (DEC-024), needed before `scripts/release.sh 0.2.0`, which refuses without it. In Terminal,
+   from this worktree: `build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys --account knobs`
+   (it keeps the private key in the login keychain and prints a public key), then hand the printed public key to
+   an agent or put it in `project.yml` as `SUPublicEDKey: "<key>"`. Back up the private key with the same tool's
+   `-x <file>` somewhere safe outside the repo; losing it means no copy of Knobs can be updated again.
 3. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
    and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its

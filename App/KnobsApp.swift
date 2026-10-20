@@ -1,5 +1,6 @@
 import AppKit
 import KnobsCore
+import Sparkle
 import SwiftUI
 
 @main
@@ -34,16 +35,18 @@ struct KnobsApp: App {
         }
         .defaultSize(width: 1180, height: 780)
         .windowToolbarStyle(.unified)
-        .commands { KnobsCommands(model: model) }
+        .commands { KnobsCommands(model: model, updater: appDelegate.updaterController?.updater) }
     }
 }
 
 struct KnobsCommands: Commands {
     let model: AppModel
+    let updater: SPUUpdater?
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About Knobs") { AboutPanel.show() }
+            if let updater { UpdateMenuItems(updater: updater) }
         }
         CommandGroup(after: .sidebar) {
             Button("Go to Task…") { model.isPaletteVisible = true }
@@ -89,10 +92,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private weak var model: AppModel?
     private var pendingURLs: [URL] = []
     private var runNotifier: RunNotifier?
+    /// Sparkle's updater with its standard windows (DEC-024). On the second launch it asks before it checks for
+    /// updates on its own. Debug builds have none: they share the installed Knobs' bundle id, so their answer to
+    /// that question would change the installed app's setting.
+    let updaterController: SPUStandardUpdaterController? = {
+        #if DEBUG
+            nil
+        #else
+            SPUStandardUpdaterController(startingUpdater: false, updaterDelegate: nil, userDriverDelegate: nil)
+        #endif
+    }()
 
     func connect(_ model: AppModel) {
         self.model = model
-        if runNotifier == nil { runNotifier = RunNotifier(model: model) }
+        if runNotifier == nil {
+            runNotifier = RunNotifier(model: model)
+            // Only once the window is up: a Sparkle window open at launch keeps SwiftUI from opening the main
+            // window, and answering it then closes the last window, which quits Knobs.
+            updaterController?.startUpdater()
+        }
         if !pendingURLs.isEmpty {
             model.openFiles(pendingURLs)
             pendingURLs = []

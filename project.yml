@@ -7,6 +7,10 @@ options:
 packages:
   KnobsCore:
     path: .
+  # The updater (DEC-024). Pinned; raise it on purpose, never as part of another change.
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -30,6 +34,7 @@ targets:
         product: KnobsCore
       - package: KnobsCore
         product: KnobsSession
+      - package: Sparkle
     info:
       path: App/Info.plist
       properties:
@@ -39,6 +44,11 @@ targets:
         LSMinimumSystemVersion: "26.0"
         LSApplicationCategoryType: public.app-category.utilities
         NSHumanReadableCopyright: "Open source under the MIT License."
+        # Sparkle (DEC-024). The feed is on the website, deployed only once the release it lists exists.
+        SUFeedURL: https://knobs.pages.dev/appcast.xml
+        # Check an update's EdDSA signature before opening its DMG. Needs SUPublicEDKey, which scripts/release.sh
+        # requires; a Release build without it says its updater can't start.
+        SUVerifyUpdateBeforeExtraction: true
         CFBundleDocumentTypes:
           - CFBundleTypeName: Any File
             CFBundleTypeRole: Viewer

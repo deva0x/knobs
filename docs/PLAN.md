@@ -120,10 +120,10 @@ that runs one real task on a tiny fixture, and try it once in the app.
 
 ### M10. Publish (only Deva can do this)
 - [x] Name and license settled: Knobs, MIT (DEC-018, on Deva's go-ahead)
-- [ ] Deva creates the GitHub repo (or approves creating it)
-- [ ] Deva turns off GitHub Actions for the repo before the first push (Settings → Actions → General → Disable actions), and leaves CodeQL default setup and Dependabot off. An empty `.github/workflows` doesn't stop GitHub's own default workflows.
-- [ ] Deva pushes
-- [ ] Deva approves uploading the DMG with `gh release create` (a release upload, not GitHub Actions)
+- [x] Deva creates the GitHub repo (or approves creating it)
+- [x] Deva turns off GitHub Actions for the repo before the first push (Settings → Actions → General → Disable actions), and leaves CodeQL default setup and Dependabot off. An empty `.github/workflows` doesn't stop GitHub's own default workflows.
+- [x] Deva pushes
+- [x] Deva approves uploading the DMG with `gh release create` (a release upload, not GitHub Actions)
 - [x] Website hosting chosen: Cloudflare Pages by direct upload (DEC-018). GitHub Pages builds run on Actions, so a direct upload (for example Cloudflare Pages through `wrangler pages deploy` from this Mac) fits DEC-002 better.
 
 ### M11. Linux (DEC-014, DEC-015)

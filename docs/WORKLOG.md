@@ -548,3 +548,39 @@ v0.1.0 released; AUR package knobs-gui-bin prepared and tested (Deva: "yes to th
   tab could offer the AUR install with the next release.
 
 Next action: Deva pushes main, deploys the website, and publishes knobs-gui-bin to the AUR (STATUS 1 to 3).
+
+## 2026-10-20 22:29 IST · Claude Code (Opus 5.5) · HEAD 610e6e9
+
+Website live, DMG install checked, agents may push (Deva: "DO yourself", then chose Pages and "Let agents push").
+
+- Website: Deva asked me to deploy. `wrangler pages project create knobs --production-branch main`, run in the
+  worktree, did not create a Pages project: Wrangler 4.135 delegated it to Workers, wrote wrangler.jsonc (name
+  "where-are-we-e513b3", assets "website") and three .gitignore lines, and deployed a Worker "knobs" at
+  knobs.bitdeva.workers.dev (22:16 IST). Probed it: only website/ files were served (/, /main.js, /README.md,
+  /assets/og.png 200; /CLAUDE.md, /docs/STATUS.md, /dist/Knobs-0.1.0.dmg, /.git/config 404); its 404 page was
+  empty. Its deployment history (read-only) showed one deployment, mine, so nothing of Deva's was replaced.
+  Reverted the local edits (.gitignore restored, wrangler.jsonc removed). A delete attempt was refused by the
+  permission check; Deva then chose "Pages, delete the Worker". `wrangler delete knobs` (22:24): deleted, the
+  address returns 404. From an empty scratch folder: `wrangler pages project create knobs --production-branch
+  main --force` created the Pages project; `wrangler pages deploy <worktree>/website --project-name knobs
+  --branch main` uploaded 13 files (22:25). Deva said to be careful, as the account holds other important work:
+  every command named only knobs. Wrangler auto-answers its prompts "yes" when not interactive; noted in
+  WORKFLOW.
+- Checked https://knobs.pages.dev: / and assets 200 and byte-identical to website/ (index.html, main.js); an
+  unknown path returns 404 with our 404.html; X-Content-Type-Options, Referrer-Policy, X-Frame-Options and
+  Permissions-Policy set; in the browser pane no console errors, the demo renders, Download for Mac links to
+  the v0.1.0 DMG. Link-preview tags wait for the domain Deva is buying on Cloudflare.
+- website/main.js: dropped the "repository isn't public yet" comment before deploying (218c344).
+- DMG check (PLAN M9 exit): downloaded Knobs-0.1.0.dmg from the release (SHA-256 9da1de32...), marked it as a
+  Safari download (com.apple.quarantine), opened it; Deva dragged Knobs to /Applications (my synthetic drags
+  did not take). Quarantine flag carried over (0183); spctl: accepted, Notarized Developer ID. `open`
+  started it within 4 s with no Gatekeeper prompt; the flag became 01c3 (approved); screenshot showed its
+  window with the tool list.
+- Push rule (DEC-020, Deva's choice): guard.sh no longer blocks pushes naming main or master; CLAUDE.md's
+  standing authorization allows a plain push of main to origin and of the AUR files to knobs-gui-bin's
+  master after their release exists; force pushes and --no-verify stay blocked. WORKFLOW updated to match.
+- STATUS restructured: published items under Now; Waiting on Deva is the AUR account, the domain, and the
+  optional accessibility checks and certificate backup. PLAN M10 boxes ticked.
+
+Next action: push main to origin (first agent push under DEC-020) and check GitHub matches; then wait for the
+AUR account and the domain.

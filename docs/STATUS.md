@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-20 IST (website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -50,7 +50,10 @@ Updated: 2026-10-20 IST (AUR package ready 22:08; v0.1.0 released 21:45; pushed 
     afterwards: `spctl` accepts the DMG and the app inside it as "Notarized Developer ID", `stapler validate`
     passes on both, `codesign --verify --deep --strict` passes, the app has the hardened runtime and no
     entitlements, `syspolicy_check distribution` says it is ready for distribution, and the SHA-256 file
-    matches (9da1de32...). Not yet done: opening it from the DMG on this Mac by hand (PLAN M9's exit check).
+    matches (9da1de32...). Installed by hand (22:22 IST): the DMG downloaded from the GitHub release and marked
+    as a browser download (quarantine), Knobs dragged to /Applications in Finder, then opened: it started with
+    no Gatekeeper prompt or warning, macOS marked it approved (quarantine flag 0183 to 01c3), and its window
+    showed the tool list. That is PLAN M9's exit check.
   - All seven Linux packages (`scripts/linux.sh package 0.1.0` arm64 and amd64), each installed in a clean
     container and run through Broadway: Shrink a video on the 36.3 MB 1080p sample gave a 10 s 1280x720
     H.264+AAC file and "Done in N s" every time. arm64 .deb (Ubuntu 26.04), .rpm (Fedora 44, GTK 4.22.5,
@@ -76,41 +79,49 @@ Updated: 2026-10-20 IST (AUR package ready 22:08; v0.1.0 released 21:45; pushed 
 - Next action: none for BUG-014. Watch for BUG-015 in later Linux checks; BUG-016 needs a Linux `Process`
   replacement or an upstream fix, not planned.
 
+- Published 2026-10-20: the repository, release v0.1.0, and the website at https://knobs.pages.dev. Agents now
+  push `main` themselves (DEC-020).
+  - Website (22:25 IST, deployed by me on Deva's request): Cloudflare Pages project `knobs`, production branch
+    `main`. Checked: `/` and every asset 200 with the same bytes as `website/`, an unknown path gets our 404
+    page with status 404, the four `_headers` security headers are set, no console errors in a browser, and the
+    Download buttons and GitHub links point at the v0.1.0 release. On the way, Wrangler's `pages project create`
+    deployed a Worker `knobs` at knobs.bitdeva.workers.dev (Deva's Gmail name in the address) for about nine
+    minutes, serving only `website/`'s files (repo files, docs, `dist/` and `.git` were 404). Deva chose Pages;
+    that Worker, which had only my one deployment, was deleted and its address returns 404. Nothing else in the
+    Cloudflare account was touched.
+  - Release v0.1.0 (21:45 IST): Deva created it at b08ddd3 with the notes in `dist/release-notes-0.1.0.md`
+    (written from CHANGELOG, gitignored). Checked: published, not a draft; all nine files (DMG, its .sha256,
+    seven Linux packages) have the same SHA-256 on GitHub as in `dist/`; every `#release` download link and the
+    site's four GitHub links answer 200.
+  - Repository (21:41 IST): Deva created the public github.com/deva0x/knobs, turned GitHub Actions off before
+    the first push, and pushed `main` (the pre-push hook ran `scripts/ci.sh` full: PASS). Checked through the
+    GitHub API: Actions disabled with 0 runs, Dependabot alerts and code scanning default setup off, every
+    author and committer email 95619082+deva0x@users.noreply.github.com (Deva's choice; the history was
+    rewritten at 21:39, WORKLOG maps old to new hashes), commits linked to the deva0x account, no token, key or
+    `/Users/deva` path in any commit. The pre-rewrite commits stay on this Mac under `refs/original/`; GitHub
+    never got them, and Deva can delete them.
+
 ## Waiting on Deva
-Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
-publish, or a system setting:
-1. Push `main` (it has the AUR package change, DEC-019).
-   Released 2026-10-20 21:45 IST: Deva created v0.1.0 at b08ddd3 with the notes in
-   `dist/release-notes-0.1.0.md` (written from CHANGELOG, gitignored). Checked: published, not a draft; all nine
-   files (DMG, its .sha256, seven Linux packages) have the same SHA-256 on GitHub as in `dist/`; every
-   `#release` download link on the website and its four GitHub links answer 200.
-   Done before that: Deva created the public repository github.com/deva0x/knobs (21:41 IST), turned GitHub
-   Actions off before the first push, and pushed `main` (21:42, the pre-push hook ran `scripts/ci.sh` full:
-   PASS). Checked through the GitHub API: Actions disabled with 0 runs, Dependabot alerts and code scanning
-   default setup off, GitHub's main equal to local main with all 112 commits, every author and committer email
-   95619082+deva0x@users.noreply.github.com (Deva's choice; the history was rewritten at 21:39, WORKLOG maps
-   old to new hashes), and commits linked to the deva0x account. Earlier checks: no token, key or
-   `/Users/deva` path in any commit, no `.github` folder. The pre-rewrite commits stay on this Mac under
-   `refs/original/`; GitHub never got them, and Deva can delete them.
-2. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
-   site's address (website/README.md, "Link previews") and deploy again. Checked 2026-10-20: Wrangler is signed
-   in to one Cloudflare account with Pages write access, and no Pages project exists yet, so the first deploy
-   creates `knobs`. Wrangler leaves a `.wrangler/` cache in the repo, now ignored.
-3. Publish `knobs-gui-bin` to the AUR (Deva said yes; the name is DEC-019). Ready: the PKGBUILD and .SRCINFO
-   for 0.1.0 are in this worktree's `dist/linux/aur/` (`.claude/worktrees/where-are-we-e513b3`), and any
-   checkout can write them again with the amd64 `scripts/linux.sh package` or `linux/packaging/package-arch.sh`.
-   Tested 2026-10-20 in a fresh archlinux container given only the PKGBUILD: makepkg downloaded the tarball from
-   the release and its checksum passed (it equals GitHub's digest), `makepkg --printsrcinfo` matches the
-   .SRCINFO, namcap reports nothing on the PKGBUILD and no errors on the package, pacman installed it with
-   GTK and libadwaita, no library is missing, `knobs --help` runs, and its 16 files are byte-identical to
-   the tested 0.1.0 `knobs-bin` apart from the license folder's name. Deva's steps: an AUR account with an SSH
-   key, then clone `ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, add the two files, commit, push `master`.
-4. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
-   each needs a system setting, and Keyboard navigation is off on this Mac), and click through Knobs on
-   omarchy-1.
-5. Open `dist/Knobs-0.1.0.dmg`, drag Knobs to Applications and open it, to see it start without a Gatekeeper
-   warning (PLAN M9's exit check). Also export a .p12 backup of the Developer ID certificate (created
-   2026-10-20 21:22 IST through Xcode); its private key is only in this Mac's login keychain.
+Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts or a
+system setting:
+1. AUR account: register at aur.archlinux.org and add an SSH public key under My Account (agents may not create
+   accounts). Then an agent publishes `knobs-gui-bin` (DEC-019, DEC-020): clone
+   `ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, set that clone's user.email to the GitHub private address,
+   add the PKGBUILD and .SRCINFO, commit, push `master`. The files for 0.1.0 are in this worktree's
+   `dist/linux/aur/` (`.claude/worktrees/where-are-we-e513b3`); any checkout can write them again with the amd64
+   `scripts/linux.sh package` or `linux/packaging/package-arch.sh`. Tested 2026-10-20 in a fresh archlinux
+   container given only the PKGBUILD: makepkg downloaded the tarball from the release and its checksum passed
+   (it equals GitHub's digest), `makepkg --printsrcinfo` matches the .SRCINFO, namcap reports nothing on the
+   PKGBUILD and no errors on the package, pacman installed it with GTK and libadwaita, no library is missing,
+   `knobs --help` runs, and its 16 files are byte-identical to the tested 0.1.0 `knobs-bin` apart from the
+   license folder's name.
+2. Domain: Deva is buying one on Cloudflare for the site. Once it is attached to the Pages project `knobs`, an
+   agent adds the link-preview image tags with that address (website/README.md, "Link previews") and deploys
+   again.
+3. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
+   each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
+   and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its
+   private key is only in this Mac's login keychain).
 
 ## Blocked
 - Nothing. BUG-009 is fixed (see BUGS).

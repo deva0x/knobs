@@ -233,6 +233,23 @@ import Testing
         #expect(!command.displayString.contains("hunter2"))
     }
 
+    @Test func img2pdfKeepsTheImagesInTheOrderTheyWereAdded() throws {
+        let manifest = try loadRepositoryManifest("img2pdf")
+        let task = try #require(manifest.task(withID: "images-to-pdf"))
+        let images: [String: FieldValue] = ["images": .paths(["/a/receipt 2.jpg", "/a/receipt 1.png"])]
+
+        let sameSize = builder().build(task, of: manifest, values: images, extraArguments: "").command
+        let onA4 = builder().build(
+            task, of: manifest, values: images.merging(["pageSize": .text("A4")]) { $1 }, extraArguments: ""
+        ).command
+
+        #expect(
+            sameSize.argv == [
+                "--rotation=ifvalid", "-o", "/a/receipt 2.pdf", "/a/receipt 2.jpg", "/a/receipt 1.png",
+            ])
+        #expect(onA4.argv.prefix(3) == ["--pagesize", "A4", "--rotation=ifvalid"])
+    }
+
     @Test func outputNameNeverEndsOrStartsWithADot() throws {
         let manifest = try load(
             minimalManifest(

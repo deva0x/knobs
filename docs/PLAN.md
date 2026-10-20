@@ -142,7 +142,7 @@ that runs one real task on a tiny fixture, and try it once in the app.
 ### M12. PDF tools (2026-10-20, Deva's request)
 Same steps as M6 for each tool, plus a card in the website's tool gallery and the Linux package lists. The
 website and README describe them from the next release on.
-- [ ] qpdf (5): rotate pages, pick and reorder pages, protect with a password, remove a password, repair
+- [x] qpdf (5): rotate pages, pick and reorder pages, protect with a password, remove a password, repair
 - [ ] img2pdf (1): turn images into a PDF
 - [ ] pdftoppm, from Poppler (2): a page as an image, every page as images
 - [ ] pdftotext, from Poppler (1): PDF to text

@@ -27,7 +27,7 @@
   /* System tints, light appearance (Apple's palette) */
   --purple: #AF52DE; --red: #FF3B30; --teal: #30B0C7; --indigo: #5856D6; --orange: #FF9500;
   --blue: #007AFF; --gray: #8E8E93; --green: #34C759; --cyan: #32ADE6; --brown: #A2845E;
-  --mint: #00C7BE;
+  --mint: #00C7BE; --pink: #FF2D55;
   --purple-text: #8944AB;    /* accessible purple for flags in text */
 
   /* App window mock */
@@ -74,7 +74,7 @@
 
     --purple: #BF5AF2; --red: #FF453A; --teal: #40C8E0; --indigo: #5E5CE6; --orange: #FF9F0A;
     --blue: #0A84FF; --gray: #98989D; --green: #30D158; --cyan: #64D2FF; --brown: #AC8E68;
-    --mint: #63E6E2;
+    --mint: #63E6E2; --pink: #FF375F;
     --purple-text: #C77DF3;
 
     --win-bg: #1E1E1D;
@@ -234,7 +234,7 @@ h2 {
 .t-purple { --t: var(--purple); } .t-red { --t: var(--red); } .t-teal { --t: var(--teal); }
 .t-indigo { --t: var(--indigo); } .t-orange { --t: var(--orange); } .t-blue { --t: var(--blue); }
 .t-gray { --t: var(--gray); } .t-green { --t: var(--green); } .t-cyan { --t: var(--cyan); } .t-brown { --t: var(--brown); }
-.t-mint { --t: var(--mint); }
+.t-mint { --t: var(--mint); } .t-pink { --t: var(--pink); }
 
 .tile-lg { width: 2.75em; height: 2.75em; border-radius: 0.625em; }
 

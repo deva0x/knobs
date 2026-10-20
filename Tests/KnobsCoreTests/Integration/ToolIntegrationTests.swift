@@ -201,6 +201,30 @@ private func makeThreePagePDF(_ gs: URL, at path: String, in folder: URL) async 
     }
 }
 
+@Suite struct Img2pdfIntegrationTests {
+    @Test func aPhotoAndATransparentImageBecomeTwoPages() async throws {
+        guard let img2pdf = Integration.tool("img2pdf"), let magick = Integration.tool("magick"),
+            let qpdf = Integration.tool("qpdf")
+        else { return }
+        let folder = try Integration.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let photo = folder.appending(path: "photo.jpg").path
+        let logo = folder.appending(path: "logo.png").path
+        try await Integration.prepare(magick, ["-size", "640x480", "gradient:orange-purple", photo], in: folder)
+        try await Integration.prepare(
+            magick, ["-size", "200x200", "xc:none", "-fill", "red", "-draw", "circle 100,100 100,20", logo], in: folder)
+        let manifest = try loadRepositoryManifest("img2pdf")
+
+        let result = try await Integration.run(
+            "images-to-pdf", of: manifest, executable: img2pdf,
+            values: ["images": .paths([photo, logo]), "pageSize": .text("A4")], in: folder)
+
+        expectSucceeded(result, "images-to-pdf")
+        let pdf = try #require(result.outputPath)
+        #expect(try await Integration.prepare(qpdf, ["--show-npages", pdf], in: folder) == ["2"])
+    }
+}
+
 @Suite struct WhisperIntegrationTests {
     /// The test model downloaded into .cache/models (docs/DECISIONS.md, DEC-009).
     private let model = manifestsDirectory.deletingLastPathComponent().appending(path: ".cache/models/ggml-tiny.en.bin")

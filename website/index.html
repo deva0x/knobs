@@ -159,6 +159,7 @@
       <symbol id="g-ocrmypdf" viewBox="0 0 24 24"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M8 9h8M8 12h8M8 15h5"/></symbol>
       <symbol id="g-ghostscript" viewBox="0 0 24 24"><rect x="8" y="7" width="12" height="14" rx="2"/><path d="M16 4.25V4a1 1 0 0 0-1-1H6a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h.75"/><path d="M11 12h6M11 15.5h4"/></symbol>
       <symbol id="g-qpdf" viewBox="0 0 24 24"><path d="M13.75 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.25z"/><path d="M13.75 3v5.25H19"/><rect x="9" y="13.5" width="6" height="4.5" rx="1"/><path d="M10.25 13.5v-1.25a1.75 1.75 0 0 1 3.5 0v1.25"/></symbol>
+      <symbol id="g-img2pdf" viewBox="0 0 24 24"><path d="M13.75 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.25z"/><path d="M13.75 3v5.25H19"/><path d="m8 17.5 2.75-3.25 2 2.25 1.25-1.25 2 2.25"/><circle cx="10" cy="11" r="1"/></symbol>
       <symbol id="g-whisper" viewBox="0 0 24 24"><path d="M3.5 11v2M7 8.5v7M10.5 4.5v15M14 7.5v9M17.5 10v4M21 11.25v1.5"/></symbol>
       <symbol id="g-rsync" viewBox="0 0 24 24"><path d="M19.25 10A7.5 7.5 0 0 0 5.6 7.6"/><path d="M4.75 14a7.5 7.5 0 0 0 13.65 2.4"/><path d="M19.6 4.75V10h-5.25"/><path d="M4.4 19.25V14h5.25"/></symbol>
       <symbol id="g-sevenzip" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/></symbol>
@@ -302,7 +303,7 @@
     <section class="tools" id="tools" aria-labelledby="tools-title">
       <div class="wrap">
         <div class="section-head">
-          <h2 id="tools-title">Eleven tools to start with.</h2>
+          <h2 id="tools-title">Twelve tools to start with.</h2>
           <p>Each one comes with everyday tasks in plain words. Knobs doesn’t install tools; if one is missing, it shows the brew command to copy.</p>
         </div>
         <ul class="desk">
@@ -361,6 +362,13 @@
             <p class="strip-what">PDF pages and passwords</p>
             <ul class="strip-tasks"><li>Rotate pages</li><li>Pick and reorder pages</li><li>Protect with a password</li></ul>
             <code class="strip-brew">brew install qpdf</code>
+          </li>
+          <li class="strip" style="--tint: var(--pink)">
+            <span class="tile t-pink"><svg class="g"><use href="#g-img2pdf"/></svg></span>
+            <h3>img2pdf</h3>
+            <p class="strip-what">Images to PDF</p>
+            <ul class="strip-tasks"><li>Turn images into a PDF</li></ul>
+            <code class="strip-brew">brew install img2pdf</code>
           </li>
           <li class="strip" style="--tint: var(--green)">
             <span class="tile t-green"><svg class="g"><use href="#g-whisper"/></svg></span>

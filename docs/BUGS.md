@@ -257,6 +257,11 @@ Template:
   `--flag:` as the flag and the summary's first word as the value name. The detailed `== --flag (...) ==`
   sections further down add the right spelling (`--rotate` with `+|-]angle[:page-range`), so most options are
   listed twice, once with the colon.
+- Same kind, img2pdf (`Fixtures/help/img2pdf.txt`, img2pdf 0.6.3): a prose line that starts with a flag,
+  "  --pagesize options, respectively.", becomes the `--pagesize` entry with the value name "options
+  respectively.", and the real `-S, --pagesize LxL` line later is dropped as a duplicate. The prose line
+  "  --imgsize options are passed, then the --border option will be ignored." likewise becomes one entry for
+  both flags, and the real `-s, --imgsize` and `-b, --border` lines are dropped. The golden count pins 37.
 - Effect: qpdf's All options view has many entries that make a command qpdf refuses. qpdf's five tasks are not
   affected; they don't use the help.
 - Not fixed yet: the parser should read `--flag: summary` as a flag and its summary, and then keep the entry

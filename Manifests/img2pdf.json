@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "img2pdf",
+  "name": "img2pdf",
+  "summary": "Turn photos and scans into a PDF without losing quality.",
+  "executable": "img2pdf",
+  "install": { "brew": "img2pdf" },
+  "homepage": "https://gitlab.mister-muffin.de/josch/img2pdf",
+  "symbol": "doc.text.image",
+  "tint": "pink",
+  "tasks": [
+    {
+      "id": "images-to-pdf",
+      "title": "Turn images into a PDF",
+      "summary": "Put images into one PDF, a page each, in the order you add them.",
+      "symbol": "rectangle.portrait.on.rectangle.portrait",
+      "fields": [
+        { "id": "images", "label": "Images", "kind": "inputFile", "multiple": true,
+          "contentTypes": ["public.jpeg", "public.png", "com.compuserve.gif", "org.webmproject.webp",
+                           "com.microsoft.bmp", "public.tiff"],
+          "help": "JPEG, PNG, GIF, WebP, BMP or TIFF. Convert iPhone HEIC photos to JPEG first, with ImageMagick." },
+        { "id": "pageSize", "label": "Page size", "kind": "choice", "default": "",
+          "options": [
+            { "value": "", "label": "Same as each image" },
+            { "value": "A4", "label": "A4" },
+            { "value": "Letter", "label": "US Letter" }
+          ] }
+      ],
+      "output": { "template": "{images.stem}.pdf", "nextTo": "images" },
+      "arguments": [
+        { "if": "pageSize", "then": ["--pagesize", "{pageSize}"] },
+        "--rotation=ifvalid", "{extra}", "-o", "{output}", "{images}"
+      ]
+    }
+  ]
+}

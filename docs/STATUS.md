@@ -2,14 +2,16 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (PDF tools: qpdf added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-20 IST (PDF tools: qpdf and img2pdf added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - PDF tools for the next release (PLAN M12, Deva's request 2026-10-20): qpdf added, with golden tests and an
-  integration test that runs all five tasks on a real PDF. Still to come: img2pdf, then pdftoppm and pdftotext
-  from Poppler, then a check of each in the app. `website/` already lists qpdf (its test keeps the gallery in
+  integration test that runs all five tasks on a real PDF; img2pdf added, its integration test turning a JPEG
+  and a transparent PNG into a two-page A4 PDF. Still to come: pdftoppm and pdftotext from Poppler, then a
+  check of each in the app. `website/` already lists them (its test keeps the gallery in
   step with the manifests), but the live site describes 0.1.0, so deploy `website/` with the next release, not
-  before. BUG-017 (open): qpdf's All options shows colon-suffixed flags qpdf rejects; the tasks are fine.
+  before. BUG-017 (open): qpdf's All options shows colon-suffixed flags qpdf rejects, and img2pdf's misreads
+  `--pagesize` and `--imgsize`; the tasks are fine.
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
   screenshots in the README and on the website, and most of the Linux version (M11).
 - Website (2026-10-19), ready to deploy: the demo, safety example and manifest excerpt show the real Shrink a

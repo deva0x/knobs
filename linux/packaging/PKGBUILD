@@ -21,6 +21,7 @@ optdepends=(
     'perl-image-exiftool: photo details'
     'ghostscript: PDF tasks'
     'qpdf: PDF pages and passwords'
+    'img2pdf: images to PDF'
     'rsync: folder copies'
     'yt-dlp: downloads'
     'ocrmypdf: searchable PDFs (AUR)'

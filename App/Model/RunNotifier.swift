@@ -63,6 +63,11 @@ final class RunNotifier: NSObject, UNUserNotificationCenterDelegate {
     private static func message(for session: TaskSession, _ outcome: RunOutcome) -> String {
         switch outcome {
         case .succeeded:
+            if let result = session.result, result.fileCount > 1 {
+                let done = result.fileCount - result.failedFiles.count
+                return result.failedFiles.isEmpty
+                    ? "Done: \(done) files." : "Done: \(done) of \(result.fileCount) files; the rest didn't work."
+            }
             if let name = session.result?.outputURL?.lastPathComponent { return "Done: \(name)" }
             return "Done."
         case .failed:

@@ -24,7 +24,13 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   (usernoted log, 02:39:52); at 02:45:50 the setting changed to off (answered "Don't Allow" or closed), and later
   runs log "Notifications are turned off for Knobs" and post nothing, as intended. A posted notification and the
   Dock bar were not seen (both are outside the window). To try: System Settings > Notifications > Knobs > Allow.
-  Next: many files, Sparkle, the Homebrew cask and the release files.
+  Many files (DEC-023): TaskSession runs a one-file task once per file (four TaskSessionTests, one
+  CommandBuilderTests). Tried in the app 2026-10-21 about 02:56 IST: three photos opened with Knobs offered
+  "ImageMagick · one file at a time"; Compress an image showed "3 files · one after another", made three
+  compressed copies and "3 files done, Saved in batch"; Shrink a video on three clips showed "File 2 of 3" at 54%,
+  and Cancel during file 1 of a second run stopped it there (clips 2 and 3 not started, ffmpeg gone). The Linux
+  app builds with the shared change; its window still takes one file. Next: Sparkle, the Homebrew cask and the
+  release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it

@@ -81,8 +81,8 @@ final class AppModel {
         struct Choice: Identifiable {
             let manifest: ToolManifest
             let task: ManifestTask
-            /// The task takes one file, but several were opened.
-            let usesOnlyFirstFile: Bool
+            /// The task takes one file, but several were opened, so it runs once per file.
+            let runsOncePerFile: Bool
             /// Task ids repeat across tools, so the tool is part of the id.
             var id: String { KnobsLibrary.key(toolID: manifest.id, taskID: task.id) }
         }
@@ -117,24 +117,24 @@ final class AppModel {
         let specific = pool.filter { candidate in
             Self.openableField(of: candidate.task).map { FileTypeCheck.namesSpecificTypes($0.kind) } ?? false
         }
-        // With several files, tasks that take several (Merge PDFs) come first. Single-file tasks stay on offer,
-        // marked as using only the first file, rather than being hidden or quietly dropping files.
+        // With several files, tasks that take several (Merge PDFs) come first. Single-file tasks follow, marked as
+        // running once per file.
         let choices = (specific.isEmpty ? pool : specific).map { candidate in
             PendingFiles.Choice(
                 manifest: candidate.manifest, task: candidate.task,
-                usesOnlyFirstFile: urls.count > 1
+                runsOncePerFile: urls.count > 1
                     && !(Self.openableField(of: candidate.task).map(Self.takesSeveralFiles) ?? false))
         }
         .enumerated()
         .sorted { lhs, rhs in
             // Closest fit first: tasks for several files when several were opened, then tasks that accept fewer
             // types (a video-only task before one for any image, video or PDF), then manifest order.
-            let left = (lhs.element.usesOnlyFirstFile, Self.acceptedTypeCount(of: lhs.element.task), lhs.offset)
-            let right = (rhs.element.usesOnlyFirstFile, Self.acceptedTypeCount(of: rhs.element.task), rhs.offset)
+            let left = (lhs.element.runsOncePerFile, Self.acceptedTypeCount(of: lhs.element.task), lhs.offset)
+            let right = (rhs.element.runsOncePerFile, Self.acceptedTypeCount(of: rhs.element.task), rhs.offset)
             return (left.0 ? 1 : 0, left.1, left.2) < (right.0 ? 1 : 0, right.1, right.2)
         }
         .map(\.element)
-        if choices.count == 1, let only = choices.first, !only.usesOnlyFirstFile {
+        if choices.count == 1, let only = choices.first {
             use(urls, for: only.task, of: only.manifest)
         } else if !choices.isEmpty {
             pendingFiles = PendingFiles(urls: urls, choices: choices)
@@ -182,8 +182,9 @@ final class AppModel {
         return false
     }
 
+    /// A file field takes every file: one that takes a single file runs once per file. A folder field takes one.
     private static func paths(_ urls: [URL], for field: Field) -> [String] {
-        if case .inputFile(_, true) = field.kind { return urls.map(\.path) }
+        if case .inputFile = field.kind { return urls.map(\.path) }
         return [urls[0].path]
     }
 

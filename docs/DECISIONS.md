@@ -164,3 +164,13 @@ brings Knobs forward on that task. Cancelled runs aren't announced. Knobs asks m
 a run ends in the background, the first moment a notification is useful, rather than at launch. A denied or
 withdrawn permission is respected and only logged. While a running task reports progress, the Dock icon shows a bar
 (the mean of the running tasks that report one); that needs no permission. The Linux app gets neither for now.
+
+## DEC-023: A one-file task given several files runs once per file (2026-10-21, chosen by Deva)
+Deva picked "Run on many files" for 0.2.0. No manifest changes: any task whose main input takes one file can be
+given several (dropped, chosen, or opened with Knobs), and Run goes through them one after another in the shared
+TaskSession. Each file's command is built just before it runs, so output names are picked knowing what the earlier
+files wrote and nothing is overwritten. The command bar shows the first file's command. A file that fails doesn't
+stop the others; the result names the ones that didn't work, and the run counts as failed only when every file
+failed. Cancel stops the current file and starts no more. History gets one entry and the notification (DEC-022)
+fires once per run, not per file. Tasks whose input takes several files at once (Merge PDFs) are unchanged. The
+Linux window still takes one file per run; its shared code supports several.

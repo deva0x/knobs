@@ -100,11 +100,14 @@ private struct StageBackdrop: View {
 // MARK: - Input
 
 /// The main input: a large drop target when empty, then a big preview (or a stack of them) with the file's facts.
+/// A task that takes one file can be given several; it then runs once per file.
 private struct InputStage: View {
     let field: Field
     @Bindable var session: TaskSession
     @State private var isTargeted = false
     @State private var isImporting = false
+    /// Whether the file dialog's choice joins the files already there ("Add More…") or takes their place.
+    @State private var importAppends = false
     @State private var rejectedDrop = false
 
     private var paths: [String] { session.value(of: field)?.pathList ?? [] }
@@ -126,14 +129,17 @@ private struct InputStage: View {
             if paths.isEmpty {
                 DropTarget(
                     field: field, session: session, isTargeted: isTargeted, rejectedDrop: rejectedDrop,
-                    choose: { isImporting = true })
+                    choose: chooseFilesToReplace)
             } else if paths.count == 1 {
                 SingleFile(
                     url: URL(filePath: paths[0]), session: session, isTargeted: isTargeted,
-                    replaceOrAdd: { isImporting = true }, remove: { session.setValue(nil, for: field) })
+                    replaceOrAdd: allowsMultiple ? chooseFilesToAdd : chooseFilesToReplace,
+                    remove: { session.setValue(nil, for: field) })
             } else {
-                SeveralFiles(paths: paths, session: session, isTargeted: isTargeted) {
-                    isImporting = true
+                SeveralFiles(
+                    paths: paths, runsOncePerFile: !allowsMultiple, session: session, isTargeted: isTargeted
+                ) {
+                    chooseFilesToAdd()
                 } remove: { path in
                     let remaining = paths.filter { $0 != path }
                     session.setValue(remaining.isEmpty ? nil : .paths(remaining), for: field)
@@ -148,15 +154,16 @@ private struct InputStage: View {
                 withAnimation(.knobs) { rejectedDrop = true }
                 return false
             }
-            add(accepted)
+            // Files dropped onto a list join it; onto one file of a one-file task, they take its place.
+            if allowsMultiple || paths.count > 1 { append(accepted) } else { replace(with: accepted) }
             return true
         } isTargeted: { targeted in
             withAnimation(.knobs) { isTargeted = targeted }
         }
-        .fileImporter(
-            isPresented: $isImporting, allowedContentTypes: allowedTypes, allowsMultipleSelection: allowsMultiple
-        ) { result in
-            if case .success(let urls) = result, !urls.isEmpty { add(urls) }
+        .fileImporter(isPresented: $isImporting, allowedContentTypes: allowedTypes, allowsMultipleSelection: true) {
+            result in
+            guard case .success(let urls) = result, !urls.isEmpty else { return }
+            if importAppends { append(urls) } else { replace(with: urls) }
         }
         .disabled(session.isRunning)
         .task(id: rejectedDrop) {
@@ -166,16 +173,25 @@ private struct InputStage: View {
         .animation(.knobs, value: paths)
     }
 
-    /// Adds chosen files, ignoring ones already in the list, or replaces the file of a single-file field.
-    private func add(_ urls: [URL]) {
-        let newPaths = urls.map(\.path)
-        guard allowsMultiple else {
-            session.setValue(.paths([newPaths[0]]), for: field)
-            return
-        }
+    private func chooseFilesToReplace() {
+        importAppends = false
+        isImporting = true
+    }
+
+    private func chooseFilesToAdd() {
+        importAppends = true
+        isImporting = true
+    }
+
+    /// Adds files to the list, leaving out ones already in it.
+    private func append(_ urls: [URL]) {
         var combined = paths
-        for path in newPaths where !combined.contains(path) { combined.append(path) }
+        for path in urls.map(\.path) where !combined.contains(path) { combined.append(path) }
         session.setValue(.paths(combined), for: field)
+    }
+
+    private func replace(with urls: [URL]) {
+        session.setValue(.paths(urls.map(\.path)), for: field)
     }
 }
 
@@ -288,6 +304,8 @@ private struct SingleFile: View {
 /// Several chosen files: a fanned stack, a count, and the list to trim.
 private struct SeveralFiles: View {
     let paths: [String]
+    /// The task takes one file and goes through these one after another, rather than using them all at once.
+    let runsOncePerFile: Bool
     @Bindable var session: TaskSession
     let isTargeted: Bool
     let add: () -> Void
@@ -296,6 +314,12 @@ private struct SeveralFiles: View {
 
     /// Only the first few are drawn in the stack; the rest are counted.
     private static let stackDepth = 3
+
+    /// "12 files", "12 files · one after another", or "File 3 of 12" while they run.
+    private var countLine: String {
+        if let step = session.batchStep { return "File \(step.number) of \(step.count)" }
+        return runsOncePerFile ? "\(paths.count) files · one after another" : "\(paths.count) files"
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -316,8 +340,9 @@ private struct SeveralFiles: View {
             }
             .padding(.bottom, 4)
             VStack(spacing: 4) {
-                Text("\(paths.count) files")
+                Text(countLine)
                     .font(.system(size: 17, weight: .semibold))
+                    .contentTransition(.numericText())
                 if let totalSize {
                     Text(ByteCount.string(totalSize)).foregroundStyle(.secondary)
                 }
@@ -356,6 +381,7 @@ private struct SeveralFiles: View {
             .scrollIndicators(.never)
             .frame(maxWidth: 640)
         }
+        .animation(.knobs, value: session.batchStep)
         .task(id: paths) {
             let urls = paths.map { URL(filePath: $0) }
             totalSize = await Task.detached(priority: .utility) {
@@ -584,14 +610,14 @@ private struct ResultStage: View {
                         .contentTransition(.numericText(value: sizeChange))
                         .accessibilityLabel(sizeChangePhrase(sizeChange))
                 } else {
-                    Label("Done", systemImage: "checkmark.circle.fill")
+                    Label(doneHeadline, systemImage: "checkmark.circle.fill")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(tint)
                 }
                 Text(
                     result.outputURL?.lastPathComponent
                         ?? result.folderURL.map { "Saved in \($0.lastPathComponent)" }
-                        ?? "\(session.task.title) finished"
+                        ?? (result.fileCount > 1 ? "Saved next to each file" : "\(session.task.title) finished")
                 )
                 .font(.system(size: 17, weight: .semibold))
                 .lineLimit(1)
@@ -599,6 +625,13 @@ private struct ResultStage: View {
                 Text(detail)
                     .font(.callout.monospacedDigit())
                     .foregroundStyle(.secondary)
+                if !result.failedFiles.isEmpty {
+                    Text(failedLine)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(3)
+                }
             }
             .animation(.knobs, value: result.outputBytes)
             HStack(spacing: 10) {
@@ -621,6 +654,19 @@ private struct ResultStage: View {
         .frame(maxWidth: 600)
         .accessibilityElement(children: .contain)
         .knobsTransition(.opacity.combined(with: .scale(scale: 0.97)))
+    }
+
+    /// "Done", or for several files "12 files done" and "11 of 12 done".
+    private var doneHeadline: String {
+        guard result.fileCount > 1 else { return "Done" }
+        let done = result.fileCount - result.failedFiles.count
+        return result.failedFiles.isEmpty ? "\(done) files done" : "\(done) of \(result.fileCount) done"
+    }
+
+    /// The files that didn't work, by name; the output shows why.
+    private var failedLine: String {
+        let names = result.failedFiles.map { URL(filePath: $0).lastPathComponent }.formatted(.list(type: .and))
+        return "Didn't work: \(names). The output shows why."
     }
 
     /// "53% smaller" rather than "minus 53 percent" for VoiceOver.

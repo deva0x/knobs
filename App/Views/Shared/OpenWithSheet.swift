@@ -33,8 +33,8 @@ struct OpenWithSheet: View {
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(choice.task.title).font(.body.weight(.medium))
                                     Text(
-                                        choice.usesOnlyFirstFile
-                                            ? "\(choice.manifest.name) · uses only the first file"
+                                        choice.runsOncePerFile
+                                            ? "\(choice.manifest.name) · one file at a time"
                                             : choice.manifest.name
                                     )
                                     .font(.helpText).foregroundStyle(.secondary)

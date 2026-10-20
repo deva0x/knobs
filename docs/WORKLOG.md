@@ -398,3 +398,16 @@ Commit email (Deva, 21:15: "don't make it public. my mail id ... admin@mantis.de
 
 Next action: Deva runs the rewrite command in /Users/deva/opensource/knobs, then an agent verifies it and
 records the hash map. The certificate waits for Deva's answer on the name.
+
+## 2026-10-20 21:19 IST · Claude Code (Opus 5.5) · HEAD 29e6196
+
+Commit email, follow-up (Deva: "is it even necessary to add the email?").
+
+- Every git commit records an email field, but it needn't be a real address. Tried in a scratch repo: an
+  explicitly empty address commits fine and shows as "Deva <>".
+- GitHub's private address for deva0x is 95619082+deva0x@users.noreply.github.com (from gh api user). It keeps
+  commits linked to the profile without exposing a mailbox.
+- Offered Deva three choices: the GitHub private address (recommended), admin@mantis.dev (set in the repo config
+  at 21:17), or no address. Whichever is chosen, the existing commits still need the one-time rewrite.
+
+Next action: Deva picks the address; then the repo config and the rewrite command use it.

@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-20 IST (pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -79,19 +79,19 @@ Updated: 2026-10-20 IST (commit email rewritten 21:39; signed and notarized DMG 
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
 publish, or a system setting:
-1. Create the GitHub repository `deva0x/knobs`, turn off GitHub Actions for it before the first push, and push.
-   Then create release v0.1.0 with the DMG and the `dist/linux/` files (`scripts/release.sh` prints the
-   command). The website's Download buttons link straight to that release's files (`#release` in
-   website/index.html); only "Every file of this release" goes to the latest-release page.
-   In that order: `gh repo create deva0x/knobs --public` without `--source` or `--push` (either would push
-   before Actions is off), then `gh api -X PUT repos/deva0x/knobs/actions/permissions -F enabled=false`, then
-   add the remote and push `main`. Before the release, date CHANGELOG's `[0.1.0] - not yet released`.
-   Checked 2026-10-20: no token, key or `/Users/deva` path in any commit, no `.github` folder, the biggest file
-   is a 1 MB screenshot. Every commit carries GitHub's private address
-   95619082+deva0x@users.noreply.github.com, Deva's choice: Deva rewrote the history at 21:39 IST on
-   2026-10-20, and this repository's git config uses that address for new commits. Commit hashes changed then;
-   WORKLOG's 2026-10-20 entry after the rewrite maps old to new. The pre-rewrite commits stay on this Mac under
-   `refs/original/`, which pushing `main` does not send; delete them after the push.
+1. Push `main` again (it has the dated CHANGELOG), then create release v0.1.0 with the DMG and the
+   `dist/linux/` files, using the command `scripts/release.sh` printed and the notes in
+   `dist/release-notes-0.1.0.md` (written from CHANGELOG, gitignored). The website's Download buttons link
+   straight to that release's files (`#release` in website/index.html); only "Every file of this release" goes
+   to the latest-release page.
+   Done 2026-10-20: Deva created the public repository github.com/deva0x/knobs (21:41 IST), turned GitHub
+   Actions off before the first push, and pushed `main` (21:42, the pre-push hook ran `scripts/ci.sh` full:
+   PASS). Checked through the GitHub API: Actions disabled with 0 runs, Dependabot alerts and code scanning
+   default setup off, GitHub's main equal to local main with all 112 commits, every author and committer email
+   95619082+deva0x@users.noreply.github.com (Deva's choice; the history was rewritten at 21:39, WORKLOG maps
+   old to new hashes), and commits linked to the deva0x account. Earlier checks: no token, key or
+   `/Users/deva` path in any commit, no `.github` folder. The pre-rewrite commits stay on this Mac under
+   `refs/original/`; GitHub never got them, and Deva can delete them.
 2. Deploy the website (WORKFLOW, "Publishing the website"), then add the link-preview image tags with the
    site's address (website/README.md, "Link previews") and deploy again. Checked 2026-10-20: Wrangler is signed
    in to one Cloudflare account with Pages write access, and no Pages project exists yet, so the first deploy

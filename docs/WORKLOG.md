@@ -497,3 +497,23 @@ eb2dea4 → d1c75cd   3109b9c → 4340d06   55a1584 → 989f83f   24dd81b → 91
 
 Next action: Deva creates the GitHub repository, turns off Actions, adds the remote and pushes main (STATUS,
 "Waiting on Deva" 1). Deva also opens Knobs from the DMG once.
+
+## 2026-10-20 21:43 IST · Claude Code (Opus 5.5) · HEAD ee3aaff
+
+GitHub repository created and pushed; release prepared.
+
+- Deva, in Terminal 2: `gh repo create deva0x/knobs --public` (21:41 IST), Actions turned off through the API,
+  then added the remote and pushed main (21:42). The pre-push hook ran scripts/ci.sh full: PASS (160 tests in
+  27 suites, Debug app build).
+- Checked through the GitHub API: Actions enabled=false, 0 workflow runs; Dependabot alerts off (404), code
+  scanning default setup not-configured; remote main = local main = 29d83d2; 112 commits on both; all 224
+  author and committer emails are 95619082+deva0x@users.noreply.github.com; commits show author deva0x; the
+  only remote ref is refs/heads/main.
+- CHANGELOG: 0.1.0 dated 2026-10-20 (Deva is releasing tonight). Nothing reads the old "not yet released"
+  wording; release.sh only needs the "## [0.1.0]" heading; the app bundle has no CHANGELOG, so the notarized
+  DMG stays valid.
+- Release notes written to dist/release-notes-0.1.0.md in the main checkout (gitignored): the CHANGELOG 0.1.0
+  section plus a short list of the files.
+
+Next action: Deva pushes main, then runs gh release create with the printed file list and
+--notes-file dist/release-notes-0.1.0.md. Then an agent checks every #release download link on the website.

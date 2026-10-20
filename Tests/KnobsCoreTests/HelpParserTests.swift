@@ -34,6 +34,17 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
         #expect(option("--skip-text", in: options)?.summary.hasSuffix("--force-ocr).") == true)
     }
 
+    /// qpdf wraps a bullet so that a flag closing a sentence starts the next line, two spaces deeper.
+    @Test func aFlagThatEndsASentenceIsNotAnOption() {
+        let options = HelpParser.options(
+            in: """
+                - none: don't uncompress anything. This is the default with
+                  --json-output.
+                - generalized: uncompress streams compressed with a
+                """)
+        #expect(options.isEmpty)
+    }
+
     @Test func aColonRightAfterTheFlagEndsTheFlag() {
         let options = HelpParser.options(in: "Related options:\n  --linearize: linearize (web-optimize) output\n")
         #expect(
@@ -100,7 +111,7 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
     /// not only in the one flag per tool checked below. Update a count only after reading the new parse.
     @Test(arguments: [
         ("7zz", 46), ("curl", 250), ("ffmpeg", 42), ("gs", 7), ("img2pdf", 38), ("jq", 29), ("magick", 261),
-        ("ocrmypdf", 59), ("pandoc", 109), ("pdftoppm", 46), ("pdftotext", 29), ("qpdf", 141), ("rsync", 151),
+        ("ocrmypdf", 59), ("pandoc", 109), ("pdftoppm", 46), ("pdftotext", 29), ("qpdf", 140), ("rsync", 151),
         ("whisper-cli", 66), ("yt-dlp", 246),
     ])
     func realHelpTextYieldsTheKnownNumberOfOptions(tool: String, count: Int) throws {

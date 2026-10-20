@@ -5,6 +5,9 @@ Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
+- 0.2.0 in progress (PLAN M13, Deva picked every item on 2026-10-21). Done: BUG-018. Next: the Linux file
+  filter for img2pdf, then Split a PDF, the result number, install-all, notifications, many files, Sparkle, the
+  Homebrew cask and the release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
   share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it
@@ -32,8 +35,8 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   step with the manifests), but the live site describes 0.1.0, so deploy `website/` with the next release, not
   before. BUG-017 fixed (2026-10-21): qpdf's All options now spells its options as qpdf accepts them (141
   entries, none with a colon; `--linearize` and `--rotate=+90` run), and img2pdf's now has `-S, --pagesize`,
-  `-s, --imgsize` and `-b, --border`; every other tool's help parses as before. BUG-018 (open, small):
-  qpdf's list still has one `--json-output.` entry.
+  `-s, --imgsize` and `-b, --border`; every other tool's help parses as before. BUG-018 fixed the same day:
+  the stray `--json-output.` entry is gone (140 entries).
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
   screenshots in the README and on the website, and most of the Linux version (M11).
 - Website (2026-10-19), ready to deploy: the demo, safety example and manifest excerpt show the real Shrink a

@@ -289,7 +289,7 @@ Template:
   exit 2 with "unrecognized argument".
 - Left over: `--json-output.` (BUG-018).
 
-## BUG-018: qpdf's All options still lists `--json-output.` (open)
+## BUG-018: qpdf's All options still lists `--json-output.` (fixed)
 - Found: 2026-10-21, Claude, reading the parse after the BUG-017 fix.
 - Steps: parse `Tests/KnobsCoreTests/Fixtures/help/qpdf.txt` with `HelpParser.options(in:)`.
 - Expected: no entry for prose; `--json-output` is already listed, from "Related options:".
@@ -299,5 +299,7 @@ Template:
   qpdf refuses.
 - Also seen, cosmetic: value names lose brackets only at their ends, so `--rotate` shows the placeholder
   `+|-]angle[:page-range` and img2pdf's `--border` shows `L[:L`. The value typed in goes in unchanged.
-- Not fixed yet: a flag that ends in a full stop is never a real spelling, but changing that touches every tool's
-  parse, so it gets its own change checked against all the fixtures.
+- Fixed 2026-10-21 (Claude): a flag that ends in a full stop is skipped as prose. Test
+  `aFlagThatEndsASentenceIsNotAnOption` failed before the change and passes after. The parse of all 15 help
+  fixtures was compared before and after: the only difference is this entry gone (qpdf 141 to 140 options).
+- Still open, cosmetic: the brackets in value names noted above.

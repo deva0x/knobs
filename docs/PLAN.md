@@ -151,7 +151,7 @@ website and README describe them from the next release on.
 
 ### M13. Release 0.2.0 (2026-10-21, everything Deva picked)
 One commit or more per item, each with its docs, tested, and tried in the app when it shows on screen.
-- [ ] BUG-018: no flag ending in a full stop in All options
+- [x] BUG-018: no flag ending in a full stop in All options
 - [ ] Linux file chooser filters img2pdf's image types
 - [ ] qpdf: Split a PDF, one PDF per page into a new folder
 - [ ] Result card shows the size change only when input and output are the same kind of file

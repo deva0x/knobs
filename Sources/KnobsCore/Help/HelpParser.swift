@@ -211,7 +211,9 @@ public enum HelpParser {
             if token.hasPrefix("-"), isFlagStart(token) {
                 valuesAfterLastFlag = []
                 let (flag, attachedValue, attachedStyle) = splitFlag(token)
-                guard flag.count > 1 else { continue }
+                // No tool spells a flag with a full stop at the end; that is prose closing a sentence, as in
+                // qpdf's wrapped "This is the default with\n  --json-output.".
+                guard flag.count > 1, !flag.hasSuffix(".") else { continue }
                 if !flags.contains(flag) { flags.append(flag) }
                 if let attachedValue, valueName == nil {
                     valueName = attachedValue

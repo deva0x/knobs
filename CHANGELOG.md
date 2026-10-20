@@ -15,7 +15,8 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
 
 ### Fixed
 - All options for qpdf lists each option as qpdf accepts it (`--linearize`, not `--linearize:`), and img2pdf's
-  page size, image size and border options are read from their own lines, not from the prose above them.
+  page size, image size and border options are read from their own lines, not from the prose above them. A flag
+  that ends a sentence, such as qpdf's `--json-output.`, is no longer listed.
 
 ### Changed
 - The Arch Linux package is now `knobs-gui-bin`, because the AUR's `knobs` is a different program. It downloads

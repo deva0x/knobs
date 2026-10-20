@@ -773,3 +773,18 @@ missing tools, BUG-018, run on many files, done notification, Homebrew cask, and
   fake manifests, removed before the commit.
 - Pushed through 4ef59d7: full `scripts/ci.sh` PASS (184 tests in 30 suites, 9 session tests, app build).
 - Next: notification and Dock progress, then many files, Sparkle, cask, release files.
+
+## 2026-10-21 02:59 IST · Claude Code (Opus 5.5) · HEAD 5fa69f9
+
+0.2.0 progress (PLAN M13), seven of ten items done; pushed through 5fa69f9.
+- Notifications and Dock progress (DEC-022): RunNotifier; Toolbox.onRunFinished and runningSessions. macOS showed
+  the permission request at 02:39:52 (usernoted log); the setting went off at 02:45:50 ("Don't Allow" or closed),
+  and later runs log "Notifications are turned off for Knobs". Posted notification and Dock bar not seen (outside
+  the window; full-screen approval timed out). Note: zsh's `log` is a different builtin; use /usr/bin/log.
+- Many files (DEC-023): TaskSession runs a one-file task once per file; builder shows the first file's command.
+  Tried in the app: three photos compressed ("3 files done"), "File 2 of 3" with overall progress, Cancel during
+  file 1 stopped the rest.
+- Full `scripts/ci.sh` PASS (185 tests in 30 suites, 17 session tests, app build); `scripts/ci.sh linux` PASS
+  (186 tests in 19 suites, known BUG-016).
+- Noticed: Quit does nothing while the Open With sheet is open (left alone).
+- Next: Sparkle (read its docs first; Deva makes the EdDSA key), Homebrew cask, release files.

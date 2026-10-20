@@ -34,15 +34,92 @@ private func option(_ flag: String, in options: [HelpOption]) -> HelpOption? {
         #expect(option("--skip-text", in: options)?.summary.hasSuffix("--force-ocr).") == true)
     }
 
+    @Test func aColonRightAfterTheFlagEndsTheFlag() {
+        let options = HelpParser.options(in: "Related options:\n  --linearize: linearize (web-optimize) output\n")
+        #expect(
+            options == [
+                HelpOption(
+                    flags: ["--linearize"], valueName: nil, valueStyle: .separate,
+                    summary: "linearize (web-optimize) output")
+            ])
+    }
+
+    @Test func aLaterSpellingWithItsValueJoinedGivesAListedOptionItsValue() {
+        let options = HelpParser.options(
+            in: """
+                Related options:
+                  --rotate: rotate pages
+
+                == --rotate (rotate pages) ==
+
+                --rotate=angle
+                """)
+        #expect(
+            options == [
+                HelpOption(flags: ["--rotate"], valueName: "angle", valueStyle: .equals, summary: "rotate pages")
+            ])
+    }
+
+    @Test func aLaterSpellingNeverReplacesAValueAlreadyNamed() {
+        let options = HelpParser.options(in: "  --bits=N   key length\n\n--bits={48|128|256}\n")
+        #expect(options.map(\.valueName) == ["N"])
+    }
+
+    @Test func aLaterSpellingWithASeparateValueLeavesAListedOptionOnOff() {
+        let options = HelpParser.options(in: "  --overlay: begin overlay options\n\n--overlay file [options] --\n")
+        #expect(options.map(\.valueName) == [nil])
+    }
+
+    @Test(arguments: [
+        "--pagesize options, respectively.  If either dimension of the image size is",
+        "--pagesize option is not given, then the page size will be calculated from the",
+    ])
+    func proseThatWrapsOntoALineStartingWithAFlagIsNotAnOption(proseLine: String) {
+        let options = HelpParser.options(
+            in: """
+                  The image size and page size can be set using the --imgsize and
+                  \(proseLine)
+                  image size.
+
+                  -S, --pagesize LxL    Sets the size of the PDF pages.
+                """)
+        #expect(
+            options == [
+                HelpOption(
+                    flags: ["-S", "--pagesize"], valueName: "LxL", valueStyle: .separate,
+                    summary: "Sets the size of the PDF pages.")
+            ])
+    }
+
+    @Test func optionsRightBelowAHeadingStayOptions() {
+        let options = HelpParser.options(in: "Options:\n--verbose\n--quiet\n")
+        #expect(options.map(\.flags) == [["--verbose"], ["--quiet"]])
+    }
+
     /// Golden counts for the real help fixtures: a parser change that swallows or invents options shows up here,
     /// not only in the one flag per tool checked below. Update a count only after reading the new parse.
     @Test(arguments: [
-        ("7zz", 46), ("curl", 250), ("ffmpeg", 42), ("gs", 7), ("img2pdf", 37), ("jq", 29), ("magick", 261),
-        ("ocrmypdf", 59), ("pandoc", 109), ("pdftoppm", 46), ("pdftotext", 29), ("qpdf", 223), ("rsync", 151),
+        ("7zz", 46), ("curl", 250), ("ffmpeg", 42), ("gs", 7), ("img2pdf", 38), ("jq", 29), ("magick", 261),
+        ("ocrmypdf", 59), ("pandoc", 109), ("pdftoppm", 46), ("pdftotext", 29), ("qpdf", 141), ("rsync", 151),
         ("whisper-cli", 66), ("yt-dlp", 246),
     ])
     func realHelpTextYieldsTheKnownNumberOfOptions(tool: String, count: Int) throws {
         #expect(HelpParser.options(in: try fixture(tool)).count == count)
+    }
+
+    @Test func qpdfOptionsAreSpelledAsQpdfAcceptsThem() throws {
+        let options = HelpParser.options(in: try fixture("qpdf"))
+        #expect(options.flatMap(\.flags).filter { $0.hasSuffix(":") }.isEmpty)
+        #expect(option("--linearize", in: options)?.valueName == nil)
+        #expect(option("--rotate", in: options)?.valueStyle == .equals)
+    }
+
+    @Test func img2pdfSizeAndBorderOptionsComeFromTheirOwnLines() throws {
+        let options = HelpParser.options(in: try fixture("img2pdf"))
+        #expect(option("--pagesize", in: options)?.flags == ["-S", "--pagesize"])
+        #expect(option("--pagesize", in: options)?.valueName == "LxL")
+        #expect(option("--imgsize", in: options)?.flags == ["-s", "--imgsize"])
+        #expect(option("--border", in: options)?.flags == ["-b", "--border"])
     }
 
     @Test func longOnlyOptionsOnTheirOwnIndentedLineStayOptions() throws {

@@ -146,3 +146,13 @@ push. CLAUDE.md's standing authorization now allows a plain `git push` of `main`
 AUR files to `knobs-gui-bin`'s `master` once the release they download exists. `.claude/hooks/guard.sh` no
 longer blocks a push that names `main` or `master`. Force pushes, `--no-verify`, `gh repo create` and
 `gh release create` stay blocked or forbidden, and the pre-push hook still runs `scripts/ci.sh` before each push.
+
+## DEC-021: An output can be a new folder that Knobs makes (2026-10-21, chosen by Deva)
+pdftoppm writes every page as `<name>-1.png`, `<name>-2.png` and so on, can't make a folder, and replaces files of
+those names. Deva chose to keep the "Nothing is overwritten" promise rather than list an exception under
+SECURITY.md's Known limits. A manifest's `output` may say `"newFolder": true`: the name is picked like any output's
+(an existing folder gets " 2"), and the shared run path in KnobsSession makes the folder, empty, just before the
+tool starts. Intermediate folders are off, so a missing parent or a folder that appeared since the name was
+picked stops the run with a message instead of mixing files in. After a failed or cancelled run Knobs removes the
+folder only if it is still empty (`rmdir`, which can't remove anything inside); pages a tool already wrote are
+kept. The result card shows the folder as it shows 7-Zip's extracted folder.

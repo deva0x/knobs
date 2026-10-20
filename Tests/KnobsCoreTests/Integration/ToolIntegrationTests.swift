@@ -242,6 +242,24 @@ private func makeThreePagePDF(_ gs: URL, at path: String, in folder: URL) async 
         }
     }
 
+    @Test func everyPageBecomesAnImageInANewFolder() async throws {
+        guard let pdftoppm = Integration.tool("pdftoppm"), let gs = Integration.tool("gs") else { return }
+        let folder = try Integration.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let pdf = folder.appending(path: "three pages.pdf").path
+        try await makeThreePagePDF(gs, at: pdf, in: folder)
+        let manifest = try loadRepositoryManifest("pdftoppm")
+
+        for format in ["png", "jpg"] {
+            let result = try await Integration.run(
+                "every-page-to-images", of: manifest, executable: pdftoppm,
+                values: ["input": .paths([pdf]), "format": .text(format), "resolution": .text("72")], in: folder)
+            expectSucceeded(result, "every-page-to-images as \(format)")
+            let pages = try FileManager.default.contentsOfDirectory(atPath: try #require(result.outputPath))
+            #expect(pages.sorted() == ["page-1.\(format)", "page-2.\(format)", "page-3.\(format)"])
+        }
+    }
+
     @Test func aPDFsTextBecomesATextFile() async throws {
         guard let pdftotext = Integration.tool("pdftotext"), let gs = Integration.tool("gs") else { return }
         let folder = try Integration.makeFolder()

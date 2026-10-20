@@ -2,9 +2,20 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-21 IST (BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder output, DEC-021; BUG-017 fixed: qpdf's and img2pdf's All options; PDF tools: qpdf, img2pdf and Poppler added; AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
+- pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
+  DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
+  share, makes that folder just before the tool starts (never an existing one), stops with a plain message if it
+  can't, and removes it after a failed or cancelled run only while it is empty. The task writes `page-1.png` and
+  on into "<PDF name> pages" next to the PDF. Checked: TaskSessionTests (four cases, each shown to fail without
+  the code it covers), the golden argv test, and an integration test where a real three-page PDF gave three PNGs
+  and three JPEGs; `scripts/ci.sh fast` passes, and so does `scripts/ci.sh linux` (164 tests in 19 suites,
+  TaskSessionTests included; one known issue, BUG-016). The Debug app was built and opened, but access to control it
+  was declined, so the task was not clicked through in the window; instead the app's own Toolbox and
+  TaskSession ran it headlessly on a three-page PDF: "Lease pages" with three 1275x1650 PNGs, then "Lease
+  pages 2" on a second run.
 - PDF tools for the next release (PLAN M12, Deva's request 2026-10-20): qpdf added, with golden tests and an
   integration test that runs all five tasks on a real PDF; img2pdf added, its integration test turning a JPEG
   and a transparent PNG into a two-page A4 PDF; Poppler's pdftoppm (a page as a PNG or JPEG) and pdftotext
@@ -13,7 +24,7 @@ Updated: 2026-10-21 IST (BUG-017 fixed: qpdf's and img2pdf's All options; PDF to
   Ghostscript's and OCRmyPDF's; Rotate pages turned only page 1 (pdfinfo: 90, 0, 0); Save a page as an image
   wrote a 1275x1650 PNG of page 2 and offered "Lease page 2 2.png" next; Turn a PDF into text wrote all three
   pages' text; Turn images into a PDF made a two-page PDF from a JPEG and a PNG. The website gallery was
-  checked in a browser, light and dark, at 375 px and desktop width. Waiting on Deva: whether pdftoppm also gets "every page as images" (see Waiting on Deva). `website/` already lists them (its test keeps the gallery in
+  checked in a browser, light and dark, at 375 px and desktop width. `website/` already lists them (its test keeps the gallery in
   step with the manifests), but the live site describes 0.1.0, so deploy `website/` with the next release, not
   before. BUG-017 fixed (2026-10-21): qpdf's All options now spells its options as qpdf accepts them (141
   entries, none with a colon; `--linearize` and `--rotate=+90` run), and img2pdf's now has `-S, --pagesize`,
@@ -136,11 +147,8 @@ system setting:
    agent adds the link-preview image tags with that address (website/README.md, "Link previews"), deploys
    again, and changes the website link in the GitHub repository's About box and in README's Download section
    from https://knobs.pages.dev to the domain.
-3. pdftoppm "every page as images": pdftoppm can only write `<name>-1.png`, `<name>-2.png` and so on into a
-   folder, replacing files of the same names, and it can't make a new folder, so the task would break the
-   "Nothing is overwritten" promise (SECURITY.md, README). Either accept that for this one task and list it
-   under SECURITY.md's Known limits, or extend the manifest format so an output can be a new folder Knobs
-   makes before the run (as 7-Zip's Extract gets from 7-Zip itself), in KnobsCore and both apps.
+3. Try "Save every page as images" once in the app window (open a PDF with Knobs, pick the task, Run): the
+   access to control the Debug app was declined on 2026-10-21, so only the headless check above was done.
 4. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), click through Knobs on omarchy-1,
    and export a .p12 backup of the Developer ID certificate (created 2026-10-20 21:22 IST through Xcode; its

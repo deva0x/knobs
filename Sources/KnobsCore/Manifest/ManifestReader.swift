@@ -56,7 +56,7 @@ enum ManifestReader {
             summary: try task.string("summary"),
             symbol: try task.string("symbol"),
             fields: try task.array("fields").map { item throws(ManifestError) in try readField(item) },
-            output: try task.optionalObject("output", allowedKeys: ["template", "nextTo", "folder"]).map {
+            output: try task.optionalObject("output", allowedKeys: ["template", "nextTo", "folder", "newFolder"]).map {
                 output throws(ManifestError) in try readOutput(output)
             },
             arguments: try task.array("arguments").map { item throws(ManifestError) in try readArgument(item) },
@@ -158,9 +158,12 @@ enum ManifestReader {
 
     private static func readOutput(_ output: ObjectReader) throws(ManifestError) -> OutputRule {
         let template = try output.string("template")
+        let isNewFolder = try output.optionalBool("newFolder") ?? false
         switch (try output.optionalString("nextTo"), try output.optionalString("folder")) {
-        case (let fieldID?, nil): return OutputRule(template: template, location: .nextTo(fieldID: fieldID))
-        case (nil, let fieldID?): return OutputRule(template: template, location: .folder(fieldID: fieldID))
+        case (let fieldID?, nil):
+            return OutputRule(template: template, location: .nextTo(fieldID: fieldID), isNewFolder: isNewFolder)
+        case (nil, let fieldID?):
+            return OutputRule(template: template, location: .folder(fieldID: fieldID), isNewFolder: isNewFolder)
         default: throw output.error(at: "", "needs exactly one of nextTo or folder")
         }
     }

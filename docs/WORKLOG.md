@@ -672,6 +672,18 @@ PDF tools done (PLAN M12), apart from Deva's choice on pdftoppm's "every page".
 - Next: ff main, push (pre-push runs full `scripts/ci.sh`), then report to Deva with the pdftoppm question,
   BUG-017 and the auto-update options.
 
+## 2026-10-21 00:11 IST · Claude Code (Opus 5.5) · HEAD 5b12285
+
+**Work:** Start: new-folder output and pdftoppm's "Save every page as images" (STATUS Waiting on Deva 3; Deva chose option b, making a new folder, by starting the "New-folder output" session from the parent session's card).
+Outcome: a manifest output can say `"newFolder": true`; the shared run path (KnobsSession's TaskSession) makes that folder, empty, just before the tool starts, fails loudly if it can't, and removes it again only if a run that didn't succeed left it empty; pdftoppm gets "Save every page as images" writing into "{input.stem} pages".
+Evidence: reader, golden, KnobsSession and integration tests; `scripts/ci.sh fast`; the task run once in the Debug app from `scripts/run-app.sh`.
+Boundaries: no change to OutputNamer, the result card views, other manifests or the help parser (BUG-017 has its own session); no push, no website deploy.
+Stop condition: committed on this branch with docs updated, or a blocker logged here.
+**Files and decisions:** Design: key `newFolder` on `output`; folder made with intermediate folders off, so a missing parent or a folder that appeared since the name was picked fails the run instead of mixing files in; empty-folder removal by rmdir, which can't remove anything that has files in it.
+**Validation:** none yet.
+**Bugs and blockers:** none.
+**Next:** KnobsCore and KnobsSession change with tests.
+
 ## 2026-10-21 00:20 IST · Claude Code (Opus 5.5), side session of local_ff419942 · HEAD 928c7bb
 
 **Work:** BUG-017, HelpParser misreading qpdf's and img2pdf's help (asked by the session that added the PDF tools). Outcome: qpdf's All options has no colon-suffixed flags, `--linearize` and `--rotate` spelled as qpdf accepts them; img2pdf has `-S, --pagesize LxL`, `-s, --imgsize`, `-b, --border` as their own entries. Evidence: a before/after dump of every help fixture, new HelpParserTests, `scripts/ci.sh fast`, real qpdf runs. Boundaries: parser, its tests and docs only; no manifest or UI change; no push. Stop condition: committed on this branch with fast CI passing, or two failed attempts.
@@ -679,6 +691,14 @@ PDF tools done (PLAN M12), apart from Deva's choice on pdftoppm's "every page".
 **Validation:** Characterization first: a dumper (swiftc of HelpParser.swift plus a scratch main.swift) printed every fixture's parse; counts matched the pinned 15. After the change: 13 fixtures byte-identical (every flag, value name, style, summary); qpdf 223 to 141 with no colon flags, img2pdf 37 to 38; both read entry by entry and judged better. The new tests run against HEAD's old parser: 6 of 8 fail as expected (the two guard tests pass on both). `swift test --filter HelpParserTests`: 30 tests pass. `scripts/ci.sh fast`: PASS, 163 tests in 17 suites, also run by the pre-commit hook on 928c7bb. qpdf 12.4.2 on a three-page Ghostscript PDF in the scratchpad: `--linearize` and `--rotate=+90` exit 0 (`--check-linearization`: no errors), `--linearize:` and `--rotate:` exit 2 "unrecognized argument". Not checked in the app (parser-only change).
 **Bugs and blockers:** BUG-018 (new, open): qpdf still yields `--json-output.` from a wrapped bullet two spaces deeper than its prose; value names lose brackets only at the ends (`--rotate` placeholder `+|-]angle[:page-range`, img2pdf `--border` `L[:L`), cosmetic. qpdf's `--encrypt` entry carries the encryption usage block as its summary (unchanged).
 **Next:** the starting session reviews and merges this branch into main (not pushed from here); BUG-018 waits for its own parser change.
+
+## 2026-10-21 00:25 IST · Claude Code (Opus 5.5) · HEAD 46a369b
+
+**Work:** New-folder output and pdftoppm's "Save every page as images" done (STATUS Waiting on Deva 3, Deva's choice: a new folder, DEC-021).
+**Files and decisions:** 2e2570c core: `output.newFolder` in MANIFEST_FORMAT, OutputRule.isNewFolder, ManifestReader; TaskSession makes the folder just before the tool starts (intermediate folders off, so a missing parent or a folder that appeared since naming gives "Knobs couldn't make the folder ..." as couldNotStart and nothing runs) and, after a run that didn't succeed, rmdir's it (only empty folders go); IntegrationSupport.run makes it the same way; DEC-021. No validator rule added: the reader's type check is the only new rule needed. 46a369b poppler: task every-page-to-images, output "{input.stem} pages" next to the PDF, root "{output}/page" (pdftoppm writes page-1.png and on); website card, CHANGELOG, PLAN M12, SECURITY.md promise line, STATUS. Result card: the folder is the run's outputURL, as with 7-Zip's Extract, so the card shows a size-change percentage like page-to-image's (left alone).
+**Validation:** `swift test --filter TaskSessionTests`: 4 passed. Mutation checks, each restored after: without rmdir, "leaves no new folder" failed; without the folder creation, three tests failed; with a recursive delete instead of rmdir, "keeps what the tool wrote" failed. Golden test and PopplerIntegrationTests (real pdftoppm on a three-page PDF: page-1 to page-3 in PNG and JPEG) passed. pdftoppm into a missing folder exits 1 ("Could not write image"), confirming the premise. `scripts/ci.sh fast` PASS before and on both commits (158 tests in 17 suites). `scripts/ci.sh linux` PASS (164 tests in 19 suites, TaskSessionTests included, one known issue BUG-016). `scripts/run-app.sh` built and opened the Debug app; its bundle carries the new manifest. Control of the app was declined (request_access: user_denied), so the task was not clicked through in the window. Instead a scratch package outside the repo ran it through the app's Toolbox and TaskSession with the repo's manifests and a throwaway settings folder: "Lease pages" with three 1275x1650 PNGs, a second run "Lease pages 2", next name "Lease pages 3". The Debug app was quit afterwards (it shares the bundle id with other worktrees' builds).
+**Bugs and blockers:** none. Noticed, left alone: the early couldNotStart return in TaskSession.start doesn't rebuild the draft, so after the rare race where a same-named folder appears, the inspector shows the taken name until the next Run (which picks a fresh one); "{output}/page" is colored as a value, not a path, in the command bar.
+**Next:** Deva tries the task once in the window (STATUS Waiting on Deva 3); then merge this branch into main and push under DEC-020.
 
 ## 2026-10-21 00:26 IST · Claude Code (Opus 5.5) · HEAD 5b12285
 

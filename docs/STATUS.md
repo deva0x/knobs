@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-20 IST (AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -79,12 +79,12 @@ Updated: 2026-10-20 IST (pushed to GitHub 21:42; commit email rewritten 21:39; s
 ## Waiting on Deva
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts, a
 publish, or a system setting:
-1. Push `main` again (it has the dated CHANGELOG), then create release v0.1.0 with the DMG and the
-   `dist/linux/` files, using the command `scripts/release.sh` printed and the notes in
-   `dist/release-notes-0.1.0.md` (written from CHANGELOG, gitignored). The website's Download buttons link
-   straight to that release's files (`#release` in website/index.html); only "Every file of this release" goes
-   to the latest-release page.
-   Done 2026-10-20: Deva created the public repository github.com/deva0x/knobs (21:41 IST), turned GitHub
+1. Push `main` (it has the AUR package change, DEC-019).
+   Released 2026-10-20 21:45 IST: Deva created v0.1.0 at b08ddd3 with the notes in
+   `dist/release-notes-0.1.0.md` (written from CHANGELOG, gitignored). Checked: published, not a draft; all nine
+   files (DMG, its .sha256, seven Linux packages) have the same SHA-256 on GitHub as in `dist/`; every
+   `#release` download link on the website and its four GitHub links answer 200.
+   Done before that: Deva created the public repository github.com/deva0x/knobs (21:41 IST), turned GitHub
    Actions off before the first push, and pushed `main` (21:42, the pre-push hook ran `scripts/ci.sh` full:
    PASS). Checked through the GitHub API: Actions disabled with 0 runs, Dependabot alerts and code scanning
    default setup off, GitHub's main equal to local main with all 112 commits, every author and committer email
@@ -96,7 +96,15 @@ publish, or a system setting:
    site's address (website/README.md, "Link previews") and deploy again. Checked 2026-10-20: Wrangler is signed
    in to one Cloudflare account with Pages write access, and no Pages project exists yet, so the first deploy
    creates `knobs`. Wrangler leaves a `.wrangler/` cache in the repo, now ignored.
-3. Optional: publish `knobs-bin` to the AUR (needs an AUR account and a public link to the x86_64 tarball).
+3. Publish `knobs-gui-bin` to the AUR (Deva said yes; the name is DEC-019). Ready: the PKGBUILD and .SRCINFO
+   for 0.1.0 are in this worktree's `dist/linux/aur/` (`.claude/worktrees/where-are-we-e513b3`), and any
+   checkout can write them again with the amd64 `scripts/linux.sh package` or `linux/packaging/package-arch.sh`.
+   Tested 2026-10-20 in a fresh archlinux container given only the PKGBUILD: makepkg downloaded the tarball from
+   the release and its checksum passed (it equals GitHub's digest), `makepkg --printsrcinfo` matches the
+   .SRCINFO, namcap reports nothing on the PKGBUILD and no errors on the package, pacman installed it with
+   GTK and libadwaita, no library is missing, `knobs --help` runs, and its 16 files are byte-identical to
+   the tested 0.1.0 `knobs-bin` apart from the license folder's name. Deva's steps: an AUR account with an SSH
+   key, then clone `ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, add the two files, commit, push `master`.
 4. Optional: try Reduce Motion, VoiceOver and keyboard-only use once on the Mac (PLAN M9's accessibility item;
    each needs a system setting, and Keyboard navigation is off on this Mac), and click through Knobs on
    omarchy-1.

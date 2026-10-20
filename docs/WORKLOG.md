@@ -517,3 +517,34 @@ GitHub repository created and pushed; release prepared.
 
 Next action: Deva pushes main, then runs gh release create with the printed file list and
 --notes-file dist/release-notes-0.1.0.md. Then an agent checks every #release download link on the website.
+
+## 2026-10-20 22:08 IST · Claude Code (Opus 5.5) · HEAD 21f5841
+
+v0.1.0 released; AUR package knobs-gui-bin prepared and tested (Deva: "yes to the bin one" = publish to the AUR).
+
+- Release (Deva ran gh release create, 21:45 IST): v0.1.0 at b08ddd3, published, not a draft. All nine assets'
+  GitHub sha256 digests equal the local files in dist/. Every #release download URL on the website (8) and its
+  four GitHub links answered 200.
+- AUR name: the AUR already has "knobs" (eckso's clock and power-limit tool, installs /usr/bin/knobs). Asked
+  Deva; Deva chose knobs-gui-bin. Recorded as DEC-019; DEC-017 points to it.
+- Outcome: linux/packaging/PKGBUILD is knobs-gui-bin; source is the release URL (local builds find the copied
+  tarball and skip the download); provides knobs-gui; conflicts knobs-gui, knobs, knobs-bin; depends adds
+  glib2 and hicolor-icon-theme; the license moves to /usr/share/licenses/knobs-gui-bin; maintainer line is the
+  name plus the project page (DEC-018). package-arch.sh also writes PKGBUILD and .SRCINFO to <out>/aur/.
+- Evidence: package-arch.sh on the released 0.1.0 tarball in the knobs-linux-arch container (checksum Passed;
+  "libfakeroot internal error: payload not recognized" printed under emulation, package still made). Then a
+  fresh container given only the PKGBUILD: makepkg downloaded the tarball from GitHub, checksum Passed;
+  printsrcinfo equals the written .SRCINFO; namcap PKGBUILD: nothing; namcap package after install: warnings
+  only (implicit GTK libraries, no full RELRO), no errors; pacman -U pulled GTK and libadwaita; ldd: 0 missing;
+  knobs --help prints usage; 16 files byte-identical to the released knobs-bin package except the license
+  folder's name. PKGBUILD sha256 equals GitHub's digest of knobs-0.1.0-linux-x86_64.tar.gz (103339656b...).
+  After changing only the maintainer comment, regenerated: .SRCINFO identical, PKGBUILD differs in line 1 only.
+- Boundaries kept: no AUR account or push, release files and website unchanged (0.1.0 keeps knobs-bin).
+- The AUR files are in the worktree's dist/linux/aur/; copying them into the main checkout's dist/ was refused
+  by the permission check, so it was left.
+- Docs: CHANGELOG [Unreleased], README, WORKFLOW (AUR push after the release; pkgrel for PKGBUILD-only
+  changes), DECISIONS, STATUS.
+- Noticed, left alone: website/main.js line 4 still says the repository isn't public yet; the website's Arch
+  tab could offer the AUR install with the next release.
+
+Next action: Deva pushes main, deploys the website, and publishes knobs-gui-bin to the AUR (STATUS 1 to 3).

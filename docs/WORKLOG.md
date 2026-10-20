@@ -851,3 +851,17 @@ Homebrew cask and 0.2.0 release files (PLAN M13). Pushed 84661f3 and 399154d (Sp
   two approaches (CLAUDE.md); worth a look on omarchy-1.
 - Website tests pass (3). The full CI runs at the push.
 - Waiting on Deva: generate_keys (item 3), the tap repository (item 4). Then release.sh 0.2.0 and gh release create.
+
+## 2026-10-21 04:21 IST · Claude Code (Opus 5.5) · HEAD 07987c6
+
+Pushed 07987c6 (version 0.2.0); the pre-push full CI passed (185 tests in 30 suites, 17 session tests, app build).
+- `scripts/release.sh 0.2.0` in the main checkout passes the version, CHANGELOG and website checks and stops only at
+  "project.yml has no SUPublicEDKey", as intended until Deva makes the key.
+- Left on this Mac: ~/Library/Preferences/io.github.deva0x.Knobs.sparkle-test.plist, an empty 42-byte file from the
+  update test (its domain was deleted with `defaults delete`; agents don't delete outside the repo). Launch Services
+  knows the main checkout's 0.2.0 Debug build next to the installed 0.1.0, so "Open with Knobs" may pick the
+  Debug build until 0.2.0 is installed.
+- Promises in committed text: CHANGELOG's date 2026-10-21 assumes the release happens today; the CHANGELOG and
+  release-notes line `brew install --cask deva0x/knobs/knobs` needs the tap repository first.
+- Next: Deva runs generate_keys and pastes the public key; an agent adds it to project.yml, launches the Release
+  build once to see the updater start, commits and pushes; Deva runs release.sh 0.2.0 and gh release create.

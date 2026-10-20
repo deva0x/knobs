@@ -2,7 +2,7 @@
 
 All notable changes to Knobs are listed here. The format follows Keep a Changelog, and versions follow SemVer.
 
-## [0.1.0] - not yet released
+## [0.1.0] - 2026-10-20
 
 The first release.
 

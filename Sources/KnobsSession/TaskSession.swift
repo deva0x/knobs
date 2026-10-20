@@ -25,6 +25,10 @@ public final class TaskSession: Identifiable {
         /// Whether the output is the same kind of file as the one input, as when a video is shrunk into another
         /// video. Only then does the change in size say something; a PDF turned into text is always smaller.
         public let sizesAreComparable: Bool
+        /// How many files the run went through: 1, or more when a one-file task was given several.
+        public let fileCount: Int
+        /// The input files whose run failed, when the task went through several; the others still ran.
+        public let failedFiles: [String]
 
         /// How much larger (positive) or smaller (negative) the output is, as a fraction of the input's size, once
         /// both are measured. Nil when the sizes aren't comparable.
@@ -52,7 +56,27 @@ public final class TaskSession: Identifiable {
     public private(set) var log = OutputLog()
     public private(set) var result: RunResult?
 
+    /// Where a run over several files stands: which file comes next and which have failed.
+    private struct Batch {
+        let files: [String]
+        let field: Field
+        let executable: URL
+        let runner: ToolRunner
+        let startedAt: Date
+        var nextIndex = 0
+        var failedFiles: [String] = []
+        var lastFailure: RunOutcome?
+        var outputFolders: [String] = []
+    }
+
+    /// The file a run over several files is on, counted from 1, and how many there are.
+    public struct BatchStep: Equatable, Sendable {
+        public let number: Int
+        public let count: Int
+    }
+
     private let builder: CommandBuilder
+    private var batch: Batch?
     private var toolRun: ToolRun?
     /// Counts runs, so sizes measured in the background land only on the run they belong to.
     private var runNumber = 0
@@ -125,6 +149,19 @@ public final class TaskSession: Identifiable {
         return false
     }
 
+    /// The files Run goes through one after another, when a one-file task was given several; otherwise empty.
+    public var filesRunOneByOne: [String] {
+        guard let field = primaryInputField, case .inputFile(_, false) = field.kind else { return [] }
+        let paths = value(of: field)?.pathList ?? []
+        return paths.count > 1 ? paths : []
+    }
+
+    /// The file a run over several files is on, while it runs.
+    public var batchStep: BatchStep? {
+        guard let batch, isRunning else { return nil }
+        return BatchStep(number: batch.nextIndex, count: batch.files.count)
+    }
+
     /// The value a field shows: what the user set, else the manifest default.
     public func value(of field: Field) -> FieldValue? {
         values[field.id] ?? field.defaultValue
@@ -161,18 +198,47 @@ public final class TaskSession: Identifiable {
         guard !isRunning else { return }
         rebuildDraft()
         guard draft.isRunnable else { return }
-        let command = draft.command
         log = OutputLog()
         progress = nil
         result = nil
+        let files = filesRunOneByOne
+        if let field = primaryInputField, !files.isEmpty {
+            batch = Batch(files: files, field: field, executable: executable, runner: runner, startedAt: clock())
+            startNextFile()
+        } else {
+            batch = nil
+            run(draft.command, executable: executable, runner: runner)
+        }
+    }
+
+    /// Starts the batch's next file with a command built for that file alone, just before it runs, so its output
+    /// name is picked knowing the files the earlier ones wrote.
+    private func startNextFile() {
+        guard var batch, batch.nextIndex < batch.files.count else { return }
+        let file = batch.files[batch.nextIndex]
+        batch.nextIndex += 1
+        self.batch = batch
+        var fileValues = values
+        fileValues[batch.field.id] = .paths([file])
+        let fileDraft = builder.build(task, of: manifest, values: fileValues, extraArguments: extraArguments)
+        let header = "— \(URL(filePath: file).lastPathComponent) (\(batch.nextIndex) of \(batch.files.count)) —"
+        log.append(header, from: .standardOutput)
+        guard fileDraft.isRunnable else {
+            runEnded(.couldNotStart("Knobs couldn't make the command for this file."), command: fileDraft.command)
+            return
+        }
+        run(fileDraft.command, executable: batch.executable, runner: batch.runner)
+    }
+
+    private func run(_ command: Command, executable: URL, runner: ToolRunner) {
         reportedOutputPath = nil
         if let problem = makeNewOutputFolder(for: command) {
-            phase = .finished(.couldNotStart(problem))
-            onFinish?(.couldNotStart(problem), nil)
+            runEnded(.couldNotStart(problem), command: command)
             return
         }
         let startedAt = clock()
-        phase = .running(startedAt: startedAt)
+        // A run over several files stays running from its first file to its last.
+        if !isRunning { phase = .running(startedAt: batch?.startedAt ?? startedAt) }
         runNumber += 1
 
         let workingDirectory = command.outputPath.map { URL(filePath: $0).deletingLastPathComponent() }
@@ -181,7 +247,7 @@ public final class TaskSession: Identifiable {
         )
         toolRun = run
         // The input is measured in the background as the tool starts, for the result card.
-        let inputPaths = primaryInputField.flatMap { value(of: $0)?.pathList } ?? []
+        let inputPaths = batch == nil ? primaryInputField.flatMap { value(of: $0)?.pathList } ?? [] : []
         let inputSize = Task.detached(priority: .utility) {
             inputPaths.count == 1 ? Self.fileSize(atPath: inputPaths[0]) : nil
         }
@@ -210,34 +276,105 @@ public final class TaskSession: Identifiable {
             log.append(text, from: stream)
             if let path = Self.firstCapture(of: outputPathExpression, in: text) { reportedOutputPath = path }
         case .progress(let fraction):
-            progress = fraction
+            if let batch {
+                progress = (Double(batch.nextIndex - 1) + fraction) / Double(batch.files.count)
+            } else {
+                progress = fraction
+            }
         case .finished(let outcome):
             toolRun = nil
-            if outcome == .succeeded {
-                let outputPath = [reportedOutputPath, command.outputPath].compactMap { $0 }
-                    .first { FileManager.default.fileExists(atPath: $0) }
-                let folderPath = outputFolderField.flatMap { value(of: $0)?.firstPath }
-                    .map { ($0 as NSString).expandingTildeInPath }
-                let inputPaths = primaryInputField.flatMap { value(of: $0)?.pathList } ?? []
-                let inputKind = inputPaths.count == 1 ? FileKind(path: inputPaths[0]) : nil
-                let outputKind = outputPath.flatMap(FileKind.init(path:))
-                result = RunResult(
-                    outputURL: outputPath.map { URL(filePath: $0) },
-                    folderURL: folderPath.map { URL(filePath: $0) },
-                    inputBytes: nil,
-                    outputBytes: nil,
-                    duration: clock().timeIntervalSince(startedAt),
-                    sizesAreComparable: inputKind != nil && inputKind == outputKind
-                )
-                progress = 1
-            } else {
-                removeNewOutputFolderIfEmpty(for: command)
-            }
-            phase = .finished(outcome)
-            onFinish?(outcome, result?.outputURL)
-            // The output now exists, so the next run must pick a fresh name.
-            rebuildDraft()
+            if outcome != .succeeded { removeNewOutputFolderIfEmpty(for: command) }
+            runEnded(outcome, command: command, startedAt: startedAt)
         }
+    }
+
+    /// What happens after one run of the tool: the result of a single run, or the next file of several.
+    private func runEnded(_ outcome: RunOutcome, command: Command, startedAt: Date? = nil) {
+        if batch != nil {
+            fileEnded(outcome, command: command)
+            return
+        }
+        if outcome == .succeeded, let startedAt {
+            let outputPath = [reportedOutputPath, command.outputPath].compactMap { $0 }
+                .first { FileManager.default.fileExists(atPath: $0) }
+            let folderPath = outputFolderField.flatMap { value(of: $0)?.firstPath }
+                .map { ($0 as NSString).expandingTildeInPath }
+            let inputPaths = primaryInputField.flatMap { value(of: $0)?.pathList } ?? []
+            let inputKind = inputPaths.count == 1 ? FileKind(path: inputPaths[0]) : nil
+            let outputKind = outputPath.flatMap(FileKind.init(path:))
+            result = RunResult(
+                outputURL: outputPath.map { URL(filePath: $0) },
+                folderURL: folderPath.map { URL(filePath: $0) },
+                inputBytes: nil,
+                outputBytes: nil,
+                duration: clock().timeIntervalSince(startedAt),
+                sizesAreComparable: inputKind != nil && inputKind == outputKind,
+                fileCount: 1,
+                failedFiles: []
+            )
+            progress = 1
+        }
+        phase = .finished(outcome)
+        onFinish?(outcome, result?.outputURL)
+        // The output now exists, so the next run must pick a fresh name.
+        rebuildDraft()
+    }
+
+    /// One file of several is done: note how it went, then go on to the next unless the user cancelled. A failed
+    /// file doesn't stop the others; the result says which failed.
+    private func fileEnded(_ outcome: RunOutcome, command: Command) {
+        guard var batch else { return }
+        let file = batch.files[batch.nextIndex - 1]
+        switch outcome {
+        case .succeeded:
+            let output = [reportedOutputPath, command.outputPath].compactMap { $0 }
+                .first { FileManager.default.fileExists(atPath: $0) }
+            if let folder = output.map({ ($0 as NSString).deletingLastPathComponent }),
+                !batch.outputFolders.contains(folder)
+            {
+                batch.outputFolders.append(folder)
+            }
+        case .cancelled:
+            break
+        case .failed, .couldNotStart:
+            batch.failedFiles.append(file)
+            batch.lastFailure = outcome
+        }
+        progress = Double(batch.nextIndex) / Double(batch.files.count)
+        self.batch = batch
+        if outcome != .cancelled, batch.nextIndex < batch.files.count {
+            startNextFile()
+        } else {
+            batchEnded(batch, cancelled: outcome == .cancelled)
+        }
+    }
+
+    private func batchEnded(_ batch: Batch, cancelled: Bool) {
+        let outcome: RunOutcome
+        if cancelled {
+            outcome = .cancelled
+        } else if batch.failedFiles.count == batch.files.count {
+            outcome = batch.lastFailure ?? .failed(exitCode: 1)
+        } else {
+            outcome = .succeeded
+            let folderPath =
+                outputFolderField.flatMap { value(of: $0)?.firstPath }.map { ($0 as NSString).expandingTildeInPath }
+                ?? (batch.outputFolders.count == 1 ? batch.outputFolders[0] : nil)
+            result = RunResult(
+                outputURL: nil,
+                folderURL: folderPath.map { URL(filePath: $0) },
+                inputBytes: nil,
+                outputBytes: nil,
+                duration: clock().timeIntervalSince(batch.startedAt),
+                sizesAreComparable: false,
+                fileCount: batch.files.count,
+                failedFiles: batch.failedFiles
+            )
+        }
+        self.batch = nil
+        phase = .finished(outcome)
+        onFinish?(outcome, nil)
+        rebuildDraft()
     }
 
     /// Fills in the result's sizes once they're measured, unless another run has started since.

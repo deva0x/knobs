@@ -95,6 +95,10 @@ private struct Context {
     func value(of field: Field) -> FieldValue? {
         guard let value = values[field.id] ?? field.defaultValue else { return nil }
         guard case .paths(let paths) = value else { return value }
+        // A one-file field holding several files is run once per file (TaskSession); its command is the first's.
+        if case .inputFile(_, false) = field.kind, let first = paths.first {
+            return .paths([expandingTilde(first)])
+        }
         return .paths(paths.map(expandingTilde))
     }
 

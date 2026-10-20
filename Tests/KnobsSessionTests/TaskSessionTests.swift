@@ -155,4 +155,118 @@ import Testing
         #expect(outcome == .succeeded)
         #expect(session.result?.sizesAreComparable == false)
     }
+
+    // MARK: Several files, one after another
+
+    /// Counts how often a session reports the end of a run, to check that a run over several files reports once.
+    private final class FinishCount {
+        var count = 0
+    }
+
+    /// Starts a run and waits for its one reported end, counting reports so a second one would show.
+    private func runCounting(_ session: TaskSession, with executable: String) async throws -> (RunOutcome, FinishCount)
+    {
+        try #require(session.draft.isRunnable, "\(session.draft.problems)")
+        let finishes = FinishCount()
+        let outcome = await withCheckedContinuation { continuation in
+            session.onFinish = { outcome, _ in
+                finishes.count += 1
+                if finishes.count == 1 { continuation.resume(returning: outcome) }
+            }
+            session.start(executable: URL(filePath: executable), runner: ToolRunner(environment: [:]))
+        }
+        return (outcome, finishes)
+    }
+
+    @Test func severalFilesInAOneFileTaskRunOneAfterAnother() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let clips = try ["a.mov", "b.mov", "c.mov"].map { name in
+            let clip = folder.appending(path: name)
+            try Data(count: 100).write(to: clip)
+            return clip
+        }
+        let session = try makeCopySession(input: clips[0], outputExtension: "mp4")
+        session.values["input"] = .paths(clips.map(\.path))
+        #expect(session.filesRunOneByOne == clips.map(\.path))
+
+        let (outcome, finishes) = try await runCounting(session, with: "/bin/cp")
+
+        #expect(outcome == .succeeded)
+        #expect(finishes.count == 1)
+        for name in ["a out.mp4", "b out.mp4", "c out.mp4"] {
+            #expect(FileManager.default.fileExists(atPath: folder.appending(path: name).path), "\(name)")
+        }
+        #expect(session.result?.fileCount == 3)
+        #expect(session.result?.failedFiles == [])
+        #expect(session.result?.folderURL?.path == folder.path)
+        #expect(session.result?.outputURL == nil)
+    }
+
+    @Test func aFileThatFailsDoesNotStopTheOthers() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let first = folder.appending(path: "a.mov")
+        let missing = folder.appending(path: "gone.mov")
+        let last = folder.appending(path: "c.mov")
+        try Data(count: 100).write(to: first)
+        try Data(count: 100).write(to: last)
+        let session = try makeCopySession(input: first, outputExtension: "mp4")
+        session.values["input"] = .paths([first.path, missing.path, last.path])
+
+        let (outcome, finishes) = try await runCounting(session, with: "/bin/cp")
+
+        #expect(outcome == .succeeded)
+        #expect(finishes.count == 1)
+        #expect(session.result?.failedFiles == [missing.path])
+        #expect(FileManager.default.fileExists(atPath: folder.appending(path: "c out.mp4").path))
+    }
+
+    @Test func whenEveryFileFailsTheRunFails() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let paths = ["x.mov", "y.mov"].map { folder.appending(path: $0).path }
+        let session = try makeCopySession(input: URL(filePath: paths[0]), outputExtension: "mp4")
+        session.values["input"] = .paths(paths)
+
+        let (outcome, _) = try await runCounting(session, with: "/bin/cp")
+
+        #expect(outcome == .failed(exitCode: 1))
+        #expect(session.result == nil)
+    }
+
+    @Test func cancellingStopsTheFilesNotYetStarted() async throws {
+        let folder = try makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let paths = try ["a.mov", "b.mov"].map { name in
+            let clip = folder.appending(path: name)
+            try Data(count: 100).write(to: clip)
+            return clip.path
+        }
+        // A task that waits long enough to be cancelled, whatever file it is given.
+        let json = """
+            {
+              "schemaVersion": 1, "id": "wait", "name": "Wait", "summary": "Waits.",
+              "executable": "sleep", "install": { "brew": "coreutils" }, "symbol": "doc", "tint": "gray",
+              "tasks": [{
+                "id": "wait", "title": "Wait", "summary": "Waits.", "symbol": "doc",
+                "fields": [{ "id": "input", "label": "File", "kind": "inputFile" }],
+                "arguments": ["30", "{extra}"]
+              }]
+            }
+            """
+        let manifest = try ManifestLoader.load(Data(json.utf8), source: "wait.json")
+        let session = TaskSession(
+            manifest: manifest, task: try #require(manifest.tasks.first), initialValues: ["input": .paths(paths)])
+
+        let outcome = await withCheckedContinuation { continuation in
+            session.onFinish = { outcome, _ in continuation.resume(returning: outcome) }
+            session.start(executable: URL(filePath: "/bin/sleep"), runner: ToolRunner(environment: [:]))
+            session.cancel()
+        }
+
+        #expect(outcome == .cancelled)
+        #expect(session.phase == .finished(.cancelled))
+        #expect(!session.isRunning)
+    }
 }

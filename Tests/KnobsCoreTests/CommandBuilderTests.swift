@@ -134,6 +134,19 @@ import Testing
         #expect(argv == ["-o", "/out/merged.pdf", "/a/1.pdf", "/a/2 two.pdf"])
     }
 
+    /// A one-file task given several files runs once per file; its command is the first file's.
+    @Test func aOneFileFieldHoldingSeveralFilesBuildsTheFirstFilesCommand() throws {
+        let manifest = try load(minimalManifest())
+
+        let command = builder().build(
+            manifest.tasks[0], of: manifest, values: ["input": .paths(["/a/one.mov", "/a/two.mov", "/a/three.mov"])],
+            extraArguments: ""
+        ).command
+
+        #expect(command.argv == ["/a/one.mov", "/a/one out.txt"])
+        #expect(command.outputPath == "/a/one out.txt")
+    }
+
     @Test func equalsConditionsPickTheBranchForTheChosenOption() throws {
         let fields: [[String: Any]] = [
             ["id": "input", "label": "File", "kind": "inputFile"],

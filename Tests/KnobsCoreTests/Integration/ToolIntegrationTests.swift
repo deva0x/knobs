@@ -190,6 +190,18 @@ private func makeThreePagePDF(_ gs: URL, at path: String, in folder: URL) async 
                 values: ["input": .paths([lockedPath]), "password": .text("s3cret pass")], in: folder),
             "remove-password")
 
+        let onePerPage = try await Integration.run(
+            "split", of: manifest, executable: qpdf, values: input, in: folder)
+        expectSucceeded(onePerPage, "split")
+        let pageFiles = try FileManager.default.contentsOfDirectory(atPath: try #require(onePerPage.outputPath))
+        #expect(pageFiles.sorted() == ["three pages-1.pdf", "three pages-2.pdf", "three pages-3.pdf"])
+        let twoPerFile = try await Integration.run(
+            "split", of: manifest, executable: qpdf, values: input.merging(["pagesPerFile": .integer(2)]) { $1 },
+            in: folder)
+        expectSucceeded(twoPerFile, "split two pages per file")
+        let pairFiles = try FileManager.default.contentsOfDirectory(atPath: try #require(twoPerFile.outputPath))
+        #expect(pairFiles.sorted() == ["three pages-1-2.pdf", "three pages-3-3.pdf"])
+
         // Cut short, as by an interrupted download: qpdf rebuilds what it can and only warns.
         let damaged = folder.appending(path: "cut short.pdf")
         let whole = try Data(contentsOf: URL(filePath: pdf))

@@ -47,6 +47,19 @@
       "arguments": ["--warning-exit-0", "{extra}", "{input}", "--pages", ".", "{pages}", "--", "{output}"]
     },
     {
+      "id": "split",
+      "title": "Split a PDF",
+      "summary": "Save each page, or every few pages, as its own PDF in a new folder.",
+      "symbol": "square.split.2x1",
+      "fields": [
+        { "id": "input", "label": "PDF", "kind": "inputFile", "contentTypes": ["com.adobe.pdf"] },
+        { "id": "pagesPerFile", "label": "Pages per file", "kind": "integer", "default": 1, "minimum": 1, "maximum": 1000,
+          "help": "1 gives one PDF per page, each named by its pages, such as Report-3.pdf." }
+      ],
+      "output": { "template": "{input.stem} split", "nextTo": "input", "newFolder": true },
+      "arguments": ["--warning-exit-0", "--split-pages={pagesPerFile}", "{extra}", "{input}", "{output}/{input.stem}.pdf"]
+    },
+    {
       "id": "protect",
       "title": "Protect with a password",
       "summary": "Lock a PDF so it opens only with a password.",

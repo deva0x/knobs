@@ -10,7 +10,8 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   filter (before, a task taking video or audio opened showing only videos). Built with warnings as errors; the
   dialog itself was not seen: through Broadway on 2026-10-21 clicks on sidebar rows did nothing and the
   selection jumped to other tools (Ghostscript, OCRmyPDF), so the check was stopped after a few tries. Not known
-  whether that is Broadway or the app; worth a look on a real Linux desktop. Next: Split a PDF, the result number, install-all, notifications, many files, Sparkle, the
+  whether that is Broadway or the app; worth a look on a real Linux desktop. qpdf's Split a PDF
+  (pages per file, into "<PDF> split"; integration test with real qpdf: 1 and 2 pages per file). Next: the result number, install-all, notifications, many files, Sparkle, the
   Homebrew cask and the release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps

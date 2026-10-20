@@ -153,7 +153,7 @@ website and README describe them from the next release on.
 One commit or more per item, each with its docs, tested, and tried in the app when it shows on screen.
 - [x] BUG-018: no flag ending in a full stop in All options
 - [x] Linux file chooser filters img2pdf's image types
-- [ ] qpdf: Split a PDF, one PDF per page into a new folder
+- [x] qpdf: Split a PDF, one PDF per page into a new folder
 - [ ] Result card shows the size change only when input and output are the same kind of file
 - [ ] One `brew install` line for every missing tool, and a pointer to brew.sh when Homebrew is missing
 - [ ] A notification and Dock progress when a run finishes while Knobs is in the background (Mac)

@@ -5,8 +5,8 @@ All notable changes to Knobs are listed here. The format follows Keep a Changelo
 ## [Unreleased]
 
 ### Added
-- qpdf: rotate pages, pick and reorder pages, protect a PDF with a password, remove a password, and repair a
-  damaged PDF.
+- qpdf: rotate pages, pick and reorder pages, split a PDF into one file per page (or per few pages) in a new
+  folder, protect a PDF with a password, remove a password, and repair a damaged PDF.
 - img2pdf: turn photos and scans into one PDF, a page each, without re-compressing them.
 - Poppler's pdftoppm and pdftotext: save a PDF page, or every page, as PNG or JPEG images, and copy a PDF's text
   into a text file. Every page goes into a new folder next to the PDF, so no existing image is replaced.

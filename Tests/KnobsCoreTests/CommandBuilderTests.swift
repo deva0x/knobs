@@ -216,6 +216,24 @@ import Testing
             ])
     }
 
+    @Test func qpdfSplitsIntoANewFolderNamedAfterThePDF() throws {
+        let manifest = try loadRepositoryManifest("qpdf")
+        let task = try #require(manifest.task(withID: "split"))
+        let input: [String: FieldValue] = ["input": .paths(["/a/report.pdf"])]
+
+        let onePerPage = builder().build(task, of: manifest, values: input, extraArguments: "").command
+        let twoPerFile = builder(existingFiles: ["/a/report split"]).build(
+            task, of: manifest, values: input.merging(["pagesPerFile": .integer(2)]) { $1 }, extraArguments: ""
+        ).command
+
+        #expect(task.output?.isNewFolder == true)
+        #expect(
+            onePerPage.argv == ["--warning-exit-0", "--split-pages=1", "/a/report.pdf", "/a/report split/report.pdf"])
+        #expect(onePerPage.outputPath == "/a/report split")
+        #expect(twoPerFile.argv[1] == "--split-pages=2")
+        #expect(twoPerFile.outputPath == "/a/report split 2")
+    }
+
     @Test func qpdfProtectsWithTheSamePasswordForOpeningAndChanging() throws {
         let manifest = try loadRepositoryManifest("qpdf")
         let task = try #require(manifest.task(withID: "protect"))

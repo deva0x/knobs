@@ -592,3 +592,13 @@ build); origin/main moved b08ddd3..5709d20. GitHub API: origin main = local main
 95619082+deva0x@users.noreply.github.com and link to deva0x, 0 Actions runs. This entry goes up with the next push.
 
 Next action: wait for Deva's AUR account and the site's domain (STATUS, Waiting on Deva 1 and 2).
+
+## 2026-10-20 22:35 IST · Claude Code (Opus 5.5) · HEAD f85c2df
+
+AUR registration is closed (Deva pasted the page, 22:35 IST): HTTP 503, "New account registration is temporarily
+closed", paused for a wave of automated sign-ups, no date, no manual queue, retries not wanted. Arch news feed
+(read once): no notice; newest item 2026-09-22. knobs-gui-bin stays ready in the worktree's dist/linux/aur/.
+STATUS records the block; Arch users keep the release's knobs-bin package meanwhile.
+
+Next action: Deva retries registration by hand later; then an agent publishes knobs-gui-bin. Also waiting:
+the site's domain.

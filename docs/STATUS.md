@@ -2,7 +2,7 @@
 
 Editable snapshot of where things stand. The history lives in `docs/WORKLOG.md`.
 
-Updated: 2026-10-20 IST (website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
+Updated: 2026-10-20 IST (AUR registration closed 22:35; website live 22:25; DMG install checked 22:22; AUR package ready 22:08; v0.1.0 released 21:45; pushed to GitHub 21:42; commit email rewritten 21:39; signed and notarized DMG 21:34; Developer ID certificate 21:22; publish steps checked 21:14)
 
 ## Now
 - Done: M0 to M3, three code review rounds, the macOS redesign (task stage, inspector, tool home), real
@@ -105,7 +105,10 @@ Updated: 2026-10-20 IST (website live 22:25; DMG install checked 22:22; AUR pack
 Decisions DEC-010 and DEC-015 and BUG-012's choice are taken (DEC-018). What is left needs Deva's accounts or a
 system setting:
 1. AUR account: register at aur.archlinux.org and add an SSH public key under My Account (agents may not create
-   accounts). Then an agent publishes `knobs-gui-bin` (DEC-019, DEC-020): clone
+   accounts). Blocked on the AUR's side: on 2026-10-20 at 22:35 IST registration answered HTTP 503, "New account
+   registration is temporarily closed" (a wave of automated sign-ups; no date given, no manual queue). The Arch
+   news feed had no notice yet; updates come there and on aur-general. Try again by hand later, never by script.
+   Until then Arch users install the release's `knobs-bin` package, as the website's Arch tab says. Then an agent publishes `knobs-gui-bin` (DEC-019, DEC-020): clone
    `ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, set that clone's user.email to the GitHub private address,
    add the PKGBUILD and .SRCINFO, commit, push `master`. The files for 0.1.0 are in this worktree's
    `dist/linux/aur/` (`.claude/worktrees/where-are-we-e513b3`); any checkout can write them again with the amd64

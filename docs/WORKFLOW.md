@@ -37,7 +37,8 @@ Hooks live in `scripts/hooks/` and are turned on with `scripts/install-hooks.sh`
 - Message format: `area: why`, for example `core: keep values with spaces as one argument`.
   Areas: `core`, `app`, `manifests`, `scripts`, `docs`.
 - Stage named paths. Never `git add -A` or `git add .`.
-- Agents commit locally. Agents never push and never create remote repos. Deva pushes.
+- Agents commit to `main` and push it with a plain `git push` (DEC-020). They never force-push and never create
+  remote repos.
 - Releases are tags: `v0.1.0`. Version numbers follow SemVer, and `CHANGELOG.md` gets an entry per release.
 
 ## Definition of done (for any task)
@@ -63,21 +64,25 @@ An agent working alone loops through this:
 6. Questions for Deva go under "Waiting on Deva" in STATUS. Work continues on everything else.
 7. Checkpoint the WORKLOG at least every hour, even mid-task.
 
-Things an unattended agent never does: push, create or change remote repos, publish a release, change
+Things an unattended agent never does: force-push, create or change remote repos, publish a release, change
 GitHub settings, use `sudo`, delete files outside the repo, download anything other than Homebrew formulas
 and the files listed in DECISIONS, or enter credentials.
 
-## Publishing the website (Deva runs this; DEC-018)
-The site is static files in `website/`. It goes to Cloudflare Pages by direct upload from this Mac, with no
-hosted CI:
+## Publishing the website (Deva, or an agent when Deva asks; DEC-018)
+The site is static files in `website/`. It goes to the Cloudflare Pages project `knobs`
+(https://knobs.pages.dev, created 2026-10-20) by direct upload from this Mac, with no hosted CI:
 
 ```bash
-npx wrangler pages deploy website --project-name knobs
+npx wrangler pages deploy website --project-name knobs --branch main
 ```
 
-The first run asks Wrangler to sign in to Cloudflare in the browser and creates the `knobs` project. Check the
-printed URL in a browser at desktop and phone widths before pointing a domain at it.
-Once the address is known, add the link-preview image tags listed in `website/README.md` and deploy again.
+Wrangler 4.135 sends `pages project create` to Cloudflare Workers unless it gets `--force`: on 2026-10-20 it
+deployed a Worker instead of making a Pages project, and wrote a `wrangler.jsonc` and `.gitignore` lines into
+the repo. The project exists now, so never run `create` again; `pages deploy` goes to Pages. Wrangler answers its own prompts "yes" when not run interactively, and it touches
+only what the command names, so name `knobs` and nothing else: the Cloudflare account holds Deva's other work.
+Check the printed URL in a browser at desktop and phone widths after each deploy. Deva is buying a domain for
+the site on Cloudflare; once it is attached, add the link-preview image tags listed in `website/README.md` with
+that address and deploy again.
 
 ## Releasing (from M9 on)
 
@@ -95,7 +100,7 @@ Once the address is known, add the link-preview image tags listed in `website/RE
 Without the certificate it skips steps 2 to 4 and leaves an unsigned DMG, saying so. Without the notary
 profile it signs but doesn't notarize, and says so.
 
-After the release is on GitHub, Deva pushes `dist/linux/aur/PKGBUILD` and `.SRCINFO` to the AUR's
+After the release is on GitHub, an agent or Deva pushes `dist/linux/aur/PKGBUILD` and `.SRCINFO` to the AUR's
 `knobs-gui-bin` repository (`ssh://aur@aur.archlinux.org/knobs-gui-bin.git`, branch `master`). Not before: that
 PKGBUILD downloads the release's x86_64 tarball and checks it against the checksum it carries. A change to the
 PKGBUILD alone, with the same tarball, raises `pkgrel` instead of the version.

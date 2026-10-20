@@ -20,7 +20,7 @@ Run these exact commands. Do not invent substitutes or add flags.
 - Format: `xcrun swift-format format --in-place --recursive Sources Tests App linux/Package.swift linux/Sources`
 - Lint: `xcrun swift-format lint --strict --recursive Sources Tests App linux/Package.swift linux/Sources`
 - Log work: `scripts/log.sh "<agent>"` with the entry body on stdin
-- Never run: anything under `.github/workflows` (must not exist), `git push`, `gh repo create`, `gh release create`, `sudo`, `brew upgrade` (it changes the tools that the tests pin against).
+- Never run: anything under `.github/workflows` (must not exist), a force push, `gh repo create`, `gh release create`, `sudo`, `brew upgrade` (it changes the tools that the tests pin against).
 
 A task is not finished until the relevant command has run in this session, or you have said why it could not.
 
@@ -37,10 +37,13 @@ Read these first instead of exploring:
 
 ## Standing authorization
 Granted by Deva on 2026-10-18 (DEC-013): work without stopping for Deva, inside this project folder only.
-- Commit locally to `main` once the hooks pass. No pushing.
+Pushing added by Deva on 2026-10-20 (DEC-020).
+- Commit to `main` once the hooks pass, and push it to `origin` (github.com/deva0x/knobs) with a plain `git push`.
+- Push `dist/linux/aur/PKGBUILD` and `.SRCINFO` to the AUR's `knobs-gui-bin` (`master`), only once the GitHub
+  release they download from exists.
 - Create files and folders inside this repo as the plan requires.
 - `brew install` the formulas listed in DEC-009, and download the whisper test model into `.cache/models/`.
-- Never: delete outside the repo, `sudo`, push, create remote repos, publish, change GitHub or system settings, or enter credentials.
+- Never: delete outside the repo, `sudo`, force-push, create remote repos, publish, change GitHub or system settings, or enter credentials.
 
 ## Before editing
 For anything beyond a one-line fix, state in four lines: outcome (what will be true when done), evidence (which command proves it), boundaries (what you will not touch), stop condition (when you stop and report). In unattended runs, write these four lines into the WORKLOG entry.
@@ -63,7 +66,7 @@ If the task reveals a bigger problem, finish the task, then report the problem. 
 After two failed attempts at the same fix, stop. Report what you tried, what you observed, and your current hypothesis. Do not keep trying variations. In unattended runs, record it in `docs/BUGS.md`, mark it blocked in STATUS, and move to the next independent item.
 
 ## Git
-Commit only under the standing authorization above or when asked; never push, amend, rebase, reset, or stash. Stage named paths, never `-A` or `.`. One concern per commit; the message is `area: why` (see WORKFLOW). Force pushes, pushes to main, hard resets, `--no-verify`, and secret files are blocked by `.claude/settings.json` and `.claude/hooks/guard.sh`; if a command is blocked, say so and stop.
+Commit and push only under the standing authorization above or when asked; never force-push, amend, rebase, reset, or stash. Stage named paths, never `-A` or `.`. One concern per commit; the message is `area: why` (see WORKFLOW). Force pushes, hard resets, `--no-verify`, and secret files are blocked by `.claude/settings.json` and `.claude/hooks/guard.sh`; if a command is blocked, say so and stop.
 
 ## Verification
 - "Done" cites a tool result from this session. If tests fail, paste the failure; do not paraphrase it into success.

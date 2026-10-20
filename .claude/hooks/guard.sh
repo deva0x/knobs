@@ -33,7 +33,6 @@ matches() { printf '%s' "$cmd" | grep -Eiq -- "$1"; }
 
 # Git: history and remote safety
 matches '\bgit\s+push\b.*(\s--force\b|\s-f\b|\s--force-with-lease\b)' && block "force push"
-matches '\bgit\s+push\b.*\b(main|master)\b'                           && block "push to main or master"
 matches '\bgit\s+reset\s+--hard\b'                                    && block "git reset --hard"
 matches '\bgit\s+checkout\s+--\s+\.(\s|$)'                            && block "git checkout -- . (discards all working changes)"
 matches '\bgit\s+restore\s+(\.|--worktree\s+\.)(\s|$)'                && block "git restore . (discards all working changes)"

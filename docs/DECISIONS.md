@@ -138,3 +138,10 @@ it. Deva chose `knobs-gui-bin`: it provides `knobs-gui` and conflicts with `knob
 and with 0.1.0's `knobs-bin`. Its PKGBUILD downloads the x86_64 tarball from the GitHub release, so the AUR
 files go up only after the release; a local build copies the tarball in first, so nothing is downloaded. The
 0.1.0 release keeps its `knobs-bin` file, which the website links to; the website changes with the next release.
+
+## DEC-020: Agents may push `main` and the AUR package (2026-10-20, chosen by Deva)
+Deva asked agents to do the publishing steps themselves instead of handing them back, and chose to let agents
+push. CLAUDE.md's standing authorization now allows a plain `git push` of `main` to `origin` and a push of the
+AUR files to `knobs-gui-bin`'s `master` once the release they download exists. `.claude/hooks/guard.sh` no
+longer blocks a push that names `main` or `master`. Force pushes, `--no-verify`, `gh repo create` and
+`gh release create` stay blocked or forbidden, and the pre-push hook still runs `scripts/ci.sh` before each push.

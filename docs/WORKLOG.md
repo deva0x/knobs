@@ -742,3 +742,17 @@ Deva asked whether the .deb and other install files need updating. Answer given,
   tool table; `scripts/linux.sh package` for arm64 and amd64 and a clean-container check of each; Deva runs
   `scripts/release.sh 0.2.0` and `gh release create`; then deploy website/ and, once registration reopens, AUR.
 - Next: wait for Deva to say whether to prepare 0.2.0.
+
+## 2026-10-21 02:23 IST · Claude Code (Opus 5.5) · HEAD 4a19925
+
+Start of 0.2.0 (PLAN M13). Deva picked every option offered: honest result number, Split a PDF, install all
+missing tools, BUG-018, run on many files, done notification, Homebrew cask, and Sparkle asking first.
+- Outcome: each item in M13 committed with tests and docs, tried in the app where it shows; then the 0.2.0
+  release files ready for Deva to sign and publish.
+- Evidence: `scripts/ci.sh fast` per commit, full `scripts/ci.sh` on push, `scripts/ci.sh linux` after shared
+  KnobsSession changes, `scripts/run-app.sh` and a hand check per UI item.
+- Boundaries: no website deploy before the release; no key generation or credentials (Deva makes Sparkle's
+  EdDSA key); no pushes outside origin and the AUR; Linux UI gets only what is stated per item.
+- Stop condition: release files ready and handed to Deva, or a blocker logged in BUGS and STATUS.
+- `scripts/ci.sh linux` on merged main (bfea2ec plus logs): PASS, 172 tests in 19 suites, one known issue
+  (BUG-016).

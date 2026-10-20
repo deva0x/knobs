@@ -149,6 +149,23 @@ website and README describe them from the next release on.
 - [x] pdftotext, from Poppler (1): PDF to text
 - Exit: every manifest validates, golden and integration tests pass, and each tool was run once in the app.
 
+### M13. Release 0.2.0 (2026-10-21, everything Deva picked)
+One commit or more per item, each with its docs, tested, and tried in the app when it shows on screen.
+- [ ] BUG-018: no flag ending in a full stop in All options
+- [ ] Linux file chooser filters img2pdf's image types
+- [ ] qpdf: Split a PDF, one PDF per page into a new folder
+- [ ] Result card shows the size change only when input and output are the same kind of file
+- [ ] One `brew install` line for every missing tool, and a pointer to brew.sh when Homebrew is missing
+- [ ] A notification and Dock progress when a run finishes while Knobs is in the background (Mac)
+- [ ] Run a single-file task on many files, one after another
+- [ ] Updates through Sparkle, asking before the first check (Mac)
+- [ ] Homebrew cask (Deva creates `deva0x/homebrew-knobs`)
+- [ ] Release files: version 0.2.0, CHANGELOG, README tools, website `#release`, Linux packages checked in
+  clean containers, then Deva runs `scripts/release.sh 0.2.0` and `gh release create`; after that the website,
+  the cask and the AUR
+- Exit: `scripts/ci.sh` and `scripts/ci.sh linux` pass, every new piece was tried in the app, and the 0.2.0
+  files are on GitHub.
+
 ## Order and dependencies
 
 M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7 → M9 → M10. M8 (website) can run alongside M4 to M7 because it only

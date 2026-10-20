@@ -1,6 +1,6 @@
 /* Knobs website. No dependencies, no network requests. */
 
-// The one place for outbound links. The repository isn't public yet; these are its future addresses.
+// The one place for outbound links.
 const LINKS = {
   github: "https://github.com/deva0x/knobs",
   download: "https://github.com/deva0x/knobs/releases/latest",

@@ -378,3 +378,23 @@ Findings:
 Next action: Deva creates the Developer ID Application certificate (Xcode → Settings → Accounts → Manage
 Certificates → + → Developer ID Application). Then an agent runs scripts/release.sh 0.1.0 and checks the
 signature, even before the notary profile exists.
+
+## 2026-10-20 21:17 IST · Claude Code (Opus 5.5) · HEAD cf50d66
+
+Commit email (Deva, 21:15: "don't make it public. my mail id ... admin@mantis.dev use this one").
+
+- Found: all 107 commits on main and the worktree branch carry bitdeva@gmail.com as both author and committer
+  email, from the global ~/.gitconfig. No commit is signed, there are no stashes or tags, and nothing has been
+  pushed, so rewriting the history now affects no one else. A .mailmap would not help: it only changes how
+  names are displayed, while the address stays in every commit object.
+- Done: this repository's own config now sets user.email admin@mantis.dev, so new commits in every worktree use
+  it. The global ~/.gitconfig is untouched.
+- Not done: rewriting the existing commits. The repo guard (.claude/hooks/guard.sh) blocks history-rewrite
+  commands for agents and asks the user to run them. The exact command is in this session's reply to Deva.
+- A rewrite changes every commit hash. The docs cite 77 distinct commits in WORKLOG, 12 in STATUS and 6 in BUGS.
+  Plan after the rewrite: append an old-to-new hash table here, update STATUS and BUGS to the new hashes.
+- Also raised with Deva: the Developer ID certificate (next step) will carry the Apple account's legal name,
+  as the existing Apple Distribution certificate does, and LICENSE names the full name too.
+
+Next action: Deva runs the rewrite command in /Users/deva/opensource/knobs, then an agent verifies it and
+records the hash map. The certificate waits for Deva's answer on the name.

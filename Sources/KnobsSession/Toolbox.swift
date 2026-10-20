@@ -22,6 +22,9 @@ public final class Toolbox {
     public private(set) var library: KnobsLibrary
     /// A problem reading or writing the saved settings, in plain words, for the app to show.
     public var libraryProblem: String?
+    /// Whether Homebrew's `brew` is installed, so the app can point to brew.sh before showing `brew install` lines.
+    public private(set) var isHomebrewInstalled = false
+    private static let homebrewExecutable = "brew"
 
     /// The bundled tools as written, before `bundledManifests` picks the installed name of each.
     private let catalogManifests: [ToolManifest]
@@ -92,6 +95,12 @@ public final class Toolbox {
         executables[manifest.id] != nil
     }
 
+    /// The Homebrew formulas of every bundled tool that isn't installed, each once and in alphabetical order, for
+    /// one `brew install` line that installs them all. pdftoppm and pdftotext both come from `poppler`.
+    public var missingFormulas: [String] {
+        Set(bundledManifests.filter { !isInstalled($0) }.map(\.brewFormula)).sorted()
+    }
+
     /// Where the copy of the tool that Knobs runs lives, or nil when it isn't installed.
     public func location(of manifest: ToolManifest) -> URL? {
         executables[manifest.id]
@@ -117,6 +126,7 @@ public final class Toolbox {
             found[manifest.id] = locator.locate(manifest.executable)
         }
         executables = found
+        isHomebrewInstalled = locator.locate(Self.homebrewExecutable) != nil
     }
 
     /// Adds an installed tool by name and returns its id, or nil when the name is taken, isn't installed, or is a

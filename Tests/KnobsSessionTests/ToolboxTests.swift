@@ -48,6 +48,61 @@ private final class InstalledPrograms: Sendable {
         return (toolbox, folder)
     }
 
+    /// A one-task manifest for a tool installed by `formula`, as pdftoppm and pdftotext are both by poppler.
+    private static func manifest(id: String, executable: String, formula: String) -> String {
+        """
+        {
+          "schemaVersion": 1, "id": "\(id)", "name": "\(id)", "summary": "A tool.",
+          "executable": "\(executable)", "install": { "brew": "\(formula)" }, "symbol": "doc", "tint": "yellow",
+          "tasks": [{
+            "id": "run", "title": "Run", "summary": "Runs.", "symbol": "doc",
+            "fields": [{ "id": "input", "label": "File", "kind": "inputFile" }],
+            "arguments": ["{input}", "{extra}"]
+          }]
+        }
+        """
+    }
+
+    private func makeToolboxWithPoppler(installed: InstalledPrograms) throws -> (Toolbox, URL) {
+        let (_, folder) = try makeToolbox(installed: installed)
+        let manifests = folder.appending(path: "Manifests")
+        try Data(Self.manifest(id: "pdftoppm", executable: "pdftoppm", formula: "poppler").utf8)
+            .write(to: manifests.appending(path: "pdftoppm.json"))
+        try Data(Self.manifest(id: "pdftotext", executable: "pdftotext", formula: "poppler").utf8)
+            .write(to: manifests.appending(path: "pdftotext.json"))
+        let toolbox = Toolbox(
+            manifestsDirectory: manifests, dataDirectory: folder.appending(path: "Data"), environment: [:],
+            isExecutableFile: installed.contains)
+        return (toolbox, folder)
+    }
+
+    @Test func missingToolsAreListedOncePerHomebrewFormula() throws {
+        let (toolbox, folder) = try makeToolboxWithPoppler(installed: InstalledPrograms())
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        #expect(toolbox.missingFormulas == ["poppler", "sevenzip"])
+    }
+
+    @Test func anInstalledToolLeavesTheMissingList() throws {
+        let installed = InstalledPrograms(["/opt/homebrew/bin/7zz"])
+        let (toolbox, folder) = try makeToolboxWithPoppler(installed: installed)
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        #expect(toolbox.missingFormulas == ["poppler"])
+    }
+
+    @Test func homebrewIsFoundWhereItInstallsItself() throws {
+        let installed = InstalledPrograms()
+        let (toolbox, folder) = try makeToolbox(installed: installed)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        #expect(!toolbox.isHomebrewInstalled)
+
+        installed.install("/opt/homebrew/bin/brew")
+        toolbox.refreshAvailability()
+
+        #expect(toolbox.isHomebrewInstalled)
+    }
+
     @Test func checkAgainFindsAToolInstalledUnderAnotherNameAfterLaunch() throws {
         let installed = InstalledPrograms()
         let (toolbox, folder) = try makeToolbox(installed: installed)

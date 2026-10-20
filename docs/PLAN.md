@@ -155,7 +155,7 @@ One commit or more per item, each with its docs, tested, and tried in the app wh
 - [x] Linux file chooser filters img2pdf's image types
 - [x] qpdf: Split a PDF, one PDF per page into a new folder
 - [x] Result card shows the size change only when input and output are the same kind of file
-- [ ] One `brew install` line for every missing tool, and a pointer to brew.sh when Homebrew is missing
+- [x] One `brew install` line for every missing tool, and a pointer to brew.sh when Homebrew is missing
 - [ ] A notification and Dock progress when a run finishes while Knobs is in the background (Mac)
 - [ ] Run a single-file task on many files, one after another
 - [ ] Updates through Sparkle, asking before the first check (Mac)

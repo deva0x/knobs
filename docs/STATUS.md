@@ -14,7 +14,11 @@ Updated: 2026-10-21 IST (pdftoppm every page as images, through a new-folder out
   (pages per file, into "<PDF> split"; integration test with real qpdf: 1 and 2 pages per file). The result
   card's size change only for the same kind of file (KnobsSession's `RunResult.sizeChange`, three
   TaskSessionTests). Tried in the app 2026-10-21 03:00 IST: Compress a PDF still shows its number, Turn a PDF
-  into text says Done, and Split a PDF made "Lease split" with Lease-1/2/3.pdf and says Done. Next: install-all, notifications, many files, Sparkle, the
+  into text says Done, and Split a PDF made "Lease split" with Lease-1/2/3.pdf and says Done. Install-all
+  on the Mac: the not-installed panel adds one `brew install` line for every missing tool (Toolbox's
+  `missingFormulas`, poppler once) and a brew.sh link when Homebrew is missing; seen in the app with two
+  temporary fake tools (removed again); the Homebrew-missing line is covered by ToolboxTests only. The Linux
+  app keeps its "use your distribution's package manager" line. Next: notifications, many files, Sparkle, the
   Homebrew cask and the release files.
 - pdftoppm's "Save every page as images" (2026-10-21, Deva chose a new folder over accepting the overwrite,
   DEC-021): a manifest output can say `"newFolder": true`, and KnobsSession's TaskSession, which both apps
